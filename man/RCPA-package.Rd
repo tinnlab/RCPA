@@ -1,25 +1,25 @@
-\name{untitled-package}
-\alias{untitled-package}
-\alias{untitled}
+\name{RCPA-package}
+\alias{RCPA-package}
+\alias{RCPA}
 \docType{package}
 \title{
-\packageTitle{untitled}
+\packageTitle{RCPA}
 }
 \description{
-\packageDescription{untitled}
+\packageDescription{RCPA}
 }
 \details{
 
 The DESCRIPTION file:
-\packageDESCRIPTION{untitled}
-\packageIndices{untitled}
+\packageDESCRIPTION{RCPA}
+\packageIndices{RCPA}
 ~~ An overview of how to use the package, including the most important ~~
 ~~ functions ~~
 }
 \author{
-\packageAuthor{untitled}
+\packageAuthor{RCPA}
 
-Maintainer: \packageMaintainer{untitled}
+Maintainer: \packageMaintainer{RCPA}
 }
 \references{
 ~~ Literature or other references for background information ~~

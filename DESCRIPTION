@@ -5,8 +5,7 @@ Version: 1.0.0
 Author: @R: c(
     person("Bang", "Tran", , "bang.t.s@nevada.unr.edu", role = c("aut", "cre")),
     person("Hung", "Nguyen", role = c("aut")),
-    person("Tin", "Nguyen", role = c("fnd"))
-)
+    person("Tin", "Nguyen", role = c("fnd")))
 Maintainer: Bang Tran <bang.t.s@nevada.unr.edu>
 Description: More about what it does (maybe more than one line).
     Use four spaces when indenting paragraphs within the Description.
@@ -16,7 +15,9 @@ LazyData: true
 LazyDataCompression: xz
 Depends: R (>= 4.0)
 biocViews:
-Imports:
 RoxygenNote: 7.2.3
-Suggests: knitr
+Suggests: 
+    knitr,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3
