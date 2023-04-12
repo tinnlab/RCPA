@@ -33,6 +33,6 @@ A named list with three elements: database, genesets and names.
 This function retrieves gene sets for a given organism.
 }
 \examples{
-getGeneSets("KEGG", "hsa")
+getGeneSets("KEGG", "abcd")
 getGeneSets("GO", taxid = 9606, namespace = "biological_process")
 }

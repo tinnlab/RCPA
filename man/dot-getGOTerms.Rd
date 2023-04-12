@@ -4,7 +4,10 @@
 \alias{.getGOTerms}
 \title{Get GO terms}
 \usage{
-.getGOTerms(taxid = 9606, namespace = "biological_process")
+.getGOTerms(
+  taxid = 9606,
+  namespace = c("biological_process", "molecular_function", "cellular_component")
+)
 }
 \arguments{
 \item{taxid}{The NCBI taxonomy ID of the organism.}

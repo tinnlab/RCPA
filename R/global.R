@@ -1,0 +1,1 @@
+utils::globalVariables(".") # This is needed to avoid R CMD check NOTEs

@@ -4,7 +4,9 @@
 \alias{.getGOTermNames}
 \title{Get GO terms names}
 \usage{
-.getGOTermNames(namespace = "biological_process")
+.getGOTermNames(
+  namespace = c("biological_process", "molecular_function", "cellular_component")
+)
 }
 \arguments{
 \item{namespace}{The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.}

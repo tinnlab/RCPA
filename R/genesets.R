@@ -6,12 +6,15 @@
 #' @examples
 #' getKEGGPathwayNames("hsa")
 #' @importFrom stringr str_split
+#' @importFrom dplyr %>%
+#' @importFrom stats setNames
+#' @importFrom utils read.table
 .getKEGGPathwayNames <- function(org = "hsa") {
     gsNames <- read.table(paste0("http://rest.kegg.jp/list/pathway/", org), sep = "\t", header = F, stringsAsFactors = F)
     gsNames[, 2] %>%
         str_split(" - ") %>%
         sapply(function(x) paste0(x[1:(length(x) - 1)], collapse = " - ")) %>%
-        setNames(., gsNames[, 1])
+        setNames(paste0("path:", gsNames[, 1]))
 }
 
 #' @title Get KEGG gene sets
@@ -24,12 +27,13 @@
 #' @importFrom stringr str_split
 #' @importFrom dplyr %>% left_join group_by group_split mutate select
 #' @importFrom tidyr drop_na
+#' @importFrom stats setNames
 .getKEGGGeneSets <- function(org = "hsa") {
     geneLink <- read.table(paste0("https://rest.kegg.jp/link/", org, "/pathway"), sep = "\t", header = F, stringsAsFactors = F) %>%
         `colnames<-`(c("geneset", "gene"))
 
     gensets <- geneLink %>%
-        group_by(geneset) %>%
+        group_by(.$geneset) %>%
         group_split() %>%
         lapply(function(df) {
             list(
@@ -37,12 +41,12 @@
                 gene = df$gene %>% as.character()
             )
         }) %>%
-        setNames(lapply(., function(gl) gl$name)) %>%
+        `names<-`(lapply(., function(gl) gl$name)) %>%
         lapply(function(gl) gl$gene)
 
     list(
         database = "KEGG",
-        gensets = gensets,
+        genesets = gensets,
         names = .getKEGGPathwayNames(org)[names(gensets)]
     )
 }
@@ -51,7 +55,11 @@
 #' @description This function retrieves GO terms for a given organism.
 #' @param namespace The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
 #' @return A named vector with GO terms names.
-.getGOTermNames <- function(namespace = "biological_process") {
+#' @importFrom stringr str_split_1 str_starts str_detect str_match
+#' @importFrom dplyr filter
+#' @importFrom stats setNames
+.getGOTermNames <- function(namespace = c("biological_process", "molecular_function", "cellular_component")) {
+    namespace <- match.arg(namespace)
 
     con <- url("http://purl.obolibrary.org/obo/go.obo")
     rawText <- readLines(con) %>% paste(collapse = "\n")
@@ -68,7 +76,7 @@
             )
         }) %>%
         do.call(what = rbind) %>%
-        filter(ns == namespace)
+        filter(.$ns == namespace)
 
     terms$name %>% setNames(terms$id)
 }
@@ -78,7 +86,13 @@
 #' @param taxid The NCBI taxonomy ID of the organism.
 #' @param namespace The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
 #' @return A named list with three elements: database, genesets and names.
-.getGOTerms <- function(taxid = 9606, namespace = "biological_process") {
+#' @importFrom utils read.table
+#' @importFrom dplyr %>% filter group_by group_split rename select
+#' @importFrom stats setNames
+.getGOTerms <- function(taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component")) {
+
+    namespace <- match.arg(namespace)
+
     con <- gzcon(url("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz"))
     txt <- readLines(con)
     close(con)
@@ -90,9 +104,8 @@
 
     genesets <- read.table(textConnection(txt), sep = "\t", header = T, stringsAsFactors = F, fill = TRUE, comment.char = "!") %>%
         rename(tax_id = "X.tax_id") %>%
-        select(tax_id, GeneID, GO_ID, Category) %>%
-        filter(tax_id == taxid & Category == cat) %>%
-        group_by(GO_ID) %>%
+        filter(.$tax_id == taxid & .$Category == cat) %>%
+        group_by(.$GO_ID) %>%
         group_split() %>%
         lapply(function(df) {
             list(
@@ -103,7 +116,11 @@
         setNames(lapply(., function(gl) gl$name)) %>%
         lapply(function(gl) gl$geneIds)
 
-    goTermNames <- getGOTermNames(namespace)
+    if (length(genesets) == 0) {
+        stop("No GO terms found for the given organism and namespace.")
+    }
+
+     goTermNames <- .getGOTermNames(namespace)
 
     list(
         database = "GO",
@@ -124,7 +141,7 @@
 #' This parameter is only used when database is GO.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
-#' getGeneSets("KEGG", "hsa")
+#' getGeneSets("KEGG", "abcd")
 #' getGeneSets("GO", taxid = 9606, namespace = "biological_process")
 #' @export
 getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 10, maxSize = 1000) {

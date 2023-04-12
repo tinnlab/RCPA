@@ -1,107 +1,57 @@
-#' @title Differential expression analysis using limma
-#' @description This function performs differential expression analysis using limma.
-#' This function is used internally by runDEAnalysis.
+#' Differential expression analysis
+#' @description Functions to perform differential expression analysis
+#' These functions are used internally by runDEAnalysis.
 #' @param exprs Normalized expression matrix. Rows are genes and columns are samples.
-#' @param controlSamples Vector of control samples.
-#' @param conditionSamples Vector of condition samples.
-#' @return A data frame with DE analysis results
+#' @param design A design model output by model.matrix.
+#' @param contrast A contrast matrix output by limma::makeContrasts.
+#' @return A data frame with DE analysis results.
+#' Must contain the following columns: PROBEID, p.value, logFC, statistic.
 #' @importFrom limma lmFit contrasts.fit eBayes topTable makeContrasts
 #' @importFrom stats model.matrix
 #' @importFrom dplyr %>% mutate rename
-.runLimma <- function(exprs, controlSamples, conditionSamples, isPaired) {
-    group <- c(rep("c", length(controlSamples)), rep("d", length(conditionSamples)))
-    block <- c(rep(1, length(controlSamples)), rep(2, length(conditionSamples)))
-
-    if (isPaired) {
-        block <- factor(block)
-        design <- model.matrix(~0 + group + block)
-        colnames(design) <- substr(colnames(design), 2, 100)
-    }  else {
-        design <- model.matrix(~0 + group)
-        colnames(design) <- levels(group)
-    }
-
-    exprs[, c(controlSamples, conditionSamples)] %>%
+#' @name runDEInternal
+.runLimma <- function(exprs, design, contrast) {
+    exprs %>%
         lmFit(design) %>%
-        contrasts.fit(makeContrasts(contrasts = "d-c", levels = design)) %>%
+        contrasts.fit(contrast) %>%
         eBayes() %>%
         topTable(coef = 1, number = nrow(exprs)) %>%
-        mutate(PROBEID = rownames(.)) %>%
-        rename(p.value = P.Value, statistic = t)
+        mutate(PROBEID = rownames(.), p.value = .$P.Value, statistic = .$t)
 }
 
-#' @title Differential expression analysis using t-test
-#' @description This function performs differential expression analysis using t-test.
-#' This function is used internally by runDEAnalysis.
-#' @param exprs Normalized expression matrix. Rows are genes and columns are samples.
-#' @param controlSamples Vector of control samples.
-#' @param conditionSamples Vector of condition samples.
-#' @return A data frame with DE analysis results
-#' @importFrom matrixTests row_t_equalvar
-.runTTest <- function(exprs, controlSamples, conditionSamples, isPaired) {
-
-    X <- exprs[, controlSamples]
-    Y <- exprs[, conditionSamples]
-
-    DEfnc <- if (isPaired) matrixTests::row_t_paired else matrixTests::row_t_equalvar
-    DEfnc(X, Y, alternative = "two.sided") %>%
-        mutate(PROBEID = rownames(.)) %>%
-        rename(p.value = pvalue)
-}
-
-#' @title Differential expression analysis using DESeq2
-#' @description This function performs differential expression analysis using limma.
-#' This function is used internally by runDEAnalysis.
-#' @param exprs Raw counts matrix. Rows are genes and columns are samples.
-#' @param controlSamples Vector of control samples.
-#' @param conditionSamples Vector of condition samples.
-#' @return A data frame with DE analysis results
+#' @rdname runDEInternal
 #' @importFrom DESeq2 DESeqDataSetFromMatrix DESeq results
-#' @importFrom dplyr %>% mutate rename
-.runDESeq2 <- function(exprs, controlSamples, conditionSamples) {
+.runDESeq2 <- function(exprs, design, contrast) {
 
-    group <- c(rep("c", length(controlSamples)), rep("d", length(conditionSamples)))
-    exprs <- exprs[, c(controlSamples, conditionSamples)]
-
-    colData <- data.frame(
-        row.names = colnames(exprs),
-        condition = group
-    )
-
-    DESeqDataSetFromMatrix(
+    DERes <- DESeqDataSetFromMatrix(
         countData = exprs,
-        colData = colData,
-        design = ~condition
+        colData = data.frame(row.names = colnames(exprs), dummy.var = rep(1, ncol(exprs))),
+        design = design
     ) %>%
         DESeq() %>%
-        results(contrast = c("condition", "d", "c")) %>%
+        results(contrast) %>%
         as.data.frame() %>%
-        mutate(PROBEID = rownames(.)) %>%
-        rename(p.value = pvalue)
+        mutate(PROBEID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange)
+
+    DERes$p.value[is.na(DERes$p.value)] <- 1
+    DERes
 }
 
-#' @title Differential expression analysis using DESeq2
-#' @description This function performs differential expression analysis using limma.
-#' This function is used internally by runDEAnalysis.
-#' @param exprs Raw counts matrix. Rows are genes and columns are samples.
-#' @param controlSamples Vector of control samples.
-#' @param conditionSamples Vector of condition samples.
-#' @return A data frame with DE analysis results
+#' @rdname runDEInternal
 #' @importFrom edgeR DGEList calcNormFactors estimateDisp exactTest topTags
-#' @importFrom dplyr %>% mutate rename
-.runEdgeR <- function(exprs, controlSamples, conditionSamples) {
+.runEdgeR <- function(exprs, design, contrast) {
 
-    group <- c(rep("c", length(controlSamples)), rep("d", length(conditionSamples)))
-    exprs <- exprs[, c(controlSamples, conditionSamples)]
-
-    DGEList(counts = exprs, group = factor(group)) %>%
+    DERes <- DGEList(counts = exprs) %>%
         calcNormFactors() %>%
-        estimateDisp(design = model.matrix(~group), robust = TRUE) %>%
-        exactTest() %>%
+        estimateDisp(design = design) %>%
+        glmQLFit(design = design, contrast = contrast) %>%
+        glmQLFTest(contrast = contrast) %>%
         topTags(n = nrow(exprs)) %>%
         `$`("table") %>%
-        mutate(PROBEID = rownames(.)) %>%
-        rename(p.value = pvalue)
+        mutate(PROBEID = rownames(.), p.value = .$PValue, statistic = .$logFC, logFC = .$logFC)
+
+    DERes$p.value[is.na(DERes$p.value)] <- 1
+    DERes
 }
 
 #' @title Get ID mapping annotation from GEO platform
@@ -147,6 +97,8 @@
             stop(paste0("Platform ", platform, " is not supported. Please pass an AnnotationDbi object instead"))
         }
     }
+
+    annotation
 }
 
 #' @title Map probe IDs to gene symbols
@@ -166,7 +118,11 @@
 #' @importFrom tidyr drop_na
 .mapProbeIDsToGeneSymbols <- function(exprs, annotation, DEResults) {
 
-    top <- DEResults %>% arrange(p.value)
+    if (is.null(annotation)) {
+        return(list(exprs = exprs, DEResults = DEResults))
+    }
+
+    top <- DEResults %>% arrange(.data$p.value)
 
     mapping <- top %>%
         select(PROBEID) %>%
@@ -221,28 +177,15 @@
 #' @importFrom S4Vectors SimpleList
 #' @importFrom dplyr %>%
 #' @export
-runDEAnalysis <- function(summarizedExperiment, controlSamples, conditionSamples, isPaired = FALSE, method = c("limma", "DESeq2", "edgeR"), annotation = NULL) {
+runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "edgeR"), design, contrast, annotation = NULL) {
     method <- match.arg(method)
-    mappingMethod <- match.arg(mappingMethod)
 
-    # check if all samples are in the SummarizedExperiment object
-    if (any(!controlSamples %in% colnames(summarizedExperiment))) {
-        stop("Some control samples are not in the SummarizedExperiment object")
+    if (is.null(design)) {
+        stop("Design matrix must be provided")
     }
 
-    if (any(!conditionSamples %in% colnames(summarizedExperiment))) {
-        stop("Some condition samples are not in the SummarizedExperiment object")
-    }
-
-    # check if there are any samples in both control and condition vectors
-    if (any(intersect(controlSamples, conditionSamples))) {
-        stop("Some samples are in both control and condition vectors")
-    }
-
-    if (isPaired) {
-        if (length(controlSamples) != length(conditionSamples)) {
-            stop("Number of control and condition samples must be the same for paired analysis")
-        }
+    if (is.null(contrast)) {
+        stop("Contrast matrix must be provided")
     }
 
     # get ID mapping annotation
@@ -258,10 +201,6 @@ runDEAnalysis <- function(summarizedExperiment, controlSamples, conditionSamples
         stop("Annotation must be a data frame, ChipDb or OrgDb object")
     }
 
-    # filter out samples that are not in the control or condition vectors
-
-    summarizedExperiment <- summarizedExperiment[, intersect(c(controlSamples, conditionSamples), colnames(summarizedExperiment))]
-
     # get expression matrix
     exprs <- assay(summarizedExperiment)
 
@@ -272,7 +211,7 @@ runDEAnalysis <- function(summarizedExperiment, controlSamples, conditionSamples
     )
 
     # run DE analysis
-    DEResult <- DEFunc(exprs, controlSamples, conditionSamples, isPaired)
+    DEResult <- DEFunc(exprs, design, contrast)
 
     # map probe IDs to gene symbols
     mappedResults <- .mapProbeIDsToGeneSymbols(exprs, annotation, DEResult)
@@ -280,7 +219,10 @@ runDEAnalysis <- function(summarizedExperiment, controlSamples, conditionSamples
     # create a new SummarizedExperiment object
     newSummarizedExperiment <- SummarizedExperiment(
         assays = SimpleList(counts = mappedResults$exprs),
-        rowData = cbind(rowData(summarizedExperiment), mappedResults$DEResult),
+        rowData = cbind(
+            rowData(summarizedExperiment),
+            mappedResults$DEResult[, c("logFC", "p.value", "statistic")]
+        ),
         colData = colData(summarizedExperiment)
     )
 
