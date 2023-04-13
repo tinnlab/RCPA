@@ -15,7 +15,20 @@ LazyData: true
 LazyDataCompression: xz
 Depends: R (>= 4.0)
 biocViews:
-Imports: BiocManager, DESeq2, S4Vectors, SummarizedExperiment, dplyr, edgeR, limma, matrixTests, stringr, tibble, tidyr
+Imports:
+    AnnotationDbi,
+    BiocManager,
+    DESeq2,
+    S4Vectors,
+    SummarizedExperiment,
+    dplyr,
+    edgeR,
+    limma,
+    stats,
+    stringr,
+    tibble,
+    tidyr,
+    utils
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,

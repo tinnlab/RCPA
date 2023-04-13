@@ -48,6 +48,9 @@ Other slots will be the same as in the input SummarizedExperiment object.
 \description{
 This function performs differential expression analysis using either limma, DESeq2 or edgeR.
 }
+\examples{
+#TODO add examples
+}
 \seealso{
 \code{\link{limma::makeContrasts}}
 }
