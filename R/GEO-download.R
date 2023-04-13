@@ -27,26 +27,52 @@
 #' @title Download samples from GEO object
 #' @description This function downloads the corresponding samples from queried GEO object. This function is only used if the protocol is affymetrix or agilent.
 #' This function is used internally by downloadGEO.
-#' @param GEOObject The downloaded GEO object.
+#' @param sampleIDs A vector of GEO accession sample IDs to be downloaded.
+#' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
 #' @param destDir The user path to save the downloaded files.
-#' @return A vector of samples IDs of the queried GEO object.
+#' @return TRUE
 #' @details This function is used internally by downloadGEO.
 #' @importFrom GEOquery getGEOSuppFiles
-#' @importFrom Biobase pData
 #' @importFrom dplyr %>%
-.downloadSamples <- function(GEOObject, destDir) {
-    samples <- pData(GEOObject)["geo_accession"] %>% apply(MARGIN = 1, FUN = function(x) x)
-    for (sample in samples) {
-        if (file.exists(file.path(destDir, paste0(sample, ".CEL.gz")))) next()
-        else {
-            downloadedFiles <- getGEOSuppFiles(sample, baseDir = destDir, makeDirectory = F) %>% rownames()
-            if (protocol == "affymetrix")
-                downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", sample, ".CEL.gz"))
-            else
-                downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", sample, ".TXT.gz"))
+.downloadSamples <- function(sampleIDs, protocol, destDir) {
+
+    if (!dir.exists(destDir)) {
+        stop("The destination directory does not exist.")
+    }
+
+    if(!(protocol %in% c("affymetrix", "agilent"))) {
+        stop("The specified protocol is not valid.")
+    }
+
+    for (id in sampleIDs) {
+
+        if(protocol == "affymetrix"){
+
+            if (file.exists(file.path(destDir, paste0(id, ".CEL.gz")))) next()
+
+            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = F) %>% rownames()
+
+            if(is.null(downloadedFiles)){
+                stop("Check the specified samples IDs to be valid. No file is found.")
+            }
+
+            downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
+
+        }else{
+
+            if (file.exists(file.path(destDir, paste0(id, ".TXT.gz")))) next()
+
+            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = F) %>% rownames()
+
+            if(is.null(downloadedFiles)){
+                stop("Check the specified samples IDs to be valid. No file is found.")
+            }
+
+            downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
         }
     }
-    return(samples)
+
+    return(TRUE)
 }
 
 #' @title Process and normalize affymetrix-based dataset
@@ -54,41 +80,54 @@
 #' The normalization process includes background correction using RMA and data normalization using quantile method.
 #' This function is only used if the protocol is affymetrix or agilent.
 #' This function is used internally by downloadGEO.
-#' @param GEOObject The downloaded GEO object.
-#' @param samples The downloaded samples from the queried GEO object.
+#' @param metadata The metadat of downloaded GEO object.
+#' @param sampleIDs A vector of downloaded samples IDs from the queried GEO object.
 #' @param destDir The user path to save the downloaded files.
 #' @return A SummarizedExperiment object with appended expression values as assay and metadata as colData.
 #' @details This function is used internally by downloadGEO.
 #' @importFrom affy ReadAffy
 #' @importFrom affyPLM threestep
 #' @importFrom oligo read.celfiles rma
-#' @importFrom Biobase pData
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
-.processAffymetrix <- function(GEOObject, samples, destDir) {
+.processAffymetrix <- function(metadata, sampleIDs, destDir) {
+
+    if (!dir.exists(destDir)) {
+        stop("The destination directory does not exist.")
+    }
+
+    metadata <- metadata[metadata$geo_accession %in% sampleIDs,]
+
+    if(nrow(metadata) < length(sampleIDs)){
+        stop("The input metadata and sampleIDs do not match. Make sure the sample IDs match with geo_accession IDs from dataset.")
+    }
+
     #Normalize expression data based on RMA method
     expression <- try({
-        ReadAffy(verbose = T, celfile.path = destDir, sampleNames = samples, filenames = paste0(samples, '.CEL.gz')) %>%
+        ReadAffy(verbose = T, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
             threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
             exprs() %>%
             as.data.frame()
     })
 
     if ("try-error" %in% class(expression)) {
-        expression <- read.celfiles(paste0(destDir, "/", samples, '.CEL.gz')) %>%
+        expression <- read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
             rma(normalize = F) %>%
             exprs() %>%
             as.data.frame()
-        if (sum(is.na(expression)) > 0) stop("NA in expression")
-        colnames(expression) <- samples
+        if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
+        colnames(expression) <- sampleIDs
     }
 
-    metadata <- GEOObject %>% pData()
+    if(dim(expression)[1] == 0 | dim(expression)[2] == 0){
+        stop("The expression matrix is empty.")
+    }
 
     summarizedExperiment <- SummarizedExperiment(
         assays = expression %>% log2() %>% as.matrix(),
         colData = data.frame(metadata)
     )
+
     return(summarizedExperiment)
 }
 
@@ -97,21 +136,32 @@
 #' In the normalization process the limma package functions are utilized, including background correction using normexp and data normalization using loess and quantile methods.
 #' This function is only used if the protocol is agilent.
 #' This function is used internally by downloadGEO.
-#' @param GEOObject The downloaded GEO object.
-#' @param samples The downloaded samples from the queried GEO object.
+#' @param metadata The metadat of downloaded GEO object.
+#' @param sampleIDs A vector of downloaded samples IDs from the queried GEO object.
 #' @param destDir The user path to save the downloaded files.
 #' @return A SummarizedExperiment object with appended expression values as assay and metadata as colData.
 #' @details This function is used internally by downloadGEO.
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
-#' @importFrom Biobase pData
 #' @importFrom limma read.maimages backgroundCorrect normalizeWithinArrays normalizeBetweenArrays
 #' @importFrom dplyr %>%
-.processAgilent <- function(GEOObject, samples, destDir) {
-    raw.data <- read.maimages(paste0(destDir, "/", samples, ".TXT.gz"),
+.processAgilent <- function(metadata, sampleIDs, destDir) {
+
+    if (!dir.exists(destDir)) {
+        stop("The destination directory does not exist.")
+    }
+
+    metadata <- metadata[metadata$geo_accession %in% sampleIDs,]
+
+    if(nrow(metadata) < length(sampleIDs)){
+        stop("The input metadata and sampleIDs do not match. Make sure the sample IDs match with geo_accession IDs from dataset.")
+    }
+
+    raw.data <- read.maimages(file.path(destDir, paste0(sampleIDs, ".TXT.gz")),
                               source = "agilent",
                               green.only = TRUE,
-                              names = samples
+                              names = sampleIDs
     )
+
     #Correct expression for background using the normexp method
     background_corrected_data <- backgroundCorrect(raw.data, method = "normexp")
 
@@ -132,12 +182,15 @@
         rownames(expression) <- norm.data$genes[, "ProbeName"]
     }
 
-    metadata <- GEOObject %>% pData()
+    if(dim(expression)[1] == 0 | dim(expression)[2] == 0){
+        stop("The expression matrix is empty.")
+    }
 
     summarizedExperiment <- SummarizedExperiment(
         assays = expression %>% as.matrix(),
         colData = data.frame(metadata)
     )
+
     return(summarizedExperiment)
 }
 
@@ -145,34 +198,44 @@
 #' @description This function download and process data from GEO for microarray and RNASeq data.
 #' @param GEOID The ID of the GEO dataset
 #' @param platform The platform of selected GEO dataset
-#' @param protocol The protocol of the selected GEO dataset, including affymetrix, agilent, and RNASeq.
+#' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
 #' @return A SummarizedExperiment object including the processed data
 #' @examples
 #' downloadGEO("GSE20153", "GPL570", "affymetrix", getwd())
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
+#' @importFrom Biobase pData
 #' @export
 downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir) {
     protocol <- match.arg(protocol)
+    protocol <- protocol %>% tolower()
 
     #Download data with the specified platform from GEO
     GEOObject <- .downloadGEOObject(GEOID, platform, destDir)
 
-    protocol <- protocol %>% tolower()
-    summarizedExperimentObject <- NULL
-    if (protocol %in% c("affymetrix", "agilent")) {
-        #Download samples from the current GEO object
-        samples <- .downloadSamples(GEOObject, destDir)
+    #Extract metadata from GEOObject
+    GEOObject.metadata <- GEOObject %>% pData()
 
-        if (protocol == "affymetrix")
-            #Normalize expression data for affymetrix using RMA method
-            summarizedExperimentObject <- .processAffymetrix(GEOObject, samples, destDir)
-        else
-            #Normalize expression data for affymetrix using limma normexp, loess, and quantile methods
-            summarizedExperimentObject <- .processAgilent(GEOObject, samples, destDir)
-    }else {
-        #Download and normalize read counts data for RNASeq
-        summarizedExperimentObject <- .processRNASeq(GEOID, GEOObject, destDir)
+    #Object to store processed and normalized data
+    summarizedExperimentObject <- NULL
+
+    #Download samples from the current GEO object
+    sampleIDs <- GEOObject.metadata["geo_accession"] %>% apply(MARGIN = 1, FUN = function(x) x)
+    downloadRes <- .downloadSamples(sampleIDs, protocol, destDir)
+
+    if(downloadRes != TRUE){
+        stop("There is an error in downloading samples.")
+    }
+
+    if (protocol == "affymetrix")
+        #Normalize expression data for affymetrix using RMA method
+        summarizedExperimentObject <- .processAffymetrix(GEOObject.metadata, sampleIDs, destDir)
+    else
+        #Normalize expression data for affymetrix using limma normexp, loess, and quantile methods
+        summarizedExperimentObject <- .processAgilent(GEOObject.metadata, sampleIDs, destDir)
+
+    if(is.null(summarizedExperimentObject)){
+        stop("There is an error in processing and normalizing data.")
     }
 
     return(summarizedExperimentObject)
