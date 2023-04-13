@@ -2,8 +2,11 @@
 #' @description This function gets ID mapping annotation from GEO platform.
 #' This function is used internally by runDEAnalysis.
 #' @param GEO platform ID. E.g., GPL570
-#' @param dbObj A database object from AnnotationDbi package.
-#' @return A data frame with ID mapping annotation. The first column is the probe ID and the second column is the gene symbol.
+#' @return A data frame with ID mapping annotation and two columns: FROM and TO.
+#' The first column is the probe ID and the second column is the entrez ID.
+#' @importFrom AnnotationDbi select keys
+#' @importFrom dplyr %>%
+#' @importFrom tidyr drop_na
 .getIDMappingAnnotation <- function(platform) {
 
     annotations <- list(
@@ -33,8 +36,8 @@
     )
 
     if (grep("GPL", platform)) {
-        if (!is.null(annotations[[annotation]])) {
-            anno <- annotations[[annotation]]
+        if (!is.null(annotations[[platform]])) {
+            anno <- annotations[[platform]]
             .requirePackage(anno)
             annotation <- get(anno)
         } else {
@@ -42,16 +45,21 @@
         }
     }
 
-    annotation
+    suppressMessages({
+        AnnotationDbi::select(annotation, keys = keys(annotation, keytype = "PROBEID"), columns = c("PROBEID", "ENTREZID"), keytype = "PROBEID")
+    }) %>%
+        `colnames<-`(c("FROM", "TO")) %>%
+        drop_na()
+
 }
 
 #' @title Map probe IDs to gene symbols
 #' @description This function maps probe IDs to gene symbols.
 #' This function is used internally by runDEAnalysis.
 #' @param exprs Expression matrix. Rows are genes and columns are samples.
-#' @param annotation Annotation data frame with mapping between probe IDs and gene symbols. The first column is the probe ID and the second column is the gene symbol.
+#' @param annotation Annotation data frame with mapping between probe IDs and entrez IDs.
+#' The data frame must have two columns: FROM and TO. The first column is the probe ID and the second column is the entrez ID.
 #' @param DEResults DE analysis results data frame. Must have a column named ID and p.value.
-#' @param mappingMethod Method to use for mapping probe IDs to gene symbols. Can be "mean", "max", "median", "mostSignificant".
 #' @return A list with two elements:
 #' \itemize{
 #'  \item exprs: Expression matrix with probe IDs mapped to gene symbols. Rows are genes and columns are samples.
@@ -60,36 +68,48 @@
 #' @importFrom dplyr %>% arrange select group_by mutate first rename left_join summarize_all
 #' @importFrom tibble rownames_to_column
 #' @importFrom tidyr drop_na
-.mapProbeIDsToGeneSymbols <- function(exprs, annotation, DEResults) {
+.mapIDs <- function(exprs, annotation, DEResults) {
 
     if (is.null(annotation)) {
-        return(list(exprs = exprs, DEResults = DEResults))
+        return(list(
+            exprs = exprs,
+            DEResults = DEResults,
+            mapping = data.frame(ID = rownames(exprs), TO = rownames(exprs))
+        ))
+    }
+
+    if (is.null(DEResults)) {
+        stop("DE results are required for mapping probe IDs to entrez IDs")
     }
 
     top <- DEResults %>% arrange(.data$p.value)
 
-    mapping <- top %>%
-        select(PROBEID) %>%
-        left_join(annotation, by = "PROBEID") %>%
-        group_by(PROBEID) %>%
-        mutate(SYMBOL.FIRST = first(SYMBOL)) %>%
-        select(PROBEID, SYMBOL.FIRST) %>%
+    mapping <- top[, "ID", drop = F] %>%
+        left_join(annotation, by = c("ID" = "FROM")) %>%
+        group_by(ID) %>%
+        mutate(TO.FIRST = first(.data$TO)) %>%
+        `[`(c("ID", "TO.FIRST")) %>%
         unique() %>%
-        group_by(SYMBOL.FIRST) %>%
-        mutate(PROBEID.FIRST = first(PROBEID)) %>%
-        select(PROBEID.FIRST, SYMBOL.FIRST) %>%
+        group_by(.data$TO.FIRST) %>%
+        mutate(ID.FIRST = first(.data$ID)) %>%
+        `[`(c("ID.FIRST", "TO.FIRST")) %>%
         unique() %>%
-        rename(PROBEID = PROBEID.FIRST, SYMBOL = SYMBOL.FIRST)
+        mutate(ID = .data$ID.FIRST, TO = .data$TO.FIRST) %>%
+        `[`(c("ID", "TO")) %>%
+        drop_na()
 
-    mappedExprs <- exprs[mapping$PROBEID,] %>%
-        `rownames<-`(mapping$SYMBOL)
+    mappedExprs <- exprs[mapping$ID,] %>% `rownames<-`(mapping$TO)
 
     mappedDEResults <- DEResults %>%
-        left_join(mapping, by = "PROBEID") %>%
-        drop_na()
+        left_join(mapping, by = "ID") %>%
+        mutate(ID = .$TO) %>%
+        `[`(!is.na(.$ID), -ncol(.)) %>%
+        `rownames<-`(.$ID) %>%
+        `[`(mapping$TO, )
 
     list(
         exprs = mappedExprs,
-        DEResults = mappedDEResults
+        DEResults = mappedDEResults,
+        mapping = mapping
     )
 }

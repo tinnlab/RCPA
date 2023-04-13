@@ -1,12 +1,14 @@
-#' Differential expression analysis
+#' @title Differential expression analysis
 #' @description Functions to perform differential expression analysis
 #' These functions are used internally by runDEAnalysis.
 #' @param exprs Normalized expression matrix. Rows are genes and columns are samples.
 #' @param design A design model output by model.matrix.
 #' @param contrast A contrast matrix output by limma::makeContrasts.
 #' @return A data frame with DE analysis results.
-#' Must contain the following columns: PROBEID, p.value, logFC, statistic, dispersion.
+#' Must contain the following columns: ID, p.value, logFC, statistic, dispersion.
 #' @importFrom limma lmFit contrasts.fit eBayes topTable makeContrasts
+#' @importFrom DESeq2 DESeqDataSetFromMatrix DESeq results
+#' @importFrom edgeR DGEList calcNormFactors estimateDisp glmQLFit glmQLFTest topTags
 #' @importFrom stats model.matrix
 #' @importFrom dplyr %>% mutate
 #' @name runDEInternal
@@ -18,17 +20,15 @@
 
     resTable <- DERes %>%
         topTable(coef = 1, number = nrow(exprs)) %>%
-        mutate(PROBEID = rownames(.),
+        mutate(ID = rownames(.),
                p.value = .$P.Value,
                statistic = .$t
         )
 
-    resTable$dispersion <- (DERes$stdev.unscaled * sqrt(DERes$s2.post))[rownames(resTable),1]
-    resTable[rownames(exprs), c("PROBEID", "p.value", "statistic", "logFC", "dispersion")]
+    resTable$dispersion <- (DERes$stdev.unscaled * sqrt(DERes$s2.post))[rownames(resTable), 1]
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "dispersion")]
 }
 
-#' @importFrom DESeq2 DESeqDataSetFromMatrix DESeq results
-#' @importFrom dplyr %>% mutate
 #' @rdname runDEInternal
 .runDESeq2 <- function(exprs, design, contrast) {
 
@@ -42,15 +42,13 @@
 
     resTable <- DERes %>%
         as.data.frame() %>%
-        mutate(PROBEID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange)
+        mutate(ID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange)
 
     resTable$p.value[is.na(resTable$p.value)] <- 1
     resTable$dispersion <- resTable$lfcSE
-    resTable[rownames(exprs), c("PROBEID", "p.value", "statistic", "logFC", "dispersion")]
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "dispersion")]
 }
 
-#' @importFrom edgeR DGEList calcNormFactors estimateDisp glmQLFit glmQLFTest topTags
-#' @importFrom dplyr %>% mutate
 #' @rdname runDEInternal
 .runEdgeR <- function(exprs, design, contrast) {
 
@@ -61,39 +59,46 @@
         glmQLFTest(contrast = contrast)
 
     resTable <- DERes$table %>%
-        mutate(PROBEID = rownames(.), p.value = .$PValue, statistic = .$logFC, logFC = .$logFC)
+        mutate(ID = rownames(.), p.value = .$PValue, statistic = .$logFC, logFC = .$logFC)
 
     resTable$p.value[is.na(resTable$p.value)] <- 1
     resTable$dispersion <- DERes$dispersion
-    resTable[rownames(exprs), c("PROBEID", "p.value", "statistic", "logFC", "dispersion")]
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "dispersion")]
 }
 
 #' @title Differential expression analysis
 #' @description This function performs differential expression analysis using either limma, DESeq2 or edgeR.
 #' @param summarizedExperiment SummarizedExperiment object
-#' @param controlSamples Vector of control samples. Each sample is a column in the SummarizedExperiment object.
-#' @param conditionSamples Vector of condition samples. Each sample is a column in the SummarizedExperiment object.
 #' @param method Method to use for differential expression analysis. Can be "limma", "DESeq2" or "edgeR".
-#' @param annotation A data frame, ChipDb, or OrgDb object with mapping between probe IDs and gene symbols.
+#' @param design A design model output by model.matrix.
+#' @param contrast A contrast matrix. See limma::makeContrasts.
+#' @param annotation A data frame mapping between probe IDs and entrez gene IDs.
 #' If not provided, the function will try to get the mapping from the platform annotation in the SummarizedExperiment object.
 #' If the annotation is not available, the function will return the probe IDs.
-#' Regardless of the type of annotation, it must contains two columns: PROBEID and SYMBOL.
+#' Regardless of the type of annotation, it must contains two columns: FROM and TO,
+#' where FROM is the probe ID and TO is the entrez gene ID.
 #' @return A SummarizedExperiment object with DE analysis results appended to the rowData slot with the following columns:
 #' \itemize{
+#' \item{ID}{gene ID. If annotation is provided, this will be the entrez gene ID. Otherwise, it will be the probe ID.}
 #' \item{logFC}{log2 fold change}
-#' \item{p.value}{p-value}
+#' \item{p.value}{p-value from the DE analysis using the specified method}
 #' \item{pFDR}{p-value adjusted for multiple testing using Benjamini-Hochberg method}
-#' \item{control.mean}{mean expression in control samples}
-#' \item{condition.mean}{mean expression in condition samples}
+#' \item{statistic}{statistic from the DE analysis using the specified method.
+#' For limma, this is the t-statistic.
+#' For DESeq2, this is the Wald statistic.
+#' For edgeR, this is the log fold change.}
+#' \item{dispersion}{dispersion from the DE analysis using the specified method}
 #' }
-#' The assay slot will contain only samples from the control and condition vectors,
-#' and the rownames will be the gene symbols.
+#' The assay slot will contain the input expression/count matrix,
+#' and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object
+#' or in the annotation parameter.
 #' Other slots will be the same as in the input SummarizedExperiment object.
 #' @examples
-#'
-#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
+#' #TODO add examples
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
 #' @importFrom S4Vectors SimpleList
 #' @importFrom dplyr %>%
+#' @seealso \code{\link{limma::makeContrasts}}
 #' @export
 runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "edgeR"), design, contrast, annotation = NULL) {
     method <- match.arg(method)
@@ -108,15 +113,22 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
 
     # get ID mapping annotation
     if (is.null(annotation)) {
-        annotation <- .getIDMappingAnnotation(platform = summarizedExperiment$platform)
+        if (is.null(metadata(summarizedExperiment)$platform)) {
+            stop("Platform annotation is not found in the meta data of the SummarizedExperiment object. Please provide an annotation data frame instead.")
+        }
+        annotation <- .getIDMappingAnnotation(platform = metadata(summarizedExperiment)$platform)
     }
 
-    if ("data.frame" %in% class(annotation) & !all(c("PROBEID", "SYMBOL") %in% colnames(annotation))) {
-        stop("Annotation data frame must have columns PROBEID and SYMBOL")
-    } else if (any(class(annotation) %in% c("ChipDb", "OrgDb"))) {
-        annotation <- AnnotationDbi::select(annotation, keys = rownames(summarizedExperiment), columns = c("PROBEID", "SYMBOL"), keytype = "PROBEID")
+    if ("character" %in% class(annotation)) {
+        annotation <- .getIDMappingAnnotation(platform = annotation)
+    }
+
+    if ("data.frame" %in% class(annotation)) {
+        if (!all(c("FROM", "TO") %in% colnames(annotation))) {
+            stop("Annotation data frame must have columns FROM and TO")
+        }
     } else {
-        stop("Annotation must be a data frame, ChipDb or OrgDb object")
+        stop("Annotation must be a data frame or a string")
     }
 
     # get expression matrix
@@ -132,16 +144,29 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
     DEResult <- DEFunc(exprs, design, contrast)
 
     # map probe IDs to gene symbols
-    mappedResults <- .mapProbeIDsToGeneSymbols(exprs, annotation, DEResult)
+    mappedResults <- .mapIDs(exprs, annotation, DEResult)
 
     # create a new SummarizedExperiment object
     newSummarizedExperiment <- SummarizedExperiment(
         assays = SimpleList(counts = mappedResults$exprs),
-        rowData = cbind(
-            rowData(summarizedExperiment),
-            mappedResults$DEResult[, c("logFC", "p.value", "statistic")]
+        rowData = data.frame(
+            cbind(
+                rowData(summarizedExperiment)[mappedResults$mapping$ID,],
+                PROBEID = mappedResults$mapping$ID,
+                mappedResults$DEResult
+            ),
+            row.names = mappedResults$mapping$TO
         ),
-        colData = colData(summarizedExperiment)
+        colData = colData(summarizedExperiment),
+        metadata = c(
+            metadata(summarizedExperiment),
+            DEAnalysis = list(
+                method = method,
+                design = design,
+                contrast = contrast,
+                mapping = mappedResults$mapping
+            )
+        )
     )
 
     newSummarizedExperiment

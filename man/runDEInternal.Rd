@@ -22,7 +22,7 @@
 }
 \value{
 A data frame with DE analysis results.
-Must contain the following columns: PROBEID, p.value, logFC, statistic, dispersion.
+Must contain the following columns: ID, p.value, logFC, statistic, dispersion.
 }
 \description{
 Functions to perform differential expression analysis

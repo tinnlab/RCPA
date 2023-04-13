@@ -8,11 +8,10 @@
 }
 \arguments{
 \item{GEO}{platform ID. E.g., GPL570}
-
-\item{dbObj}{A database object from AnnotationDbi package.}
 }
 \value{
-A data frame with ID mapping annotation. The first column is the probe ID and the second column is the gene symbol.
+A data frame with ID mapping annotation and two columns: FROM and TO.
+The first column is the probe ID and the second column is the entrez ID.
 }
 \description{
 This function gets ID mapping annotation from GEO platform.

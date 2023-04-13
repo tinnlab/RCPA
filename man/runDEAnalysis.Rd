@@ -17,28 +17,37 @@ runDEAnalysis(
 
 \item{method}{Method to use for differential expression analysis. Can be "limma", "DESeq2" or "edgeR".}
 
-\item{annotation}{A data frame, ChipDb, or OrgDb object with mapping between probe IDs and gene symbols.
+\item{design}{A design model output by model.matrix.}
+
+\item{contrast}{A contrast matrix. See limma::makeContrasts.}
+
+\item{annotation}{A data frame mapping between probe IDs and entrez gene IDs.
 If not provided, the function will try to get the mapping from the platform annotation in the SummarizedExperiment object.
 If the annotation is not available, the function will return the probe IDs.
-Regardless of the type of annotation, it must contains two columns: PROBEID and SYMBOL.}
-
-\item{controlSamples}{Vector of control samples. Each sample is a column in the SummarizedExperiment object.}
-
-\item{conditionSamples}{Vector of condition samples. Each sample is a column in the SummarizedExperiment object.}
+Regardless of the type of annotation, it must contains two columns: FROM and TO,
+where FROM is the probe ID and TO is the entrez gene ID.}
 }
 \value{
 A SummarizedExperiment object with DE analysis results appended to the rowData slot with the following columns:
 \itemize{
+\item{ID}{gene ID. If annotation is provided, this will be the entrez gene ID. Otherwise, it will be the probe ID.}
 \item{logFC}{log2 fold change}
-\item{p.value}{p-value}
+\item{p.value}{p-value from the DE analysis using the specified method}
 \item{pFDR}{p-value adjusted for multiple testing using Benjamini-Hochberg method}
-\item{control.mean}{mean expression in control samples}
-\item{condition.mean}{mean expression in condition samples}
+\item{statistic}{statistic from the DE analysis using the specified method.
+For limma, this is the t-statistic.
+For DESeq2, this is the Wald statistic.
+For edgeR, this is the log fold change.}
+\item{dispersion}{dispersion from the DE analysis using the specified method}
 }
-The assay slot will contain only samples from the control and condition vectors,
-and the rownames will be the gene symbols.
+The assay slot will contain the input expression/count matrix,
+and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object
+or in the annotation parameter.
 Other slots will be the same as in the input SummarizedExperiment object.
 }
 \description{
 This function performs differential expression analysis using either limma, DESeq2 or edgeR.
+}
+\seealso{
+\code{\link{limma::makeContrasts}}
 }
