@@ -21,7 +21,8 @@
 \item{contrast}{A contrast matrix output by limma::makeContrasts.}
 }
 \value{
-A data frame with DE analysis results. Must contain the following columns: PROBEID, p.value, statistic.
+A data frame with DE analysis results.
+Must contain the following columns: PROBEID, p.value, logFC, statistic, dispersion.
 }
 \description{
 Functions to perform differential expression analysis

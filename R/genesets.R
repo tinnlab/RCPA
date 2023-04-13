@@ -38,7 +38,7 @@
         lapply(function(df) {
             list(
                 name = df$geneset[1] %>% as.character(),
-                gene = df$gene %>% as.character()
+                gene = df$gene %>% as.character() %>% str_split(":") %>% sapply(function(x) x[2])
             )
         }) %>%
         `names<-`(lapply(., function(gl) gl$name)) %>%

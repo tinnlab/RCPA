@@ -6,19 +6,14 @@
 \usage{
 runDEAnalysis(
   summarizedExperiment,
-  controlSamples,
-  conditionSamples,
-  isPaired = FALSE,
   method = c("limma", "DESeq2", "edgeR"),
+  design,
+  contrast,
   annotation = NULL
 )
 }
 \arguments{
 \item{summarizedExperiment}{SummarizedExperiment object}
-
-\item{controlSamples}{Vector of control samples. Each sample is a column in the SummarizedExperiment object.}
-
-\item{conditionSamples}{Vector of condition samples. Each sample is a column in the SummarizedExperiment object.}
 
 \item{method}{Method to use for differential expression analysis. Can be "limma", "DESeq2" or "edgeR".}
 
@@ -26,6 +21,10 @@ runDEAnalysis(
 If not provided, the function will try to get the mapping from the platform annotation in the SummarizedExperiment object.
 If the annotation is not available, the function will return the probe IDs.
 Regardless of the type of annotation, it must contains two columns: PROBEID and SYMBOL.}
+
+\item{controlSamples}{Vector of control samples. Each sample is a column in the SummarizedExperiment object.}
+
+\item{conditionSamples}{Vector of condition samples. Each sample is a column in the SummarizedExperiment object.}
 }
 \value{
 A SummarizedExperiment object with DE analysis results appended to the rowData slot with the following columns:

@@ -36,7 +36,7 @@ devtools::load_all()
 test_that("Limma unpaired", {
     limmaRes <- .runLimma(exprs, design, contrast)
 
-    expect_true(all(c("PROBEID", "p.value", "statistic") %in% colnames(limmaRes)))
+    expect_true(all(c("PROBEID", "p.value", "statistic", "logFC", "dispersion") %in% colnames(limmaRes)))
     expect_true(all(limmaRes$p.value <= 1))
     expect_true(all(limmaRes$p.value >= 0))
     expect_true(all(limmaRes$PROBEID %in% rownames(exprs)))
@@ -45,7 +45,7 @@ test_that("Limma unpaired", {
 test_that("Limma paired", {
     limmaRes <- .runLimma(exprs, design.paired, contrast.paired)
 
-    expect_true(all(c("PROBEID", "p.value", "statistic") %in% colnames(limmaRes)))
+    expect_true(all(c("PROBEID", "p.value", "statistic", "logFC", "dispersion") %in% colnames(limmaRes)))
     expect_true(all(limmaRes$p.value <= 1))
     expect_true(all(limmaRes$p.value >= 0))
     expect_true(all(limmaRes$PROBEID %in% rownames(exprs)))
@@ -80,7 +80,7 @@ test_that("Limma unpaired vs paired", {
 test_that("DESeq2 unpaired", {
     deseq2Res <- .runDESeq2(exprs, design, contrast)
 
-    expect_true(all(c("PROBEID", "pvalue", "log2FoldChange") %in% colnames(deseq2Res)))
+    expect_true(all(c("PROBEID", "p.value", "logFC", "dispersion") %in% colnames(deseq2Res)))
     expect_true(all(deseq2Res$p.value <= 1))
     expect_true(all(deseq2Res$p.value >= 0))
     expect_true(all(deseq2Res$PROBEID %in% rownames(exprs)))
@@ -89,7 +89,7 @@ test_that("DESeq2 unpaired", {
 test_that("DESeq2 paired", {
     deseq2Res <- .runDESeq2(exprs, design.paired, contrast.paired)
 
-    expect_true(all(c("PROBEID", "pvalue", "log2FoldChange") %in% colnames(deseq2Res)))
+    expect_true(all(c("PROBEID", "p.value", "logFC", "dispersion") %in% colnames(deseq2Res)))
     expect_true(all(deseq2Res$p.value <= 1))
     expect_true(all(deseq2Res$p.value >= 0))
     expect_true(all(deseq2Res$PROBEID %in% rownames(exprs)))
@@ -124,7 +124,7 @@ test_that("DESeq2 unpaired vs paired", {
 test_that("edgeR unpaired", {
     edgeRRes <- .runEdgeR(exprs, design, contrast)
 
-    expect_true(all(c("PROBEID", "p.value", "logFC") %in% colnames(edgeRRes)))
+    expect_true(all(c("PROBEID", "p.value", "logFC", "logFC", "dispersion") %in% colnames(edgeRRes)))
     expect_true(all(edgeRRes$p.value <= 1))
     expect_true(all(edgeRRes$p.value >= 0))
     expect_true(all(edgeRRes$PROBEID %in% rownames(exprs)))
@@ -133,7 +133,7 @@ test_that("edgeR unpaired", {
 test_that("edgeR paired", {
     edgeRRes <- .runEdgeR(exprs, design.paired, contrast.paired)
 
-    expect_true(all(c("PROBEID", "p.value", "logFC") %in% colnames(edgeRRes)))
+    expect_true(all(c("PROBEID", "p.value", "logFC", "logFC", "dispersion") %in% colnames(edgeRRes)))
     expect_true(all(edgeRRes$p.value <= 1))
     expect_true(all(edgeRRes$p.value >= 0))
     expect_true(all(edgeRRes$PROBEID %in% rownames(exprs)))
