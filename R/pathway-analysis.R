@@ -1,56 +1,34 @@
 #' @title Pathway Enrichment Analysis using ORA
 #' @description This function performs pathway analysis based on ORA (Over Representation Analysis).
 #' This function is used internally by runPathwayAnalysis.
-#' @param summarizedExprimentObj The generated SummarizedExpriment object from DE analysis result.
+#' @param summarizedExperiment The generated SummarizedExpriment object from runDEAnalysis.
 #' @param genesets The genesets definition, ex. KEGG genesets.
 #' @return A dataframe of pathway analysis results
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>% filter
 #' @importFrom tidyr drop_na
-.runORA <- function(summarizedExprimentObj, gs, nperm){
-    genesets.names <- gs$names
-    genesets <- gs$genesets
-    assay <- assay(summarizedExprimentObj)
-    DE.Analysis.res <- rowData(summarizedExprimentObj)
-    DE.genes <- DE.Analysis.res %>% filter(p.value <= 0.05) %>% rownames(.)
+.runORA <- function(summarizedExperiment, genesets, pThreshold = 0.05) {
+    DE.Analysis.res <- rowData(summarizedExperiment) %>% as.data.frame()
+    DE.genes <- DE.Analysis.res %>%
+        filter(.$p.value <= pThreshold) %>%
+        rownames()
     background.genes <- DE.Analysis.res %>% rownames(.)
 
-    res <- lapply(1:length(genesets), function(i){
-      gs <- genesets[[i]]
-      wBallDraw <- intersect(gs, DE.genes) %>% length() - 1
-      if (wBallDraw < 0) return(
-                                data.frame(
-                                          pathway = names(genesets)[i],
-                                          p.value = 1,
-                                          nDE = 0,
-                                          stringsAsFactors = FALSE
-                                          )
-                                )
-      wBall <- length(DE.genes)
-      bBall <- length(background.genes) - length(DEGenes)
-      ballDraw <- length(intersect(gs, background.genes))
-      p.value <- 1 - phyper(wBallDraw, wBall, bBall, ballDraw)
-      data.frame(
-        pathway = names(genesets)[i],
-        p.value = p.value,
-        nDE = wBallDraw + 1,
-        stringsAsFactors = FALSE
-      )
-    }) %>% do.call(what = rbind)
+    GSOverlap <- sapply(genesets, function(gs) length(intersect(gs, background.genes)))
+    DEOverlap <- sapply(genesets, function(gs) length(intersect(gs, DE.genes)))
+    NoneDEInBackground <- length(background.genes) - length(DE.genes)
+    Expected <- GSOverlap * length(DE.genes) / length(background.genes)
 
-    finalRes <- data.frame(pathway = names(genesets) %>% unique(), stringsAsFactors = F)
-    rownames(finalRes) <- finalRes$pathway
-    finalRes$p.value <- 1
-    finalRes$nDE <- 0
+    pvals <- 1 - phyper(DEOverlap - 1, length(DE.genes), NoneDEInBackground, GSOverlap)
+    ES <- DEOverlap / Expected
 
-    finalRes[res$pathway %>% as.character(), 'p.value'] <- res$p.value
-    finalRes[res$pathway %>% as.character(), 'nDE'] <- res$nDE
-    finalRes$pFDR <- fdr
-    colnames(res) <- c("p.value","pathway")
-
-    res <- res %>% drop_na()
-    res
+    data.frame(
+        pathway = names(genesets),
+        p.value = pvals,
+        ES = ES,
+        NES = ES
+    )
 }
 
 #' @title Pathway Enrichment Analysis using fgsea
@@ -65,16 +43,18 @@
 #' @importFrom dplyr %>% select
 #' @importFrom fgsea fgsea
 #' @importFrom tidyr drop_na
-.runFgsea <- function(summarizedExprimentObj, gs, nperm){
-    genesets.names <- gs$names
+.runFgsea <- function(summarizedExprimentObj, gs, nperm) {
     genesets <- gs$genesets
     DE.Analysis.res <- rowData(summarizedExprimentObj)
-    statistic <- DE.Analysis.res %>% select(statistic) %>% unlist() %>% as.vector()
+    statistic <- DE.Analysis.res %>%
+        select(statistic) %>%
+        unlist() %>%
+        as.vector()
     names(statistic) <- rownames(DE.Analysis.res)
     res <- fgsea(pathways = genesets,
                  stats = statistic, nperm = nperm)
 
-    res <- res$pvals[,c('pathway', 'pval')] %>% drop_na()
+    res <- res$pvals[, c('pathway', 'pval')] %>% drop_na()
     colnames(res) <- c("pathway", "p.value")
 
     return(res)
@@ -91,10 +71,10 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select
 #' @importFrom GSA GSA
-.runGSA <- function(summarizedExprimentObj, gs, nperm){ #Fix this
+.runGSA <- function(summarizedExprimentObj, gs, nperm) { #Fix this
     genesets.names <- gs$names
     genesets <- gs$genesets
-    res <- GSA(x = exprs, y = (group == "d") + 1, nperms=nperm, genesets=genesets, resp.type = "Two class unpaired",
+    res <- GSA(x = exprs, y = (group == "d") + 1, nperms = nperm, genesets = genesets, resp.type = "Two class unpaired",
                genenames = rownames(exprs), random.seed = 1,
                method = "maxmean")
 
@@ -116,12 +96,12 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select
-runPathwayAnalysis <- function(summarizedExprimentObj, genesets, method = "ORA", nperm = 1000){
+runPathwayAnalysis <- function(summarizedExprimentObj, genesets, method = "ORA", nperm = 1000) {
     analysisFunc <- switch(method,
                            ORA = .runORA,
                            fgsea = .runFgsea,
                            GSA = .runGSA
-                          )
+    )
 
     analysisResult <- analysisFunc(summarizedExprimentObj, genesets$genesets, nperm)
     return(analysisResult)
