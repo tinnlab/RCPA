@@ -35,6 +35,7 @@ A SummarizedExperiment object with DE analysis results appended to the rowData s
 \item{p.value}{p-value from the DE analysis using the specified method}
 \item{pFDR}{p-value adjusted for multiple testing using Benjamini-Hochberg method}
 \item{statistic}{statistic from the DE analysis using the specified method.
+\item{dispersion}{dispersion from the DE analysis using the specified method}
 For limma, this is the t-statistic.
 For DESeq2, this is the Wald statistic.
 For edgeR, this is the log fold change.}

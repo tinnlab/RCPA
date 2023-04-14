@@ -31,9 +31,9 @@ contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 annotation <- .getIDMappingAnnotation("GPL570")
 
 test_that("DE analysis with ID mapping", {
-    DERes <- runDEAnalysis(summarizedExperiment, method = "limma", design, contrast, annotation = annotation)
+    DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
 
-    expect_true(all(c("PROBEID", "ID", "p.value", "statistic", "logFC", "dispersion") %in% colnames(rowData(DERes))))
+    expect_true(all(c("PROBEID", "ID", "p.value", "pFDR", "statistic", "logFC", "dispersion") %in% colnames(rowData(DERes))))
     expect_true(all(
         c("DEAnalysis.method", "DEAnalysis.design", "DEAnalysis.contrast", "DEAnalysis.mapping") %in% names(metadata(DERes))
     ))
@@ -49,7 +49,7 @@ test_that("DE analysis without ID mapping and without platform", {
 test_that("DE analysis with platform and without ID mapping", {
     metadata(summarizedExperiment)$platform <- "GPL570"
     DERes <- runDEAnalysis(summarizedExperiment, method = "limma", design, contrast, annotation = NULL)
-    expect_true(all(c("PROBEID", "ID", "p.value", "statistic", "logFC", "dispersion") %in% colnames(rowData(DERes))))
+    expect_true(all(c("PROBEID", "ID", "p.value", "pFDR", "statistic", "logFC", "dispersion") %in% colnames(rowData(DERes))))
 })
 
 
