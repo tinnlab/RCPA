@@ -15,15 +15,30 @@ LazyData: true
 LazyDataCompression: xz
 Depends: R (>= 4.0)
 biocViews:
-Imports:
     AnnotationDbi,
+    Biobase,
     BiocManager,
     DESeq2,
+    GEOquery,
+    SummarizedExperiment,
+    affy,
+    affyPLM,
+    edgeR,
+    limma
+Imports:
+    AnnotationDbi,
+    Biobase,
+    BiocManager,
+    DESeq2,
+    GEOquery,
     S4Vectors,
     SummarizedExperiment,
+    affy,
+    affyPLM,
     dplyr,
     edgeR,
     limma,
+    oligo,
     stats,
     stringr,
     tibble,
