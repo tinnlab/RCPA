@@ -84,6 +84,7 @@
 #' \item{p.value}{p-value from the DE analysis using the specified method}
 #' \item{pFDR}{p-value adjusted for multiple testing using Benjamini-Hochberg method}
 #' \item{statistic}{statistic from the DE analysis using the specified method.
+#' \item{dispersion}{dispersion from the DE analysis using the specified method}
 #' For limma, this is the t-statistic.
 #' For DESeq2, this is the Wald statistic.
 #' For edgeR, this is the log fold change.}
@@ -145,6 +146,7 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
 
     # map probe IDs to gene symbols
     mappedResults <- .mapIDs(exprs, annotation, DEResult)
+    mappedResults$DEResult$pFDR <- p.adjust(mappedResults$DEResult$p.value, method = "BH")
 
     # create a new SummarizedExperiment object
     newSummarizedExperiment <- SummarizedExperiment(
