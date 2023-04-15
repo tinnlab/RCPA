@@ -13,3 +13,56 @@
 
     require(pkg, character.only=TRUE, quietly=TRUE)
 }
+
+#' @title extract grouping information from design matrix and contrast matrix
+#' @description This function extracts grouping information from design matrix and contrast matrix.
+#' This function is used internally.
+#' @param design The design matrix.
+#' @param contrast The contrast matrix.
+#' @return A list with two elements: group and pair.
+#' group is a vector of group information.
+#' pair is a vector of pair information.
+#' @importFrom dplyr %>%
+.extractPairInfo <- function(design, contrast){
+    groupMat <- design[, names(contrast[contrast[, 1] != 0, ]), drop=FALSE]
+    group <- rep(NA, nrow(groupMat))
+    names(group) <- rownames(groupMat)
+    for(i in seq_len(ncol(groupMat))){
+        group[groupMat[, i] == 1] <- colnames(groupMat)[i]
+    }
+    group <- group[!is.na(group)]
+    pairMat <- design[, names(contrast[contrast[, 1] == 0, ]), drop=FALSE]
+    vars <- names(attr(design,"contrasts"))
+
+    candidatePairs <- lapply(vars, function(v){
+        pMat <- pairMat[, colnames(pairMat) %>% str_starts(v), drop=FALSE]
+
+        if (ncol(pMat) != length(unique(group)) - 1) {
+            return(NULL)
+        }
+
+        if (any(colSums(pMat) != length(unique(group)))) {
+            return(NULL)
+        }
+
+        pairs <- rep("pair1", nrow(pMat))
+        for (i in seq_len(ncol(pMat))) {
+            pairs[pMat[, i] == 1] <- colnames(pMat)[i]
+        }
+
+        pairs
+    }) %>% `[`(!sapply(., is.null))
+
+    if (length(candidatePairs) > 1) {
+        warning("More than one pair information is found in the model matrix.")
+    }
+
+    list(
+        group = as.numeric(as.factor(group)),
+        pair = if (length(candidatePairs) == 0) {
+            NULL
+        } else {
+            as.numeric(as.factor(candidatePairs[[1]]))
+        }
+    )
+}
