@@ -31,7 +31,7 @@
         group[groupMat[, i] == 1] <- colnames(groupMat)[i]
     }
     group <- group[!is.na(group)]
-    pairMat <- design[, names(contrast[contrast[, 1] == 0, ]), drop=FALSE]
+    pairMat <- design[names(group), names(contrast[contrast[, 1] == 0, ]), drop=FALSE]
     vars <- names(attr(design,"contrasts"))
 
     candidatePairs <- lapply(vars, function(v){
@@ -58,11 +58,11 @@
     }
 
     list(
-        group = as.numeric(as.factor(group)),
-        pair = if (length(candidatePairs) == 0) {
+        group = as.numeric(as.factor(group)) %>% setNames(names(group)),
+        pair = (if (length(candidatePairs) == 0) {
             NULL
         } else {
             as.numeric(as.factor(candidatePairs[[1]]))
-        }
+        }) %>% setNames(names(group))
     )
 }
