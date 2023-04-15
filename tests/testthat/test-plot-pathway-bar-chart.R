@@ -3,8 +3,8 @@ library(ggplot2)
 
 results <- data.frame(
     ID = paste0("geneset", 1:100),
-    Name = paste0("Pathway ", 1:100),
-    Description = paste0("Description ", 1:100),
+    name = paste0("Pathway ", 1:100),
+    description = paste0("Description ", 1:100),
     p.value = runif(100) / 10,
     pFDR = runif(100) / 5,
     size = runif(100, 100, 500),

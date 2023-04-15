@@ -1,7 +1,7 @@
 #' @title Plot a bar chart of the pathway analysis results
 #' @description This function plots a bar chart of the pathway analysis results.
 #' @param results A data frame with pathway analysis results.
-#' The columns are ID, Name, Description, p.value, pFDR, size, nDE, score, normalizedScore
+#' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param limit The maximum number of pathways to plot.
 #' @param label The column to use for the labels.
 #' @param by The column to use for the bar heights.
@@ -15,7 +15,7 @@
 #' @examples
 #' #TODO add example
 #' @export
-plotBarChart <- function(results, limit = 50, label = "Name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
+plotBarChart <- function(results, limit = 50, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
 
     by <- match.arg(by)
 
