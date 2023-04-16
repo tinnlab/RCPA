@@ -34,3 +34,6 @@ A heatmap of the genes from ggplot2.
 Plot gene heatmap from a SummarizedExperiment object with DE analysis results.
 The heatmap contains p-values and log fold changes from the DE analysis.
 }
+\examples{
+#TODO add example
+}

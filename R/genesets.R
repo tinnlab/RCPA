@@ -10,7 +10,7 @@
 #' @importFrom stats setNames
 #' @importFrom utils read.table
 .getKEGGPathwayNames <- function(org = "hsa") {
-    gsNames <- read.table(paste0("http://rest.kegg.jp/list/pathway/", org), sep = "\t", header = F, stringsAsFactors = F)
+    gsNames <- read.table(paste0("https://rest.kegg.jp/list/pathway/", org), sep = "\t", header = F, stringsAsFactors = F)
     gsNames[, 2] %>%
         str_split(" - ") %>%
         sapply(function(x) paste0(x[1:(length(x) - 1)], collapse = " - ")) %>%

@@ -9,6 +9,8 @@
 #' @param logFCLims A vector of length 2 specifying the minimum and maximum log fold change to plot.
 #' @param negLog10pValueLims A vector of length 2 specifying the minimum and maximum -log10(p-value) to plot.
 #' @return A heatmap of the genes from ggplot2.
+#' @examples
+#' #TODO add example
 #' @importFrom SummarizedExperiment rowData
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 theme_minimal theme geom_tile coord_flip scale_x_discrete scale_y_discrete guide_legend element_blank
 #' @importFrom dplyr %>% select mutate
@@ -72,12 +74,14 @@ plotDEGeneHeatmap <- function(summarizedExperiment, genes, useFDR = TRUE, labels
             panel.grid.minor = element_blank()
         ) +
         scale_x_discrete(
-            labels = labels
+            labels = labels,
+            expand = c(0, 0)
         ) +
         scale_y_discrete(
             labels = c(
                 "log2 FC",
-                "-log10 p-value"
-            )
+                paste0("-log10", ifelse(useFDR, " pFDR", " p-value"))
+            ),
+            expand = c(0, 0)
         )
 }
