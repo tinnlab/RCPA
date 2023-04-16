@@ -26,8 +26,8 @@
     data.frame(
         pathway = names(genesets),
         p.value = pvals,
-        ES = ES,
-        NES = ES,
+        score = ES,
+        normalizedScore = ES,
         stringsAsFactors = FALSE
     )
 }
@@ -66,90 +66,44 @@
     )
 }
 
-.est.s0 <- function(tt, sd, s0.perc = seq(0, 1, by = .05)) {
-    ## estimate s0 (exchangeability) factor for denominator.
-    ## returns the actual estimate s0 (not a percentile)
+#' @title Pathway Enrichment Analysis using GSA
+#' @description This function performs patwhay analysis using GSA method (GeneSet Analysis).
+#' This function is used internally by runPathwayAnalysis.
+#' @param DESummarizedExperiment The generated SummarizedExpriment object from DE analysis result.
+#' @param genesets The genesets definition, ex. KEGG genesets.
+#' @param nperm The number of permutations to run pathway analysis.
+#' @return A dataframe of pathway analysis results
+#' @details This function is used internally by runPathwayAnalysis.
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData
+#' @importFrom dplyr %>% select
+#' @importFrom GSA GSA
+.runGSA <- function(assay, group_data, genesets, gsa.args = list()) {
 
-    br = unique(quantile(sd, seq(0, 1, len = 101)))
-    nbr = length(br)
-
-    a <- cut(sd, br, labels = F)
-    a[is.na(a)] <- 1
-    cv.sd <- rep(0, length(s0.perc))
-
-    for (j in 1:length(s0.perc)) {
-        w <- quantile(sd, s0.perc[j])
-        w[j == 1] <- 0
-        tt2 <- tt * sd / (sd + w)
-        tt2[tt2 == Inf] = NA
-        sds <- rep(0, nbr - 1)
-
-        for (i in 1:(nbr - 1)) {
-            sds[i] <- mad(tt2[a == i], na.rm = TRUE)
-        }
-
-        cv.sd[j] <- sqrt(var(sds)) / mean(sds)
+    if(is.null(group_data)){
+        stop("The group data in colData cannot be empty.")
     }
 
-    o = (1:length(s0.perc))[cv.sd == min(cv.sd)]
-
-    s0.hat = quantile(sd[sd != 0], s0.perc[o])
-
-    return(list(s0.perc = s0.perc, cv.sd = cv.sd, s0.hat = s0.hat))
-}
-
-.GSA.func = function(tt,
-                     gs.mat,
-                     method = c("maxmean", "mean", "absmean"),
-                     resp.type = c("Quantitative", "Two class unpaired", "Multiclass", "Two class paired")) {
-
-    resp.type <- match.arg(resp.type)
-    method <- match.arg(method)
-
-    gs.ind <- (1:dim(gs.mat)[1])
-
-    ngenes <- gs.mat %>% apply(1, function (cur.row) length(unique(cur.row)))
-
-    mean.all = mean(tt)
-    sd.all = sqrt(var(tt))
-    mean.pos = mean(tt * (tt > 0))
-    sd.pos = sqrt(var(tt * (tt > 0)))
-    mean.neg = -mean(tt * (tt < 0))
-    sd.neg = sqrt(var(tt * (tt < 0)))
-
-    tt2 = c(tt, 0)
-    ttt = matrix(tt2[gs.mat], nrow = nrow(gs.mat))
-
-    if (method == "maxmean") {
-        s2 = abs(ttt)
-        rpos = rowSums((ttt + s2) / 2) / ngenes
-        rneg = rowSums((s2 - ttt) / 2) / ngenes
-
-        rpos[is.na(rpos)] = 0
-        rneg[is.na(rneg)] = 0
-
-        rpos = (rpos - mean.pos) / (sd.pos)
-
-        if (resp.type != "Multiclass") {
-            rneg = (rneg - mean.neg) / (sd.neg)
-        }
-        rr <- pmax(rpos, rneg)
-        rr[rneg > rpos] = -1 * rr[rneg > rpos]
+    DE_metadata <- group_data$DEAnaysis
+    design_mtx <- DE_metadata$design
+    if(is.null(design_mtx) | dim(design_mtx)[1] == 0 | dim(design_mtx)[2] == 0){
+        stop("The design matrix cannot be empty.")
     }
 
-    if (method == "mean") {
-        rr = rowSums(ttt) / ngenes
-        rr <- (rr - mean.all) / (sd.all / sqrt(ngenes))
+    contrast_mtx <- DE_metadata$contrast
+    if(is.null(contrast_mtx) | dim(contrast_mtx)[1] == 0 | dim(contrast_mtx)[2] == 0){
+        stop("The contrast matrix cannot be empty.")
     }
 
-    if (method == "absmean") {
-        rr <- rowSums(abs(ttt)) / ngenes
-        rr <- (rr - mean.all) / (sd.all / sqrt(ngenes))
-    }
+    pair_data <- .extractPairInfo(design_mtx, contrast_mtx)
+    if(is.na())
 
-    rrr = rep(NA, length(genesets))
-    rrr[gs.ind] = rr
-    rrr
+    gsa_res <- GSA(x = assay, y = (group == "d") + 1, nperms = gsa.args$nperms, genesets = genesets, resp.type = gsa.args$resp.type,
+               genenames = rownames(assay), random.seed = gsa.args$random.seed, knn.neighbors = gsa.args$knn.neighbors,
+               method = gsa.args$method, s0 = gsa.args$s0, s0.perc = gsa.args$s0.perc, minsize = gsa.args$minsize, maxsize = gsa.args$maxsize, restand = gsa.args$restand,
+               restand.basis = gsa.args$restand.basis, xl.mode = gsa.args$xl.mode, xl.time = gsa.args$xl.time, xl.prevfit = gsa.args$xl.prevfit)
+
+    p.values <- cbind(gsa_res$pvalues.lo, gsa_res$pvalues.hi) %>% apply(1, min)
+    p.values <- (p.values * 2) %>% data.frame(pathway = names(genesets))
 }
 
 #' @title Pathway Enrichment Analysis using GSA
@@ -163,93 +117,89 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select
 #' @importFrom GSA GSA
-.runGSA <- function(DESummarizedExperiment, genesets, nperm = 1000,
-                    method = c("maxmean", "mean", "absmean"),
-                    resp.type = c("Quantitative", "Two class unpaired", "Multiclass", "Two class paired"), maxsize = 500) {
-    assay <- DESummarizedExperiment %>% assay()
+.runKSWilcox <- function(DE_data, genesets, method){
+    ranks <- DE_data$statistic
+    names(ranks) <- rownames(DE_data)
 
-    k = length(genesets)
-    gs.ind = (1:k)
+    test <- if (method == "ks") ks.test else wilcox.test
 
-    ngenes = rep(NA, length(gs.ind))
+    background.genes <- names(DE_genes)
 
-    gs.mat = matrix(nrow(assay) + 1, nrow = length(gs.ind), ncol = maxsize)
-    for (i in gs.ind) {
-        gene.set = match(genesets[[i]], rownames(assay))
-        gene.set = gene.set[!is.na(gene.set)]
-        if (length(gene.set) > 0) {
-            gs.mat[i, 1:length(gene.set)] = gene.set
-            ngenes[i] = length(gene.set)
-        }
-    }
-    gs.mat = gs.mat[, 1:max(ngenes, na.rm = TRUE)]
+    PA_res <- lapply(genesets, function(gs){
 
-    tt <- rowData(DESummarizedExperiment)$statistic
-    sd <- rowData(DESummarizedExperiment)$dispersion
-    s0 <- .est.s0(tt, sd, s0.perc = seq(0, 1, by = .05))
+        DEhit <- ranks[background.genes[background.genes %in% gs]]
+        DEmiss <- ranks[background.genes[!background.genes %in% gs]]
 
-    observerd.tt <- tt * sd / (sd + s0$s0.hat)
-    observerd.score <- .GSA.func(observerd.tt, gs.mat, method = "maxmean", resp.type = "Two class unpaired")
-    names(observerd.score) <- names(genesets)
+        if (length(DEhit) == 0 | length(DEmiss) == 0) return(NA)
 
-    DEMethod <- metadata(DESummarizedExperiment)$DEAnalysis.method
-    DEFunc <- switch(
-      DEMethod,
-      "DESeq2" = .runDESeq2,
-      "edgeR" = .runEdgeR,
-      "limma" = .runLimma
+        test(DEhit, DEmiss)$p.value
+    }) %>% unlist() %>% data.frame(pathway=names(genesets))
+
+    DEhit <- sapply(genesets, function(gs) ranks[background.genes[background.genes %in% gs]])
+    DEmiss <- sapply(genesets, function(gs) ranks[background.genes[!background.genes %in% gs]])
+
+    PA_res <- lapply(1:length(DEhit), function (i){
+        cur.DEhit <- DEhit[[i]]
+        cur.DEmiss <- DEmiss[[i]]
+
+        if(length(cur.DEhit) == 0 | length(cur.DEmiss) == 0) return(1)
+        test(cur.DEhit, cur.DEmiss)$p.value
+    }) %>% unlist() %>% data.frame(pathway=names(genesets))
+
+    PA_res <- PA_res %>% drop_na()
+
+    data.frame(
+      pathway = PA_res$pathway,
+      p.value = PA_res$p.value,
+      score = rep(0, nrow(PA_res)),
+      normalizedScore = rep(0, nrow(PA_res)),
+      stringsAsFactors = FALSE
     )
+}
 
-    design <- metadata(DESummarizedExperiment)$DEAnalysis.design
-    contrast <- metadata(DESummarizedExperiment)$DEAnalysis.contrast
-    toPermuteGroup <- names(which(contrast[, 1] !=0))
-    observerd.score.normalized = -qnorm(1 - pt(observerd.score, df = nrow(design) - 2))
+#' @title Pathway Enrichment Analysis using GSA
+#' @description This function performs patwhay analysis using GSA method (GeneSet Analysis).
+#' This function is used internally by runPathwayAnalysis.
+#' @param DESummarizedExperiment The generated SummarizedExpriment object from DE analysis result.
+#' @param genesets The genesets definition, ex. KEGG genesets.
+#' @param nperm The number of permutations to run pathway analysis.
+#' @return A dataframe of pathway analysis results
+#' @details This function is used internally by runPathwayAnalysis.
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData
+#' @importFrom dplyr %>% select
+#' @importFrom GSA GSA
+.runSPIA <- function(){
+    .SPIAMod()
+}
 
-    permRes <- lapply(1:1000, function(i) {
-        set.seed(i)
-        message(i)
-        designPerm <- design[sample(rownames(design)),] %>% `rownames<-`(rownames(design))
-        sePerm <- DEFunc(assay, designPerm, contrast)
-        perm.tt <- sePerm$statistic
-        perm.sd <- sePerm$dispersion
+#' @title Pathway Enrichment Analysis using GSA
+#' @description This function performs patwhay analysis using GSA method (GeneSet Analysis).
+#' This function is used internally by runPathwayAnalysis.
+#' @param DESummarizedExperiment The generated SummarizedExpriment object from DE analysis result.
+#' @param genesets The genesets definition, ex. KEGG genesets.
+#' @param nperm The number of permutations to run pathway analysis.
+#' @return A dataframe of pathway analysis results
+#' @details This function is used internally by runPathwayAnalysis.
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData
+#' @importFrom dplyr %>% select
+#' @importFrom GSA GSA
+.runCePaORA <- function(){
 
-        perm.tt.adj <- perm.tt * perm.sd / (perm.sd + s0$s0.hat)
-        perm.score <- .GSA.func(perm.tt.adj, gs.mat, method = "maxmean")
-        perm.score.normalized = -qnorm(1 - pt(perm.score, df = nrow(design) - 2))
-        data.frame(
-          pathway = names(genesets),
-          perm.score = perm.score,
-          perm.norm.score = perm.score.normalized
-        )
-    }) %>% do.call(what = rbind)
+}
 
-    pvalues.Df <- permRes %>% group_by(pathway) %>% group_split() %>% lapply(function(data){
-        null_scores <- data$perm.score
-        original.score <- observerd.score[names(observerd.score) == data$pathway[1]]
-        pval.hi <- length(null_scores[null_scores > original.score])/nperm
-        pval.lo <- length(null_scores[null_scores < original.score])/nperm
-        #pval <- (length(null_scores[null_scores >= original.score]) + 1) / (nperm + 1)
-        data.frame(
-          pathway = data$pathway[1],
-          p.value.hi = pval.hi,
-          p.value.lo = pval.lo,
-          stringsAsFactors = FALSE
-        )
-    }) %>% do.call(what = rbind)
+#' @title Pathway Enrichment Analysis using GSA
+#' @description This function performs patwhay analysis using GSA method (GeneSet Analysis).
+#' This function is used internally by runPathwayAnalysis.
+#' @param DESummarizedExperiment The generated SummarizedExpriment object from DE analysis result.
+#' @param genesets The genesets definition, ex. KEGG genesets.
+#' @param nperm The number of permutations to run pathway analysis.
+#' @return A dataframe of pathway analysis results
+#' @details This function is used internally by runPathwayAnalysis.
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData
+#' @importFrom dplyr %>% select
+#' @importFrom GSA GSA
+.runCePaGSA <- function(){
 
-    pvalues.Df$p.value <- cbind(pvalues.Df$p.value.lo, pvalues.Df$p.value.hi) %>% apply(1, min)
-    pvalues.Df$p.value <- pvalues.Df$p.value *2
-
-    exprs <- assay
-    group <- c(rep("c",5), rep("d",5))
-    names(group) <- paste0("sample", seq(1:10))
-    res <- GSA::GSA(x = exprs, y = (group == "d") + 1, nperms = 1000, genesets = genesets, resp.type = "Two class unpaired",
-               genenames = rownames(exprs), random.seed = 1,
-               method = "maxmean")
-
-    gsa.res <- cbind(res$pvalues.lo, res$pvalues.hi) %>% apply(1, min)
-    gsa.res <- (gsa.res * 2) %>% data.frame(pathway = names(genesets))
-    colnames(gsa.res) <- c('p.value', 'pathway')
 }
 
 #' @title Pathway Enrichment Analysis
@@ -263,13 +213,75 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select
-runPathwayAnalysis <- function(DESummarizedExperiment, genesets, method = "ORA", nperm = 1000) {
-    analysisFunc <- switch(method,
-                           ORA = .runORA,
-                           fgsea = .runFgsea,
-                           GSA = .runGSA
+runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method = c("ORA", "fgsea", "GSA", "KS", "wilcox"),
+                             ora.args = list(pThreshold = 0.05),
+                             fgsea.args = list(sampleSize = 101, minSize = 1, maxSize = Inf, eps = 1e-50, scoreType = "std",
+                                nproc = 0, gseaParam = 1, BPPARAM = NULL, nPermSimple = 1000, absEps = NULL),
+                             gsa.args = list(method = "maxmean", resp.type = "Two class unpaired", random.seed = NULL, knn.neighbors = 10,
+                                s0 = NULL, s0.perc = NULL, minsize = 15, maxsize = 500, restand = TRUE, restand.basis = "catalog",
+                                nperms = 200, xl.mode = "regular", xl.time = NULL,xl.prevfit = NULL)
+){
+    method <- match.arg(method)
+
+    assay <- assay(summarizedExperiment)
+    if(is.null(assay) | dim(assay)[1] == 0 | dim(assay)[2] == 0){
+        stop("No expression data is in input data.")
+    }
+
+    DE_data <- rowData(summarizedExperiment)
+    if(is.null(DE_data) | dim(DE_data)[1] == 0 | dim(DE_data)[2] == 0){
+        stop("No differential analysis data is in input data.")
+    }
+
+    group_data <- colData(summarizedExperiment)
+
+    result <- switch(method,
+           ora = .runORA(DE_data, genesets, ora.args),
+           fgsea = .runFgsea(DE_data, genesets, fgsea.args),
+           gsa = .runGSA(assay, group_data, genesets, gsa.args),
+           ks = .runKSWilcox(DE_data, genesets, method = "ks"),
+           wilcox = .runKSWilcox(DE_data, genesets, method = "wilcox")
     )
 
-    analysisResult <- analysisFunc(summarizedExprimentObj, genesets$genesets, nperm)
-    return(analysisResult)
+    if(is.null(result)){
+        stop("There is an error in geneset analysis procedure.")
+    }
+
+    return(result)
+}
+
+runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA", "cepaORA", "cepaGSA"),
+                               spia.args = list(de=NULL, all=NULL, organism="hsa", data.dir=NULL, pathids=NULL,
+                                 nB=2000, verbose=TRUE, beta=NULL, combine="fisher"),
+                              cepaORA.args = list(dif = NULL, bk = NULL, mat = NULL, label = NULL, pc, cen = default.centralities,
+                                cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)),
+                                nlevel = "tvalue_abs", plevel = "mean", iter = 1000),
+                              cepaGSA.args = list(
+                                ...
+                              )
+){
+    method <- match.arg(method)
+
+    assay <- assay(summarizedExperiment)
+    if(is.null(assay) | dim(assay)[1] == 0 | dim(assay)[2] == 0){
+        stop("No expression data is in input data.")
+    }
+
+    if(is.null(network)){
+        stop("The network needs to be prepared before running pathway enrichment analysis.")
+    }
+
+    pc <- makeCePaPathwayCat("hsa")
+
+    result <- switch(method,
+                     SPIA = .runSPIA(),
+                     cepaORA = .runCePaORA(),
+                     cepaGSA = .runCePaGSA()
+                     )
+
+    if(is.null(result)){
+        stop("There is an error in pathway analysis procedure.")
+    }
+
+    return(result)
 }
