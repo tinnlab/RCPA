@@ -4,6 +4,7 @@ library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
 
+devtools::load_all()
 # generate a random gene expression matrix
 set.seed(123)
 exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
@@ -29,7 +30,7 @@ design <- model.matrix(~0 + group, data = colData)
 contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
 annotation <- .getIDMappingAnnotation("GPL570")
-DERes <- runDEAnalysis(summarizedExperiment, method = "edgeR", design, contrast, annotation = annotation)
+DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
 
 genesets <- lapply(1:100, function(x) {
     sample(rownames(DERes), runif(1, 100, 500))
@@ -41,4 +42,18 @@ test_that('ORA', {
     expect_true(all(c("pathway", "p.value", "ES", "NES") %in% colnames(oraRes)))
     expect_true(all(oraRes$p.value <= 1))
     expect_true(all(oraRes$p.value >= 0))
+})
+
+test_that('fgsea', {
+    fgseaRes <- .runFgsea(DERes, genesets, nperm = 1000)
+    expect_true(all(c("pathway", "p.value", "ES", "NES") %in% colnames(fgseaRes)))
+    expect_true(all(fgseaRes$p.value <= 1))
+    expect_true(all(fgseaRes$p.value >= 0))
+})
+
+test_that('GSA', {
+    gsaRes <- .runGSA(DERes, genesets, nperm = 1000)
+    expect_true(all(c("pathway", "p.value", "ES", "NES") %in% colnames(gsaRes)))
+    expect_true(all(gsaRes$p.value <= 1))
+    expect_true(all(gsaRes$p.value >= 0))
 })
