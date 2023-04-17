@@ -16,499 +16,292 @@ vignette: |
   %\VignetteEngine{knitr::rmarkdown} 
 ---
 # Introduction
-.
+Consensus pathway analysis is a powerful bioinformatics method used to integrate diverse types of biological data and identify biological pathways that are significantly altered in a specific experimental condition. This approach has been successfully applied to a wide range of research areas, including cancer, neuroscience, and immunology, among others. We present RPCA, a R's package for performing consensus pathway analysis using publicly available tools and resources. We describe the key steps involved in the analysis, including data preparation, genes annotation mapping, pathway enrichment analysis, and meta-analysis to produce consensus scoring. We also provide guidelines for selecting appropriate data sources and statistical thresholds to ensure robust and reproducible results. To demonstrate the application of this protocol, we provide a case study using gene expression data downloaded from Gene Expression Omnibus (GEO). Our package offers a standardized and accessible approach to consensus pathway analysis that can be applied by researchers with varying levels of bioinformatics expertise.
 
-# Preliminaries
-In molecular biology and genetics, there is a large gap between the ease of data collection and our ability to extract knowledge from these data. Contributing to this gap is the fact that living organisms are complex systems whose emerging phenotypes are the results of multiple complex interactions taking place on various pathways. This demands powerful yet user-friendly pathway analysis tools to translate the now abundant high-throughput data into a better understanding of the underlying biological phenomena. Here we introduce Consensus Pathway Analysis (CPA), a web-based platform that allows researchers to (i) perform pathway analysis using eight established methods (GSEA, GSA, FGSEA, PADOG, Impact Analysis, ORA/Webgestalt, KS-test, Wilcox-test), (ii) perform meta-analysis of multiple datasets, (iii) combine methods and datasets to accurately identify the impacted pathways underlying the studied condition and (iv) interactively explore impacted pathways, and browse relationships between pathways and genes. The platform supports three types of input: (i) a list of differentially expressed genes, (ii) genes and fold changes and (iii) an expression matrix. It also allows users to import data from NCBI GEO. The CPA platform currently supports the analysis of multiple organisms using KEGG and Gene Ontology.
+# Data acquisition
+RCPA provides one-stop solution for downloading and processing high-throughput gene expression data from Gene Expression Omnibus (GEO) using the function *downloadGEO*. This function is specifically designed to support both Affymetrix and Agilent protocols, allowing you to seamlessly access and manipulate datasets from these popular microarray technologies.
+The simple interface allow easy download, preprocess, and analyze data from GEO, regardless of user experience level. 
 
-Install scCAN package from CRAN repository. 
-```{r, eval=FALSE}
-install.packages("RCPA")
-```
-
-To start the analysis, load scCAN package:
+Users need to provide four parameters into *downloadGEO* function to download the data. First, we need an accession number which is a unique identifier assigned to a dataset deposited in the GEO database. It consists of a combination of letters and numbers that uniquely identify a specific dataset. The accession number is typically preceded by the letters ``GSE'' and can be found in the title of the dataset and on the data summary page in the GEO database. We will use dataset with accession number *GSE48350* [@berchtold2008gene] for demonstration. Second, users need to provide platform keyword which refers to a specific microarray platform, or chip, that is used for high-throughput gene expression profiling (e.g. hgu133a.db. Third, the *protocol* can be selected between *affymetrix* and *agilent*. Finally, a specific path should be set to *destDir*. The full script download the data can be presented as:
 
 ```{r, eval=FALSE}
-library(RCPA)
-```
-# Analysis on the example dataset
-The input of scCAN is an expression matrix in which rows represent samples and columns represent genes. scCAN package includes an example dataset of 1,000 cells and 2,000 genes.
-
-<!-- scCAN will automatically rescale the expression data to a range from 0 to 1 (min-max scaling) for each cell to reduce the technical variability and heterogeneous calibration from sequencing technologies. -->
-
-```{r, eval=FALSE}
-#Load example data (SCE dataset)
-data("SCE")
-#Get data matrix and label
-data <- t(SCE$data); label <- as.character(SCE$cell_type1)
-
-```
-Inspect the example of 10 cells and 10 genes.
-```{r, eval=FALSE}
-data[1:10,1:10]
-dim(data)
-```
-
-Next, we can cluster the example dataset using the following command. 
-```{r, eval=FALSE}
-#Generate clustering result. The input matrix has rows as samples and columns as genes
-result <- scCAN(data)
-#The clustering result can be found here 
-cluster <- result$cluster
+data <- downloadGEO(GEOID = "GSE33970", platform = "GPL570", protocol = "affymetrix", destDir = "./data/")
 ```
 
 
-<!-- Now, we can view the of annotations of 1,000 cells that belong to 5 separate groups. -->
+RCPA package uses widely-adopted *SummarizedExperiment* object as its standard output format. By utilizing this robust and flexible data structure, the RCPA package ensures the workflow to integrate smoothly with various upstream and downstream tools available in many public repositories such as CRAN and Bioconductor. The *SummarizedExperiment* object is structured in a way that captures the various dimensions and metadata associated with the data, making it an ideal choice for storing and manipulating complex datasets.
 
-<!-- ```{r} -->
-<!-- label[1:10] -->
-<!-- print(paste0("The number of cell types : ",length(unique(label)))) -->
-<!-- ``` -->
-<!-- The annotation file could be stored in a vector in which each element is a cell type label of each cell.  -->
+The structure of a *SummarizedExperiment* object consists of three primary components: (i) *Assays* store the actual experiment data, such as gene expression values or read counts. *Assays* are organized as matrices or similar data structures, with rows representing features (e.g., genes or transcripts) and columns representing samples or observations. In cases where multiple data types or normalization methods are used, the *SummarizedExperiment* object can accommodate multiple assay matrices, (ii) *rowData* contains feature-level metadata, such as gene annotations, transcript information, or genomic coordinates and. *rowData* is typically stored as a DataFrame, with each row corresponding to a feature in the assay(s) and each column representing a specific metadata attribute and (iii) *colData* captures sample-level metadata, such as clinical information, experimental conditions, or batch information. Similar to *rowData*, *colData* is usually stored as a DataFrame, with each row corresponding to a sample in the assay(s) and each column representing a specific metadata attribute.
 
-<!-- #Calculate adjusted Rand Index using mclust package -->
-<!-- ari <- round(scCAN::adjustedRandIndex(cluster,label), 2) -->
-<!-- print(paste0("ARI = ", ari)) -->
+These three components are interconnected through the SummarizedExperiment object, ensuring that the assay data, rowData, and colData remain consistent and synchronized. By providing a unified data structure that can accommodate diverse biological experiments, the SummarizedExperiment object simplifies data management and promotes reproducible research practices in the Bioconductor ecosystem.
 
-Users can visualize the expression data with the new cluster annotation. To reduce the dimension, users can use the package *irlba* [@baglama2019package] to obtain the first 20 principal components, and the package *Rtsne* [@krijthe2018package] to obtain the transcriptome landscape using t-SNE. Finally, we can
-visualize the cell landscape using scatter plot available in *ggplot2* [@wickham2016ggplot2] package.
+# Differential expression analysis
+Pathway analysis aims to identify the biological pathways or functional categories that are significantly enriched with genes that are associated with a particular phenotype or condition. In other words, pathway analysis seeks to understand the molecular mechanisms and biological processes that are involved in a particular phenotype or condition, such as a disease, by identifying the genes that are involved and their interactions within pathways. By analyzing the gene list within the context of known biological pathways or functional categories, pathway analysis can identify the pathways that are over-represented in the gene list, providing insight into the underlying biological processes and mechanisms that contribute to the phenotype or condition.
+
+There are several ways to obtain a gene list for pathway analysis, depending on the research question, the type of data being analyzed, and the available resources. The common approach is differential gene expression analysis (DE) which involves comparing gene expression levels between two or more conditions or groups, such as treatment versus control or disease versus healthy. The genes that are significantly differentially expressed are then used for pathway analysis. Gene set analysis uses pre-defined sets of genes, such as gene ontologies or gene pathways, for pathway analysis. In this approach, the analysis is focused on the enrichment of genes within a pre-defined gene set rather than identifying specific differentially expressed genes. Another approach focuses on literature-based gene selection in which genes that have been reported in the literature to be associated with a particular biological process or disease. These genes can then be used for pathway analysis. Genomic annotation analysis uses genomic annotation data, such as chromatin state or DNA methylation, to identify genes that are epigenetically regulated and may be involved in a particular biological process or disease. The last approach uses network-based analysis that aims at constructing a gene co-expression network or protein-protein interaction network and selecting genes that are highly connected or central to the network.
+
+RCPA package has a dedicated function *DE-analysis* to obtain gene list from omics data without knowing prior knowledge using DE approach. *DE-analysis* provides a wrapper function to use common DE methods including *limma* [@ritchie2015limma], *edgeR* [@robinson2010edger], and *DESeq2* [@love2014moderated]. In order to perform DE analysis, *DE-analysis* requires *summarizedExperiment* object, DE method selection (limma, DESeq2, edgeR), design matrix, contrast matrix and annotation database.
+
+## Data preparation
+A simple way to prepare a simulated data can be shown as follows:
 
 ```{r, eval=FALSE}
-suppressPackageStartupMessages({
-library(irlba)
-library(ggplot2)
-library(Rtsne)
-})
-# Get 2D emebedding data of the original data.
-set.seed(1)
-low <- irlba::irlba(data, nv = 20)$u
-tsne <- as.data.frame(Rtsne::Rtsne(low)$Y)
-tsne$cluster <- as.character(cluster)
-colnames(tsne) <- c("t-SNE1","t-SNE2","Cluster")
-p <- ggplot2::ggplot(tsne, aes(x = `t-SNE1`, y = `t-SNE2`, colour = `Cluster`))+
-  ggtitle("Transcriptome landscape visualization using t-SNE")+labs(color='Cluster') +
-  geom_point(size=2, alpha = 0.8) +
-    theme_classic()+
-    theme(axis.text.x=element_blank(),
-          axis.ticks.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks.y=element_blank(),
-          axis.title=element_text(size=14),
-          plot.title = element_text(size=16),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.position="bottom", legend.box = "horizontal",
-          legend.text =element_text(size=10),
-          legend.title=element_text(size=14))+
-    guides(colour=guide_legend(nrow = 1))
-p
-```
-
-![Visualization of expression data using cells clusters identified from scCAN.](Example.png)
-
-# Download and analyze real human dataset
-## Data downloading and clustering
-We will use a real dataset from Pollen et al.[@pollenLowcoverageSinglecellMRNA2014a] that is available on our website. This dataset has 301 cells sequenced from human tissues including blood, skin, brain, and stem cells. 
-```{r, eval=FALSE}
-suppressPackageStartupMessages({
+library(hgu133plus2.db)
+library(AnnotationDbi)
 library(SummarizedExperiment)
-})
-path <- "https://bioinformatics.cse.unr.edu/software/scCAN/data/pollen.rds"
-SCE <- readRDS(url(path,"rb"))
-# Get expression matrix
-data <- t(SummarizedExperiment::assay(SCE))
-# Get cell annotation
-label <- SummarizedExperiment::colData(SCE)
-```
+library(limma)
+# generate a random gene expression matrix
+set.seed(123)
+exprs <- round(matrix(2^abs(rnorm(1000, sd = 4)), nrow = 100, ncol = 10))
+rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
+colnames(exprs) <- paste0("sample", 1:10)
 
-Next, we can cluster dataset using the following command. 
-```{r, eval=FALSE}
-#Generate clustering result, the input matrix has rows as samples and columns as genes
-start <- Sys.time()
-result <- scCAN(data)
-running_time <- difftime(Sys.time(),start,units = "mins")
-print(paste0("Running time = ", running_time))
-#The clustering result can be found here 
-cluster <- result$cluster
-```
+controlSamples <- paste0("sample", 1:5)
+conditionSamples <- paste0("sample", 6:10)
 
-```
-## Running time = 1.293936 mins
-```
+colData <- data.frame(
+    row.names = colnames(exprs),
+    group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
+    pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
+)
 
-
-This dataset also has an annotation file that includes true cell labels:
-```{r, eval=FALSE}
-head(label)
+summarizedExperiment <- SummarizedExperiment(
+    assays = list(counts = exprs),
+    colData = colData
+)
 ```
-```
-DataFrame with 6 rows and 2 columns
-          cell_type1 cell_type2
-            <factor>   <factor>
-Hi_2338_1       2338     dermal
-Hi_2338_2       2338     dermal
-Hi_2338_3       2338     dermal
-Hi_2338_4       2338     dermal
-Hi_2338_5       2338     dermal
-Hi_2338_6       2338     dermal
-```
-The annotation file is stored data frame in which rows are samples. The annotation file has two sets of labels: (i) *cell_type1* indicates cell types discovered from Pollen et al., (ii) *cell_type2* has annotation of tissues that the cells was taken. Users can compare the obtain clustering results against *cell_type1* for validation and visualization.
+## Design matrix
+A design matrix is a mathematical representation of the experimental design that describes the relationships between the samples and the variables or factors of interest. The design matrix is used in linear modeling approaches, such as the ones implemented in the R packages *limma*, *edgeR* and *DESeq2*, to identify differentially expressed genes between different groups or conditions. In a design matrix, each row represents an individual sample (e.g., RNA-seq or microarray data from a specific biological replicate), and each column represents a variable or factor in the experiment, such as different treatments, time points, or tissue types. The matrix entries are usually binary (0 or 1), indicating whether a specific factor is present (1) or absent (0) in the corresponding sample. A simple design matrix can be constructed as follows:
 
 ```{r, eval=FALSE}
-#Calculate adjusted Rand Index using mclust package
-ari <- round(scCAN::adjustedRandIndex(cluster,label$cell_type1), 2)
-print(paste0("ARI = ", ari))
+# control vs condition
+design <- model.matrix(~0 + group, data = colData)
 ```
 
-Users can use the same code above to plot the transcriptome landscape of the Pollen dataset. Below is the transcriptome landscapes of the dataset using the annotation provided by Pollen et al., and the landscape using the new cluster annotation.
-
-![Visualization of expression data using original cell types and cluster identified from scCAN for Pollen dataset.](Pollen_raw.png)
-
-scCAN was able to cluster Pollen dataset in 1 minutes with 9 clusters identified.The clusters discovered by scCAN are highly correlated with cell labels obtained from the original publication [@pollenLowcoverageSinglecellMRNA2014a] with an ARI of 0.92.
-
-## Visualizing the data using latent variables of scCAN
-scCAN generates a compressed representation of original expression data. This representation is part of the output, and can be obtained using the following code:
+The design matrix can be shown as follows:
+```
+         groupcondition groupcontrol
+sample1               0            1
+sample2               0            1
+sample3               0            1
+sample4               0            1
+sample5               0            1
+sample6               1            0
+sample7               1            0
+sample8               1            0
+sample9               1            0
+sample10              1            0
+attr(,"assign")
+[1] 1 1
+attr(,"contrasts")
+attr(,"contrasts")$group
+[1] "contr.treatment"
+```
+## Contrast matrix
+A contrast matrix is typically a matrix with one or more rows and columns equal to the number of variables or factors in the design matrix. Each row of the contrast matrix represents a specific comparison of interest (e.g., treatment vs. control, time point A vs. time point B, etc.). The entries in the matrix indicate the weights applied to each factor or coefficient when making the comparison. These weights are usually 1, -1, or 0, with 1 representing the factor of interest, -1 representing the reference or baseline condition, and 0 indicating that a factor is not involved in the comparison. The contrast matrix is used to extract the relevant information from the fitted linear model by multiplying it with the estimated coefficients. This results in a set of estimated differences in gene expression between the specified conditions, which can then be tested for statistical significance to identify differentially expressed genes. We can create a contrast matrix using *makeContrasts* function available in *limma* package. 
 
 ```{r, eval=FALSE}
-suppressPackageStartupMessages({
-  library(ggplot2)
-  library(cowplot)
-  library(scatterplot3d)
-  library(scales)
-})
-  # Get latent data from scCAN result
-  latent <- result$latent
-  # Generating 2D embedding data using 2 first latent variables
-  data1= latent[,1:2]
-  
-  # Generating 3D embedding data using 3 first latent variables
-  data2= latent[,1:3]
-  
-  #Plotting 2D data using ggplot
-  name ="Pollen"
-  dat <- as.data.frame(data1)
-  dat$p <- as.character(cluster)
-  colnames(dat) <- c("Latent Variable 1", "Latent Variable 2", "scCAN Cluster")
-  p1 <- ggplot(dat, aes(x = `Latent Variable 1`,y = `Latent Variable 2`,colour = `scCAN Cluster`)) +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    geom_point(size=2, alpha = 0.6) +
-    #scale_color_manual(values = colors)+
-    theme_classic()+
-    theme(axis.text.x=element_blank(),
-          axis.ticks.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks.y=element_blank(),
-          axis.title=element_text(size=14),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.position="none", legend.box = "horizontal",
-          legend.text =element_text(size=12),
-          legend.title=element_text(size=14) )+
-    guides(colour=guide_legend(ncol=2))
-  title1 <- ggdraw() + draw_label(name, size=16)
-  legend1 <- get_legend(p1 +
-                          theme(legend.position="bottom", legend.box = "horizontal",legend.title=element_text(size=12),
-                                legend.margin = margin(0), legend.spacing.x = unit(0.1, "cm") ,
-                                legend.text=element_text(size=12)) + guides(color=guide_legend(nrow = 2))
-  )
-  
-  m1 <- plot_grid(title1, p1, legend1, rel_heights = c(0.05, 0.5, .1), ncol = 1)
-  plot_grid(m1,rel_heights = c(0.05, 0.9), ncol = 1)
-  
-  
-  #Plotting 3D data using scatterplot3d package
-  graphics.off()
-  name = "Pollen"
-  dat <- as.data.frame(data2)
-  # dat$t <- label$cell_type1
-  dat$p <- as.character(cluster)
-  colnames(dat) <- c("Latent Variable 1", "Latent Variable 2", "Latent Variable 3", "scCAN Cluster")
-  pal <- hue_pal()(length(unique(cluster)))
-  colors <- pal[as.numeric(dat$`scCAN Cluster`)]
-  
-  scatterplot3d(dat[,1:3], pch = 16,
-                grid=TRUE, box=TRUE,color = colors)
-  
+contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+```
+The contrast matrix can be shown as follows:
+
+```
+                Contrasts
+Levels           groupcondition-groupcontrol
+  groupcondition                           1
+  groupcontrol                            -1
 ```
 
-The 2D and 3D visualizations using 2 latent variables and 3 latent variables obtained from latent data are shown as follows:
+## Gene annotation
 
-![Visualization of 2D and 3D representation of scCAN latent data using clusters identified from scCAN for Pollen dataset.](Pollen_pc.png)
+If the users do not want perform genes ID mapping for the assay, the *annotation* parameter can be set to *NULL*. Otherwise, a biological annotation databases should be provide. Annotation databases contain information about genes, transcripts, proteins, or other genomic features, such as gene symbols, descriptions, chromosomal locations, or functional annotations (e.g., Gene Ontology terms). The AnnotationDbi package is particularly useful in the context of high-throughput genomic data analysis, such as microarray or RNA-seq experiments, as it allows researchers to easily map and retrieve annotation information for a list of genes or other genomic features. A sample annotation data frame can be shown as follows:
 
-Users can also use latent data as an input to standard dimensional reduction algorithms including built-in R Principal Component Analysis (PCA), t-SNE @van2008visualizing and UMAP @becht2019dimensionality.
-```{r, eval=FALSE}
-  suppressPackageStartupMessages({
-  library(umap)
-  })
-  set.seed(1)
-  pc.data <- prcomp(latent, rank. = 2)$x
-  tsne.data <- Rtsne(latent, check_duplicates = F,dims = 2)$Y
-  umap.data <- umap(latent,n_components = 2)$layout
 ```
-
-Users can use the ggplot function to plot the 2D visualizations of the latent data:
-
-![2D Visualization of latent data with PCA, t-SNE and UMAP for Pollen dataset.](Pollen_2D.png)
-
-
-We can also use PCA, t-SNE and UMAP to get 3D embedding data of the latent variables.
+            FROM        TO
+1      1007_s_at       780
+2        1053_at      5982
+3         117_at      3310
+4         121_at      7849
+5      1255_g_at      2978
+6        1294_at      7318
+7        1316_at      7067
+8        1320_at     11099
+9      1405_i_at      6352
+10       1431_at      1571
+11       1438_at      2049
+12       1487_at      2101
+13     1494_f_at      1548
+14  1552256_a_at       949
+15  1552257_a_at     23170
+16    1552261_at     10406
+17    1552263_at      5594
+18  1552264_a_at      5594
+19    1552266_at    203102
+20    1552269_at    128153
+```
+A sample script to perform DE analysis without genes ID mapping in RCPA package can be seen as follows:
 
 ```{r, eval=FALSE}
-suppressPackageStartupMessages({
-  library(Rtsne)
-  library(umap)
-})
-  # Get latent data from scCAN result
-  latent <- result$latent
-  set.seed(1)
-  pc.data <- prcomp(latent, rank. = 3)$x
-  tsne.data <- Rtsne(latent, check_duplicates = F,dims = 3)$Y
-  umap.data <- umap(latent,n_components = 3)$layout
+DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = NULL)
 ```
 
-We can use *scatterplot3d* R package to plot 3D visualization of the latent data.
-
-```{r, eval=FALSE}
-suppressPackageStartupMessages({
-  library(ggplot2)
-  library(cowplot)
-  library(scatterplot3d)
-  library(scales)
-})
-  graphics.off()
-  name = "Pollen"
-  par(mfrow=c(1,3))
-  
-  pc.data <- as.data.frame(pc.data)
-  pc.data$t <- label
-  pc$p <- as.character(result$cluster)
-  colnames(pc) <- c("PC1","PC2","PC3","True Cluster","scCAN Cluster" )
-  pal <- hue_pal()(length(result$cluster)))
-  colors <- pal[as.numeric(tsne$`scCAN Cluster`)]
-    
-  scatterplot3d(pc.data[,1:3], pch = 16,
-                  grid=TRUE, box=TRUE,color = colors)
-    
-  tsne <- as.data.frame(tsne.data)
-  tsne$t <- label
-  tsne$p <- as.character(result$cluster)
-  colnames(tsne) <- c("t-SNE1","t-SNE2","t-SNE3","True Cluster","scCAN Cluster" )
-  pal <- hue_pal()(length(unique(result$cluster)))
-  colors <- pal[as.numeric(tsne$`scCAN Cluster`)]
-  
-  scatterplot3d(tsne[,1:3], pch = 16,
-                grid=TRUE, box=TRUE,color = colors)
-  
-  
-  umap <- as.data.frame(umap.data)
-  umap$t <- label
-  umap$p <- as.character(result$cluster)
-  colnames(umap) <- c("UMAP1","UMAP2","UMAP3","True Cluster","scCAN Cluster" )
-  
-  scatterplot3d(umap[,1:3], pch = 16,
-                grid=TRUE, box=TRUE,color = colors)
-  
-  mtext(name,side=3,line=-1.5,outer=TRUE,cex = 1.4)
+The result of DE analysis is stored in the *SummarizedExperiment* object. To access the DE analysis result, we can call *rowData* function. DE result is a data frame in which rows are genes and columns are probe IDs, gene IDs, and statistical result. The full data frame can be seen as:
 ```
+               PROBEID          ID     p.value statistic     logFC dispersion       pFDR
+           <character> <character>   <numeric> <numeric> <numeric>  <numeric>  <numeric>
+9356       210343_s_at        9356 4.81682e-05  -4.06434  -5.76835    1.41926 0.00390163
+1833         206439_at        1833 2.46935e-04  -3.66542  -3.88897    1.06099 0.01000085
+4801         244704_at        4801 9.21429e-04   3.31348   4.03540    1.21787 0.01967807
+54434     1554274_a_at       54434 9.71756e-04  -3.29858  -4.75052    1.44017 0.01967807
+81552      208091_s_at       81552 1.39365e-03  -3.19596  -4.12387    1.29034 0.02105996
+```
+# Genesets and pathways
+Pathways and gene sets are essential concepts in systems biology, as they provide a framework for understanding the organization and interactions of these molecular components within the cell. By analyzing pathways and gene sets, researchers can gain valuable insights into the biological processes and molecular mechanisms underlying various diseases, conditions, and cellular responses. Gene sets are collections of genes that share a common biological function, cellular component, or molecular process. These sets can be derived from various sources, including curated pathway databases, gene ontology annotations, or experimental data. By grouping genes based on their functional roles, gene sets provide a simplified and structured framework for interpreting large-scale gene expression data. 
 
-![3D Visualization of latent data with PCA, t-SNE and UMAP for Pollen dataset.](Pollen_3D.png)
+Gene Ontology (GO) [@ashburner2000gene] and the Kyoto Encyclopedia of Genes and Genomes (KEGG) [@kanehisa2000kegg] pathway databases are two essential resources that provide structured frameworks for annotating and analyzing genes, proteins, and other molecular components. By offering standardized vocabularies and curated information on molecular functions, cellular components, biological processes, and pathways, these databases enable researchers to systematically explore the relationships between genes and their functional roles in various biological systems. RCPA package provides a function *getGeneSets* to obtain genesets from two databases
 
-# Example code for in-depth analysis using scRNA-seq data and prior biological knowledge.
-## Download data
-In this section, we investigate the scaling ability of scCAN for clustering big data (>1 million cells). We will use neural dataset obtained from multiple brain regions of two embryonic mice published by 10X Genomics [@genomics20171 , @zheng2017massively]. The dataset was stored in *DelayedArray* format that contains 1,300,774 cells and 27,998 genes. The *DelayedArray* stores data in physical hard disk and the data can be read to memory by small blocks. We will use *TENxBrainData* R package available from Bioconductor to efficiently load the data. Before running the following code, users need to make sure that they have sufficient memory (200+ GB of RAM) and data storage (10GB).
+## Obtaining genesets from KEGG
+
+To obtain genesets from KEGG, user need to provide the keyword for organism (e.g "hsa" for human). The full supporting list is avaialble at https://www.genome.jp/kegg/catalog/org_list.html. The script to download genelist from KEGG is as follows:
 
 ```{r, eval=FALSE}
-# Loading
-# if (!require("BiocManager", quietly = TRUE))
-#     install.packages("BiocManager")
-# BiocManager::install("DelayedArray")
-# BiocManager::install("DelayedMatrixStats")
-# BiocManager::install("TENxBrainData")
-# BiocManager::install("HDF5Array")
-suppressPackageStartupMessages({
-  library(TENxBrainData)
-  library(Matrix)
-  library(SummarizedExperiment)
-  library(DelayedArray)
-  library(DelayedMatrixStats)
-  library(HDF5Array)
-})
-tenx <- TENxBrainData()
-counts <- assay(tenx)
-data <- t(counts)
-gene.names <- rowData(tenx)
-cell.names <- colData(tenx)
-rownames(data) <- cell.names$Barcode
-colnames(data) <- gene.names$Ensembl
-```
-## Data pre-processing and clustering
-The raw data is extremely sparse with excessive number of zero values. We perform one pre-processing step to remove genes that have low expression values. We filter the genes that have total UMI counts across all cells less than 1\% of the maximum total UMI counts of all genes.The code for pre-processing is presented as follows:
-```{r, eval=FALSE}
-# Set number of processing unit to 20
-setAutoBPPARAM(BiocParallel::MulticoreParam(workers=4))
-# Calculate total count for each gene
-total.count <- DelayedArray::colSums(data)
-# Filter gene that has total count less than 1 percent of maximum total count.
-setAutoBPPARAM(BiocParallel::MulticoreParam(workers=4))
-idx <- which(total.count <= (max(total.count*1/100)))
-data <- data[,-idx]
-genes <- as.vector(gene.names$Ensembl)[-idx]
-colnames(data) <- genes
+gensets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
 ```
 
-To cluster the obtained data, we need to convert it to sparse matrix using the code below:
-
-```{r, eval=FALSE}
-# Devide data into different block
-trunks<- seq(from = 1, to = nrow(data))
-seg <- split(trunks, ceiling(seq_along(trunks)/50000))
-# Convert each block to sparse dgCMatrix and combine them into a single one
-mat = NULL
-for(i in 1:length(seg)){
-  tmp <- as(data[seg[[i]],], "dgCMatrix")
-  mat = rbind(mat,tmp)
-}
-rownames(mat) <- cell.names$Barcode
-colnames(mat) <- genes
-# Set the number of clusters k = 10:50 (k = 2:15 by default) for scCAN to maximize the number clusters that can be explored.
-start <- Sys.time()
-res <- scCAN(mat,sparse = T,r.seed = 1,k = 10:50)
-running_time <- difftime(Sys.time(),start,units = "mins")
-cluster <- res$cluster
-message("Running time = ", running_time)
-message("Number of cluster = ", unique(cluster))
+The output is a list that contais database name (KEGG), list of geneset for each pathway, and a vector contain description of each pathway. A typical pathway and gene list can be seen as follows:
 
 ```
-```
-## Running time: 51.37449 mins
-## Running time: 19
-```
-scCAN was able to cluster 1.3 million cells within 51 minutes with 19 discovered clusters.
+$`path:hsa05204`
+ [1] "10"        "100861540" "10720"     "10941"     "119391"    "1543"      "1544"      "1545"      "1548"      "1549"     
+[11] "1551"      "1553"      "1557"      "1558"      "1559"      "1562"      "1571"      "1576"      "1577"      "1646"     
+[21] "2052"      "221357"    "27306"     "2938"      "2939"      "2940"      "2941"      "2944"      "2946"      "2947"     
+[31] "2948"      "2949"      "2950"      "2952"      "2953"      "3290"      "373156"    "374875"    "4257"      "4258"     
+[41] "4259"      "445329"    "54490"     "54575"     "54576"     "54577"     "54578"     "54579"     "54600"     "54657"    
+[51] "54658"     "54659"     "5743"      "574537"    "64816"     "653689"    "6799"      "6817"      "6818"      "6822"     
+[61] "7363"      "7364"      "7365"      "7366"      "7367"      "79799"     "873"       "9"         "9446"     
 
-![Visualization and clustering results of 1.3 million cells sequenced from brain tissue of E18 mice using scCAN's clusters.](1.3M.tsne.png)
-
-
-## Clustering result validation using biological analysis
-Originally, the 1.3M dataset does not have true cell types. The cluster results were obtained using k-means clustering algorithms with number of clusters *k* vary from *2* to *20*. Therefore, we will validate the sccAN's clustering results using biologically validated cell types with known marker genes. We retrieve markers genes of 31 neural cell types for mouse brain tissue in PanglaoDB database @franzen2019panglaodb. We filter the cell types that have a number of markers lower than 15. As the results, we obtain a list of markers genes for 24 cell types. We consider these biologically validated cell types as a ground truth to validate scCAN result. 
-
-We follow the approach proposed by Xie et al. @xie2020scaide to perform validation of scCAN result. For each cluster obtained from scCAN, we divide cells in each gene into two parts: (i) cells belong aforementioned cluster, and (ii) cells belong to other clusters. Next, we perform two-sided Wilcoxon test using two sets of cells with corraction to assess the differential expression. We also calculate fold-change of average expression of two sets to measure ratio of the difference. Output from this step is a list Wilcoxon p-value and fold-change values of all genes for each cluster identified from scCAN. We repeat this project for every gene in all clusters obtained from scCAN. Here, we set the threshold cut-off of the Wilcoxon test ($p\leq0.001$) for a strict detection of a small number of marker genes and 1.5 for fold-change. The codes to process markers genes and conduct differential analysis are shown below:
-```{r, eval=FALSE}
-# Download the cell type with markers gene
-url <- "https://panglaodb.se/markers/PanglaoDB_markers_27_Mar_2020.tsv.gz"
-tmp <- tempfile()
-download.file(url,tmp)
-file = gzfile(tmp)
-markers <- read.table(file, sep="\t", header = T)
-# Select only brain tissue
-markers = markers[which(markers$organ=="Brain"),]
-# Remove marker that belongs to human
-markers = markers[c(which(markers$species=="Mm Hs"),which(markers$species=="Mm")),]
-# Select cell types that have more than 15 markers
-breaks = c(15)
-for(br in breaks){
-  tmp <- as.data.frame(table(markers$cell.type))
-  
-  if(is.null(br)){
-    select_mrks <- tmp
-  }else{
-    select_mrks <- tmp[which(tmp$Freq>=br),]
-  }
-  cts <- unique(select_mrks$Var1)
-  panglao_markers <- list()
-  # ann <- NULL
-  for( ct in cts){
-    idx <- which(markers$cell.type==ct)
-    tmp <- markers[idx,]
-    panglao_markers[[ct]]<-tmp$official.gene.symbol
-  }
-  saveRDS(panglao_markers,paste0("Panglao_mrks_",br,".rds"))
-}
-# Load the expression matrix of markers genes collected from PanglaoDB database
-path <- "https://bioinformatics.cse.unr.edu/software/scCAN/data/1.3M_markers.rds"
-gene_expression_data <- readRDS(url(path,"rb"))
-# Load saved scCAN clustering result
-path <-"https://bioinformatics.cse.unr.edu/software/scCAN/result/1.3M_scCAN.rds"
-res <- readRDS(url(path,"rb"))
-cluster <- res$cluster
-# Evaluate wilcox rank sum test and log fold change values
-# Perform pair wise Wilcoxon Rank Sum and log fold change for each cluster
-# This process could take hours for big data
-eval_gene_markers <- scCAN::get_cluster_markers(gene_expression_data, 
-                                              cluster, 
-                                              threads = 16)
-gene_names <- rownames(gene_expression_data)
-# Select marker the test with p <= 0.001 and log fold change > 1.5, 
-# output is the list of markers that are strongly differentiated in the clusters
-cluster_markers_list <- scCAN::curate_markers(eval_gene_markers, gene_names, 
-                                              wilcox_threshold=0.001, 
-                                              logfc_threshold=1.5)
-```
-Next, we calculate the probability of a clusters belong to a reference cell type. Output from this step is a confusion matrix where rows represent scCAN's clusters and columns represent reference cell types. 
-```{r, eval=FALSE}
-library(matrixStats)
-# Load pre-saved the list of markers that are strongly expressed in a specific cluster
-path <-"https://bioinformatics.cse.unr.edu/software/scCAN/result/cluster_markers.rds"
-cluster_markers_list <- readRDS(url(path,"rb"))
-# Load PanglaoDB markers
-path <-"https://bioinformatics.cse.unr.edu/software/scCAN/result/panglao_markers.rds"
-panglao_markers<- readRDS(url(path,"rb"))
-# Caculate pair wise cell type/cluster probabilty using jaccard index
-celltype_prob <- scCAN::calculate_celltype_prob(cluster_markers_list,
-                                                panglao_markers,
-                                                type = "jacc")
-colnames(celltype_prob) <- names(panglao_markers)
-celltype_id <- matrixStats::rowMaxs(celltype_prob)
-celltype_prob[1:10,1:10]
-```
-```
-      Anterior pituitary gland cells Astrocytes Bergmann glia Cajal-Retzius cells Choroid plexus cells
- [1,]                     0.01190476 0.00000000    0.00000000          0.04205607           0.02564103
- [2,]                     0.03050847 0.12962963    0.08278146          0.02052786           0.02473498
- [3,]                     0.00000000 0.00000000    0.00000000          0.00000000           0.00000000
- [4,]                     0.04216867 0.08205128    0.05780347          0.03773585           0.01298701
- [5,]                     0.02631579 0.01398601    0.01652893          0.00625000           0.00000000
- [6,]                     0.01754386 0.00000000    0.00000000          0.02912621           0.02222222
- [7,]                     0.02756892 0.10981308    0.07389163          0.04269663           0.02842377
- [8,]                     0.02546296 0.02386117    0.01594533          0.08577406           0.01428571
- [9,]                     0.03398058 0.02494331    0.01193317          0.15283843           0.02000000
-[10,]                     0.03030303 0.03608247    0.03488372          0.13270142           0.02614379
-      Dopaminergic neurons GABAergic neurons Immature neurons Interneurons Meningeal cells
- [1,]           0.03246753       0.006711409       0.04651163   0.12146893     0.000000000
- [2,]           0.01423488       0.014492754       0.02006689   0.09147609     0.017921147
- [3,]           0.00000000       0.000000000       0.00000000   0.00625000     0.000000000
- [4,]           0.00000000       0.013605442       0.06470588   0.06534091     0.013333333
- [5,]           0.02000000       0.063157895       0.02542373   0.08333333     0.010204082
- [6,]           0.00000000       0.026315789       0.06557377   0.02880658     0.000000000
- [7,]           0.01038961       0.010526316       0.02729529   0.10769231     0.020887728
- [8,]           0.01913876       0.009685230       0.03211009   0.16990291     0.007211538
- [9,]           0.01758794       0.005089059       0.01923077   0.17224080     0.012626263
-[10,]           0.02649007       0.013698630       0.02366864   0.12535613     0.013422819
-```
-We can view the cluster that is strongly correlated with the reference cell type using heatmap plot. Color scale is reported by the value of *celltype_prob* for each cluster-label combination.
-```{r,eval=FALSE}
-library(pheatmap)
-pheatmap(celltype_prob)
+$`path:hsa05205`
+  [1] "10000"  "1026"   "10451"  "10818"  "10855"  "11211"  "117581" "1277"   "1278"   "1432"   "1499"   "1514"   "1634"  
+ [14] "1655"   "1839"   "1956"   "1975"   "2002"   "2017"   "2064"   "2065"   "2066"   "207"    "208"    "2099"   "2247"  
+ [27] "2260"   "22800"  "22808"  "2316"   "2317"   "2318"   "2335"   "23365"  "2475"   "2535"   "2549"   "2719"   "27250" 
+ [40] "2817"   "286"    "287"    "288"    "2885"   "29102"  "3059"   "3082"   "3091"   "3236"   "3265"   "3316"   "3339"  
+ [53] "3479"   "3480"   "3481"   "3549"   "355"    "356"    "3593"   "3673"   "3678"   "3685"   "3688"   "369"    "3690"  
+ [66] "3693"   "3708"   "3709"   "3710"   "3791"   "3845"   "387"    "388112" "4060"   "406902" "406903" "406991" "4087"  
+ [79] "4193"   "4233"   "4313"   "4318"   "4478"   "4609"   "4659"   "4660"   "4893"   "5058"   "51196"  "51384"  "5170"  
+ [92] "5290"   "5291"   "5293"   "5295"   "5296"   "5328"   "5329"   "5335"   "5336"   "54361"  "54776"  "5499"   "5500"  
+[105] "5501"   "5566"   "5567"   "5568"   "5578"   "5579"   "5582"   "5594"   "5595"   "5600"   "5603"   "5604"   "5605"  
+[118] "5727"   "5747"   "5777"   "5781"   "5829"   "5879"   "5894"   "595"    "5962"   "60"     "60495"  "6093"   "6194"  
+[131] "6198"   "6199"   "6237"   "6300"   "6382"   "6383"   "6385"   "6469"   "6548"   "6608"   "6654"   "6655"   "6714"  
+[144] "673"    "6774"   "7023"   "7040"   "7042"   "7057"   "7074"   "7078"   "7097"   "7099"   "71"     "7124"   "7157"  
+[157] "7291"   "7409"   "7410"   "7422"   "7430"   "7448"   "7471"   "7472"   "7473"   "7474"   "7475"   "7476"   "7477"  
+[170] "7478"   "7479"   "7480"   "7481"   "7482"   "7483"   "7484"   "7855"   "7976"   "79923"  "80326"  "81029"  "815"   
+[183] "816"    "817"    "818"    "8321"   "8322"   "8323"   "8324"   "8325"   "8326"   "836"    "84309"  "8503"   "857"   
+[196] "858"    "859"    "867"    "8826"   "89780"  "9138"   "9475"   "960"    "967"    "998"   
 ```
 
-![](Ref_heatmap.png)
+Example of pathway description is shown as follows:
+```
+                                                            path:hsa00010 
+                                           "Glycolysis / Gluconeogenesis" 
+                                                            path:hsa00020 
+                                              "Citrate cycle (TCA cycle)" 
+                                                            path:hsa00030 
+                                              "Pentose phosphate pathway" 
+                                                            path:hsa00040 
+                               "Pentose and glucuronate interconversions" 
+                                                            path:hsa00051 
+                                        "Fructose and mannose metabolism" 
+                                                            path:hsa00052 
+                                                   "Galactose metabolism" 
+                                                            path:hsa00053 
+                                      "Ascorbate and aldarate metabolism" 
+                                                            path:hsa00061 
+                                                "Fatty acid biosynthesis" 
+                                                            path:hsa00062 
+                                                  "Fatty acid elongation" 
+                                                            path:hsa00071 
+                                                 "Fatty acid degradation" 
+                                                            path:hsa00100 
+                                                   "Steroid biosynthesis" 
+                                                            path:hsa00120 
+                                         "Primary bile acid biosynthesis" 
+                                                            path:hsa00130 
+```
 
-We select the cluster that has highest probability value with reference cell type.
+## Obtaining genesets from GO
+
+To obtain genesets from GO, user need to provide taxonomy IDs and namespace. Taxonomy IDs are used to classify and organize species within a hierarchical system that reflects their evolutionary relationships. In GO, taxonomy IDs are used to associate specific GO terms with the organisms to which they apply. This is important because certain biological processes, molecular functions, or cellular components may be unique to, or have a different context in, specific organisms or groups of organisms.Namespace refers to the three distinct categories or domains under which GO terms are organized. Each GO term belongs to one of the following three namespaces:
+
+* Biological Process (BP): This namespace encompasses terms that describe a series of molecular events or a pathway, with a defined beginning and end, that contribute to a specific biological outcome or function. Examples include cell cycle, DNA repair, or apoptosis.
+
+* Molecular Function (MF): This namespace includes terms that describe the biochemical activities or actions of gene products at the molecular level, such as catalytic or binding activities. Examples include protein kinase activity, DNA binding, or ion channel activity.
+
+* Cellular Component (CC): This namespace consists of terms that describe the locations within a cell or the extracellular environment where gene products are active or found. These locations can be cellular structures, such as organelles or protein complexes, or broader regions like the cell membrane. Examples include nucleus, mitochondrion, or the proteasome complex.
+
+The example script to get genesets from GO database is as follows:
 
 ```{r, eval=FALSE}
-path <-"https://bioinformatics.cse.unr.edu/software/scCAN/result/1.3M_scCAN.rds"
-res <- readRDS(url(path,"rb"))
-cluster <- res$cluster
-# Map the cluster that has highest Jaccard Index value with reference cell type
-celltype_idx <- apply(celltype_prob,1,function(x){which.max(x)}  )
-cell.name <- colnames(celltype_prob)[celltype_idx]
-# Assign reference cell type to all clusters discover by scCAN
-mapping.table <- data.frame(cluster = seq(1:19), cell_type = cell.name)
-mapped.ct <- mapping.table$cell_type[mapping.table$cluster[cluster]]
-mapped.ct[1:10]
+gensets <- getGeneSets("GO", taxid = 9606, namespace = "biological_process", minSize = 10, maxSize = 1000)
 ```
+
+The output is a list that contais database name (GO), list of geneset for each term, and a named vector contain description of each term A typical term and gene list can be seen as follows:
+
 ```
-[1] "Interneurons"    "Pyramidal cells" "Astrocytes"      "Interneurons"    "Neurons"         "Neurons"        
-[7] "Pyramidal cells" "Neurons"         "Pyramidal cells" "Pyramidal cells"
+$`GO:0048511`
+ [1] "983"    "1020"   "1387"   "1390"   "1628"   "1642"   "1815"   "2146"   "6096"   "6478"   "6667"   "7153"   "7874"  
+[14] "8242"   "8451"   "9475"   "10533"  "11335"  "22871"  "23291"  "26223"  "26224"  "54551"  "55269"  "55294"  "57805" 
+[27] "84667"  "85457"  "92369"  "94233"  "150094"
+
+$`GO:0048514`
+ [1] "1000" "1282" "1545" "1948" "2116" "2321" "2324" "3397" "5921" "6654" "8456"
+
+$`GO:0048538`
+ [1] "673"   "1399"  "2255"  "2304"  "2625"  "3200"  "3280"  "6495"  "6647"  "6722"  "8379"  "8543"  "9133"  "9464"  "10269"
+[16] "57864"
+
+$`GO:0048565`
+ [1] "887"   "1281"  "1543"  "2263"  "5925"  "25836" "55366" "57680" "57680" "93649"
 ```
+
+Example of term description is shown as follows:
+```
+                                                    GO:0045739 
+                                                                "positive regulation of DNA repair" 
+                                                                                         GO:0045740 
+                                                           "positive regulation of DNA replication" 
+                                                                                         GO:0045741 
+                       "positive regulation of epidermal growth factor-activated receptor activity" 
+                                                                                         GO:0045742 
+                        "positive regulation of epidermal growth factor receptor signaling pathway" 
+                                                                                         GO:0045746 
+                                                   "negative regulation of Notch signaling pathway" 
+                                                                                         GO:0045747 
+                                                   "positive regulation of Notch signaling pathway" 
+                                                                                         GO:0045765 
+                                                                       "regulation of angiogenesis" 
+                                                                                         GO:0045766 
+                                                              "positive regulation of angiogenesis" 
+                                                                                         GO:0045773 
+                                                            "positive regulation of axon extension" 
+                                                                                         GO:0045785 
+                                                             "positive regulation of cell adhesion" 
+                                                                                         GO:0045786 
+                                                                "negative regulation of cell cycle" 
+```
+
+
+# Pathway enrichment analysis
+
+Enrichment analysis (EA) is a technique used to derive biological insight from lists of significantly altered genes. The list of genes can be obtained from Differential Expression (DE) analysis or users’ interest. The EA methods rely on the knowledge databases (e.g. KEGG and GO) to identify biological pathways or terms that are enriched in a gene list more than would be expected by chance. The outcome of the EA would be the in-depth and contextualized findings to help understand the mechanisms of disease, genes and proteins associated with the etiology of a specific disease or drug target.
+
+Over more than a decade, there are many methods have been developed for EA. RCPA package offers a wrapper function *runPathwayAnalysis* to perform enrichment analysis using three popular methods including Over Representation Analysis (ORA) [@khatri2002profiling], Fast Gene Set Enrichment Analysis (FGSEA) [@korotkevich2016fast], and Gene Set Analysis (GSA) [@efron2007testing].
+
+# Meta-analysis
+
+# Enriched pathway visualization
+## Plot heatmap
+## Ploy volcano
+## Plot pathway bar charts
+
 # Reference
 
