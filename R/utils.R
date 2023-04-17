@@ -4,14 +4,14 @@
 #' @param pkg The name of the package to be loaded.
 #' @return TRUE if the package is installed, FALSE otherwise.
 #' @importFrom BiocManager install
-.requirePackage <- function(pkg){
-    if(!(pkg %in% .packages(all.available=TRUE)))
+.requirePackage <- function(pkg) {
+    if (!(pkg %in% .packages(all.available = TRUE)))
     {
         # Try to install the package
-        BiocManager::install(pkg, update=FALSE, ask=FALSE)
+        BiocManager::install(pkg, update = FALSE, ask = FALSE)
     }
 
-    require(pkg, character.only=TRUE, quietly=TRUE)
+    require(pkg, character.only = TRUE, quietly = TRUE)
 }
 
 #' @title extract grouping information from design matrix and contrast matrix
@@ -23,21 +23,21 @@
 #' group is a vector of group information.
 #' pair is a vector of pair information.
 #' @importFrom dplyr %>%
-.extractPairInfo <- function(design, contrast){
-    groupMat <- design[, names(contrast[contrast[, 1] != 0, ]), drop=FALSE]
+.extractPairInfo <- function(design, contrast) {
+    groupMat <- design[, names(contrast[contrast[, 1] != 0,]), drop = FALSE]
     group <- rep(NA, nrow(groupMat))
     names(group) <- rownames(groupMat)
-    for(i in seq_len(ncol(groupMat))){
+    for (i in seq_len(ncol(groupMat))) {
         group[groupMat[, i] == 1] <- colnames(groupMat)[i]
     }
     group <- group[!is.na(group)]
-    pairMat <- design[names(group), names(contrast[contrast[, 1] == 0, ]), drop=FALSE]
-    vars <- names(attr(design,"contrasts"))
+    pairMat <- design[names(group), names(contrast[contrast[, 1] == 0,]), drop = FALSE]
+    vars <- names(attr(design, "contrasts"))
 
-    candidatePairs <- lapply(vars, function(v){
-        pMat <- pairMat[, colnames(pairMat) %>% str_starts(v), drop=FALSE]
+    candidatePairs <- lapply(vars, function(v) {
+        pMat <- pairMat[, colnames(pairMat) %>% str_starts(v), drop = FALSE]
 
-        if (ncol(pMat) != length(unique(group)) - 1) {
+        if (ncol(pMat) != length(group)/2 - 1) {
             return(NULL)
         }
 
@@ -62,7 +62,7 @@
         pair = (if (length(candidatePairs) == 0) {
             NULL
         } else {
-            as.numeric(as.factor(candidatePairs[[1]]))
-        }) %>% setNames(names(group))
+            as.numeric(as.factor(candidatePairs[[1]])) %>% setNames(names(group))
+        })
     )
 }
