@@ -6,12 +6,12 @@
 #' @param yAxis The column to use for the y-axis.
 #' @param pThreshold The p-value threshold to use for the horizontal line.
 #' @param label The column to use for the labels. Default is "name".
-#' @param IDsToLabels A vector of IDs to label.
+#' @param IDsToLabel A vector of IDs to label.
 #' When NULL, the top pathways are labeled. Default is NULL.
 #' @param topToLabel The number of top pathways to label when IDsToLabels is NULL.
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs
 #' @importFrom ggrepel geom_label_repel
-plotVolcano <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabels = NULL, topToLabel = 20) {
+plotVolcano <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
 
     xAxis <- match.arg(xAxis)
     yAxis <- match.arg(yAxis)
@@ -32,8 +32,8 @@ plotVolcano <- function(results, xAxis = c("normalizedScore", "score"), yAxis = 
         stop("The y-axis column is not in the results data frame.")
     }
 
-    if (is.null(IDsToLabels)) {
-        IDsToLabels <- results %>%
+    if (is.null(IDsToLabel)) {
+        IDsToLabel <- results %>%
             arrange(.data$pFDR) %>%
             head(topToLabel) %>%
             pull(.data$ID)
@@ -47,7 +47,7 @@ plotVolcano <- function(results, xAxis = c("normalizedScore", "score"), yAxis = 
             -log10(results$p.value)
         },
         size = results$size,
-        label = ifelse(results$ID %in% IDsToLabels, results[[label]], "")
+        label = ifelse(results$ID %in% IDsToLabel, results[[label]], "")
     )
 
     ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$x)) +
