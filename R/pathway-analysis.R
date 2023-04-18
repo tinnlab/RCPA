@@ -93,6 +93,13 @@
 #' @param method The pathway analsyis method, including ORA, fgsea, and GSA.
 #' @param nperm The number of permutations to run pathway analysis.
 #' @return A dataframe of pathway analysis result
+#' @examples
+#' #' \dontrun{
+#' #Loading necessary library
+#' library(RCPA)
+#' # Download data from GEO
+#' data <- downloadGEO(GEOID = "GSE33970", platform = "GPL570", protocol = "affymetrix", destDir = getwd())
+#' }
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select

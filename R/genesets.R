@@ -142,10 +142,15 @@
 #' @param maxSize The maximum size of the gene sets.
 #' This parameter is only used when database is GO.
 #' @return A named list with three elements: database, genesets and names.
-#' @examples
+#' \dontrun{
+#' # Loading the RCPA package
 #' library(RCPA)
-#' KEGGGeneset <- getGeneSets("KEGG", "hsa")
-#' GOGeneset <- getGeneSets("GO", taxid = 9606, namespace = "biological_process")
+#' # Obtaining genesets from KEGG databases
+#' gensets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
+#' 
+#' # Obtaining genesets from GO databases
+#' gensets <- getGeneSets("GO", taxid = 9606, namespace = "biological_process", minSize = 10, maxSize = 1000)
+#' }
 #' @export
 getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 10, maxSize = 1000) {
     database <- match.arg(database)

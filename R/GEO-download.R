@@ -201,7 +201,12 @@
 #' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
 #' @return A SummarizedExperiment object including the processed data
 #' @examples
-#' downloadGEO("GSE20153", "GPL570", "affymetrix", getwd())
+#' #' \dontrun{
+#' #Loading necessary library
+#' library(RCPA)
+#' # Download data from GEO
+#' data <- downloadGEO(GEOID = "GSE33970", platform = "GPL570", protocol = "affymetrix", destDir = getwd())
+#' }
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
 #' @importFrom Biobase pData
