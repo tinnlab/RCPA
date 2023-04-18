@@ -16,7 +16,7 @@ vignette: |
   %\VignetteEngine{knitr::rmarkdown} 
 ---
 # Introduction
-Consensus pathway analysis is a powerful bioinformatics method used to integrate diverse types of biological data and identify biological pathways that are significantly altered in a specific experimental condition. This approach has been successfully applied to a wide range of research areas, including cancer, neuroscience, and immunology, among others. We present RPCA, a R's package for performing consensus pathway analysis using publicly available tools and resources. We describe the key steps involved in the analysis, including data preparation, genes annotation mapping, pathway enrichment analysis, and meta-analysis to produce consensus scoring. We also provide guidelines for selecting appropriate data sources and statistical thresholds to ensure robust and reproducible results. To demonstrate the application of this protocol, we provide a case study using gene expression data downloaded from Gene Expression Omnibus (GEO). Our package offers a standardized and accessible approach to consensus pathway analysis that can be applied by researchers with varying levels of bioinformatics expertise.
+Consensus pathway analysis is a powerful bioinformatics method used to integrate diverse types of biological data and identify biological pathways that are significantly altered in a specific experimental condition. This approach has been successfully applied to a wide range of research areas, including cancer, neuroscience, and immunology. We present RPCA, a R's package for performing consensus pathway analysis using publicly available tools and resources. Here, we present a standalone R's package for consensus pathway analysis. We show the key steps involved in the analysis: (i) data acquisition from Gene Expression Omnibus, (ii) differential expression analysis using limma, edgeR, and DESeq2, (iii) genesets acquisition from KEGG and GO databases, (iv) pathway enrichment analysis using ORA, FGSEA, and GSA methods, (v) meta-analysis to produce consensus scoring using Fisher, Stouffer, addCLT, GeoMean, and minP, and (vi) and genes/pathways visualization. We also provide guidelines for selecting appropriate data sources and statistical thresholds to ensure robust and reproducible results. 
 
 # Data acquisition
 RCPA provides one-stop solution for downloading and processing high-throughput gene expression data from Gene Expression Omnibus (GEO) using the function *downloadGEO*. This function is specifically designed to support both Affymetrix and Agilent protocols, allowing you to seamlessly access and manipulate datasets from these popular microarray technologies.
@@ -42,7 +42,7 @@ There are several ways to obtain a gene list for pathway analysis, depending on 
 
 RCPA package has a dedicated function *DE-analysis* to obtain gene list from omics data without knowing prior knowledge using DE approach. *DE-analysis* provides a wrapper function to use common DE methods including *limma* [@ritchie2015limma], *edgeR* [@robinson2010edger], and *DESeq2* [@love2014moderated]. In order to perform DE analysis, *DE-analysis* requires *summarizedExperiment* object, DE method selection (limma, DESeq2, edgeR), design matrix, contrast matrix and annotation database.
 
-## Data preparation
+### Data preparation
 A simple way to prepare a simulated data can be shown as follows:
 
 ```{r, eval=FALSE}
@@ -70,7 +70,7 @@ summarizedExperiment <- SummarizedExperiment(
     colData = colData
 )
 ```
-## Design matrix
+### Design matrix
 A design matrix is a mathematical representation of the experimental design that describes the relationships between the samples and the variables or factors of interest. The design matrix is used in linear modeling approaches, such as the ones implemented in the R packages *limma*, *edgeR* and *DESeq2*, to identify differentially expressed genes between different groups or conditions. In a design matrix, each row represents an individual sample (e.g., RNA-seq or microarray data from a specific biological replicate), and each column represents a variable or factor in the experiment, such as different treatments, time points, or tissue types. The matrix entries are usually binary (0 or 1), indicating whether a specific factor is present (1) or absent (0) in the corresponding sample. A simple design matrix can be constructed as follows:
 
 ```{r, eval=FALSE}
@@ -97,7 +97,7 @@ attr(,"contrasts")
 attr(,"contrasts")$group
 [1] "contr.treatment"
 ```
-## Contrast matrix
+### Contrast matrix
 A contrast matrix is typically a matrix with one or more rows and columns equal to the number of variables or factors in the design matrix. Each row of the contrast matrix represents a specific comparison of interest (e.g., treatment vs. control, time point A vs. time point B, etc.). The entries in the matrix indicate the weights applied to each factor or coefficient when making the comparison. These weights are usually 1, -1, or 0, with 1 representing the factor of interest, -1 representing the reference or baseline condition, and 0 indicating that a factor is not involved in the comparison. The contrast matrix is used to extract the relevant information from the fitted linear model by multiplying it with the estimated coefficients. This results in a set of estimated differences in gene expression between the specified conditions, which can then be tested for statistical significance to identify differentially expressed genes. We can create a contrast matrix using *makeContrasts* function available in *limma* package. 
 
 ```{r, eval=FALSE}
@@ -112,7 +112,7 @@ Levels           groupcondition-groupcontrol
   groupcontrol                            -1
 ```
 
-## Gene annotation
+### Gene annotation
 
 If the users do not want perform genes ID mapping for the assay, the *annotation* parameter can be set to *NULL*. Otherwise, a biological annotation databases should be provide. Annotation databases contain information about genes, transcripts, proteins, or other genomic features, such as gene symbols, descriptions, chromosomal locations, or functional annotations (e.g., Gene Ontology terms). The AnnotationDbi package is particularly useful in the context of high-throughput genomic data analysis, such as microarray or RNA-seq experiments, as it allows researchers to easily map and retrieve annotation information for a list of genes or other genomic features. A sample annotation data frame can be shown as follows:
 
