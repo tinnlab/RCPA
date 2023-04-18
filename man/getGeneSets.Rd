@@ -23,7 +23,11 @@ This parameter is only used when database is KEGG.}
 \item{taxid}{The NCBI taxonomy ID of the organism.
 This parameter is only used when database is GO.}
 
-\item{namespace}{The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
+\item{namespace}{The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.}
+
+\item{minSize}{The minimum size of the gene sets.}
+
+\item{maxSize}{The maximum size of the gene sets.
 This parameter is only used when database is GO.}
 }
 \value{
@@ -33,6 +37,7 @@ A named list with three elements: database, genesets and names.
 This function retrieves gene sets for a given organism.
 }
 \examples{
-getGeneSets("KEGG", "abcd")
-getGeneSets("GO", taxid = 9606, namespace = "biological_process")
+library(RCPA)
+KEGGGeneset <- getGeneSets("KEGG", "hsa")
+GOGeneset <- getGeneSets("GO", taxid = 9606, namespace = "biological_process")
 }

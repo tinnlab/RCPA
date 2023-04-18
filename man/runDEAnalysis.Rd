@@ -52,6 +52,3 @@ This function performs differential expression analysis using either limma, DESe
 \examples{
 #TODO add examples
 }
-\seealso{
-\code{\link{limma::makeContrasts}}
-}

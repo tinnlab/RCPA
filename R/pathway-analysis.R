@@ -85,7 +85,7 @@
   return(drop_na(p.values))
 }
 
-#' @title Pathway Enrichment Analysis
+#' @title Pathway Enrichment Analysisbiological_process
 #' @description This function performs patwhay analysis using GSA method (GeneSet Analysis).
 #' This function is used internally by runPathwayAnalysis.
 #' @param summarizedExprimentObj The generated SummarizedExpriment object from DE analysis result.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pathway-analysis.R
 \name{runPathwayAnalysis}
 \alias{runPathwayAnalysis}
-\title{Pathway Enrichment Analysis}
+\title{Pathway Enrichment Analysisbiological_process}
 \usage{
 runPathwayAnalysis(
   summarizedExprimentObj,

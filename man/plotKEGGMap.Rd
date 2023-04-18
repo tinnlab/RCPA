@@ -14,6 +14,9 @@ plotKEGGMap(
 )
 }
 \arguments{
+\item{DEResults}{A named list of data frame of DE analysis results.
+The columns of each data frame should be at least ID, logFC, p.value and pFDR.}
+
 \item{KEGGPathwayID}{The KEGG pathway ID.}
 
 \item{statistic}{The column name of the statistic used to plot the DE genes.
@@ -28,9 +31,6 @@ Only used when statistic is not p.value or pFDR.}
 \item{statLimit}{The absolute value of the statistic to color the DE genes.
 If statistic is p.value or pFDR, this parameter is the limit of -log10(p-value).
 Otherwise, this parameter is the limit of the absolute value of the statistic.}
-
-\item{A}{named list of data frame of DE analysis results.
-The columns of each data frame should be at least ID, logFC, p.value and pFDR.}
 }
 \value{
 A list with the following elements:

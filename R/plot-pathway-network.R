@@ -3,7 +3,7 @@
                    contains = "BrowserViz"
 )
 
-#' Plot a pathway network
+#' @title Plot a pathway network
 #' @description This function plots a pathway network.
 #' @param results A named list of data frame of Pathway analysis results.
 #' The columns of each data frame should be at least ID, name, p.value and pFDR and nDE.
