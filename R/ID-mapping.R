@@ -128,7 +128,7 @@
 
     mapping <- top[, "ID", drop = F] %>%
         left_join(annotation, by = c("ID" = "FROM")) %>%
-        group_by(ID) %>%
+        group_by(.data$ID) %>%
         mutate(TO.FIRST = first(.data$TO)) %>%
         `[`(c("ID", "TO.FIRST")) %>%
         unique() %>%

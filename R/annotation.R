@@ -3,6 +3,7 @@
 #' @param entrezIds A vector of Entrez IDs.
 #' @return A data frame with Entrez annotation. The columns are ID, Symbol, Description, OtherDesignations, OtherAliases and Chromosome.
 #' @examples
+#' library(RCPA)
 #' getEntrezAnnotation(c("77267466", "77267467"))
 #' @importFrom httr POST content
 #' @importFrom XML xmlParse xpathApply xmlToList

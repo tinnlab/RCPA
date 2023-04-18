@@ -6,38 +6,44 @@ library(limma)
 library(ggplot2)
 
 # generate a random gene expression matrix
-set.seed(123)
-exprs <- round(matrix(2^abs(rnorm(1000, sd = 4)), nrow = 100, ncol = 10))
-rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
-colnames(exprs) <- paste0("sample", 1:10)
+DEResults <- lapply(1:3, function(seed) {
+    set.seed(seed)
+    exprs <- round(matrix(abs(rnorm(20000 * 10, sd = 4)), nrow = 20000, ncol = 10))
+    rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
+    colnames(exprs) <- paste0("sample", 1:10)
 
-controlSamples <- paste0("sample", 1:5)
-conditionSamples <- paste0("sample", 6:10)
+    controlSamples <- paste0("sample", 1:5)
+    conditionSamples <- paste0("sample", 6:10)
 
-colData <- data.frame(
-    row.names = colnames(exprs),
-    group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
-    pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
-)
+    exprs[, conditionSamples] <- exprs[, conditionSamples] + 2*sample(c(1,-1), nrow(exprs), replace = TRUE)
 
-summarizedExperiment <- SummarizedExperiment(
-    assays = list(counts = exprs),
-    colData = colData
-)
+    colData <- data.frame(
+        row.names = colnames(exprs),
+        group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
+        pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
+    )
 
-# control vs condition
-design <- model.matrix(~0 + group, data = colData)
-contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+    summarizedExperiment <- SummarizedExperiment(
+        assays = list(counts = exprs),
+        colData = colData
+    )
 
-annotation <- .getIDMappingAnnotation("GPL570")
+    # control vs condition
+    design <- model.matrix(~0 + group, data = colData)
+    contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
-DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
-genes <- sample(rownames(rowData(DERes)), 30)
+    annotation <- .getIDMappingAnnotation("GPL570")
+
+    runDEAnalysis(summarizedExperiment, method = "limma", design, contrast, annotation = annotation) %>% rowData()
+})
 
 test_that("Plot gene heatmap", {
+
+    genes <- sample(Reduce(intersect, lapply(DEResults, function(res) res$ID)), 30)
+
     annotation <- getEntrezAnnotation(genes)
     labels <- annotation[genes, "Description"]
-    pl <- plotDEGeneHeatmap(DERes, genes, labels = labels)
+    pl <- plotDEGeneHeatmap(DEResults, genes, labels = labels)
     expect_true(is.ggplot(pl))
 
     plb <- ggplot_build(pl)
