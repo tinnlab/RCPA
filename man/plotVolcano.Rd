@@ -10,7 +10,7 @@ plotVolcano(
   yAxis = c("-log10(pFDR)", "-log10(p.value)"),
   pThreshold = 0.05,
   label = "name",
-  IDsToLabels = NULL,
+  IDsToLabel = NULL,
   topToLabel = 20
 )
 }
@@ -26,7 +26,7 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 
 \item{label}{The column to use for the labels. Default is "name".}
 
-\item{IDsToLabels}{A vector of IDs to label.
+\item{IDsToLabel}{A vector of IDs to label.
 When NULL, the top pathways are labeled. Default is NULL.}
 
 \item{topToLabel}{The number of top pathways to label when IDsToLabels is NULL.}
