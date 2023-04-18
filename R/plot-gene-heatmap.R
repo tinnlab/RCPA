@@ -50,7 +50,7 @@ plotDEGeneHeatmap <- function(summarizedExperiment, genes, useFDR = TRUE, labels
         gather("type", "value", -label)
 
     ggplot() +
-        geom_tile(data = plotData[plotData$type == "logFC", ], aes(x = label, y = type, fill = value)) +
+        geom_tile(data = plotData[plotData$type == "logFC", ], aes(x = .data$label, y = .data$type, fill = .data$value)) +
         scale_fill_gradient2_tableau(
             palette =  "Red-Blue Diverging",
             na.value = "white",
@@ -58,7 +58,7 @@ plotDEGeneHeatmap <- function(summarizedExperiment, genes, useFDR = TRUE, labels
             guide = guide_legend(title = "log2 FC")
         ) +
         new_scale_fill() +
-        geom_tile(data =  plotData[plotData$type == "p.value", ], aes(x = label, y = type, fill = value)) +
+        geom_tile(data =  plotData[plotData$type == "p.value", ], aes(x = .data$label, y = .data$type, fill = .data$value)) +
         scale_fill_gradient_tableau(
             palette = "Red",
             na.value = "white",

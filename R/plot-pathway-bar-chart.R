@@ -8,13 +8,15 @@
 #' @param maxNegLog10PValue The maximum -log10(p-value) to plot.
 #' @param pThreshold The p-value threshold to use for significance.
 #' @param useFDR If TRUE, use FDR adjusted p-values. Otherwise, use raw p-values.
-#' @importFrom ggplot2 ggplot aes geom_bar theme_minimal theme geom_text coord_flip scale_x_discrete
-#' @importFrom ggplot2 scale_y_continuous guide_legend element_blank scale_fill_manual element_line labs geom_hline
-#' @importFrom dplyr %>% select mutate arrange
 #' @return A ggplot2 object.
 #' @examples
 #' #TODO add example
 #' @export
+#' @importFrom ggplot2 ggplot aes geom_bar theme_minimal theme geom_text coord_flip scale_x_discrete
+#' @importFrom ggplot2 scale_y_continuous guide_legend element_blank scale_fill_manual element_line labs geom_hline
+#' @importFrom dplyr %>% select mutate arrange desc
+#' @importFrom utils head
+#' @importFrom rlang sym
 plotBarChart <- function(results, limit = 50, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
 
     by <- match.arg(by)

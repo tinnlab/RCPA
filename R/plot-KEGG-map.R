@@ -1,6 +1,6 @@
 #' @title Plot KEGG map with DE genes
 #' @description This function plots KEGG map with DE genes.
-#' @param A named list of data frame of DE analysis results.
+#' @param DEResults A named list of data frame of DE analysis results.
 #' The columns of each data frame should be at least ID, logFC, p.value and pFDR.
 #' @param KEGGPathwayID The KEGG pathway ID.
 #' @param statistic The column name of the statistic used to plot the DE genes.
@@ -22,8 +22,8 @@
 #' @importFrom png readPNG
 #' @importFrom RCurl getURLContent
 #' @importFrom XML xmlParse xpathSApply
-#' @importFrom dplyr %>% mutate
-#' @importFrom ggplot2 ggplot annotation_custom
+#' @importFrom dplyr %>% mutate inner_join
+#' @importFrom ggplot2 ggplot annotation_custom theme_void scale_x_continuous annotation_raster geom_rect scale_fill_gradient guide_colorbar annotate element_text margin
 #' @importFrom utils globalVariables
 #' @importFrom ggthemes tableau_gradient_pal
 plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = TRUE, pThreshold = 0.05, statLimit = 3) {

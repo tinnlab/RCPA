@@ -7,24 +7,22 @@ devtools::load_all()
 styleFile <- system.file(package="RCPA", "extdata", "pieStyle.js")
 
 gs <- getGeneSets("KEGG")
-genesets <- gs$genesets
 
 results <- lapply(1:3, function(i) {
     set.seed(i)
 
     data.frame(
-        ID = names(genesets),
+        ID = names(gs$genesets),
         name = gs$names,
-        p.value = runif(length(genesets))/10,
-        pFDR = runif(length(genesets))/10,
-        ES = rnorm(length(genesets)),
-        NES = rnorm(length(genesets)),
-        nDE = sample(1:1000, length(genesets))
+        p.value = runif(length(gs$genesets))/10,
+        pFDR = runif(length(gs$genesets))/10,
+        ES = rnorm(length(gs$genesets)),
+        NES = rnorm(length(gs$genesets)),
+        nDE = sample(1:1000, length(gs$genesets))
     )
 })
 
 names(results) <- c("ORA", "FGSEA", "GSA")
-
 IDs <- sample(names(gs$genesets), 10)
 
 genesets <- gs$genesets[IDs]

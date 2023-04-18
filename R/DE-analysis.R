@@ -3,7 +3,7 @@
 #' These functions are used internally by runDEAnalysis.
 #' @param exprs Normalized expression matrix. Rows are genes and columns are samples.
 #' @param design A design model output by model.matrix.
-#' @param contrast A contrast matrix output by limma::makeContrasts.
+#' @param contrast A contrast matrix output by makeContrasts from limma package.
 #' @return A data frame with DE analysis results.
 #' Must contain the following columns: ID, p.value, logFC, statistic, dispersion.
 #' @importFrom limma lmFit contrasts.fit eBayes topTable makeContrasts
@@ -97,9 +97,9 @@
 #' @examples
 #' #TODO add examples
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
-#' @importFrom S4Vectors SimpleList
+#' @importFrom S4Vectors SimpleList metadata
 #' @importFrom dplyr %>%
-#' @seealso \code{\link{limma::makeContrasts}}
+#' @importFrom stats p.adjust
 #' @export
 runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "edgeR"), design, contrast, annotation = NULL) {
     method <- match.arg(method)

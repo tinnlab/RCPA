@@ -24,7 +24,10 @@ biocViews:
     affy,
     affyPLM,
     edgeR,
-    limma
+    limma,
+    RCyjs,
+    ROntoTools,
+    fgsea
 Imports:
     AnnotationDbi,
     Biobase,
@@ -43,7 +46,22 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    utils
+    utils,
+    BrowserViz,
+    GSA,
+    RCurl,
+    RCyjs,
+    ROntoTools,
+    XML,
+    fgsea,
+    ggnewscale,
+    ggplot2,
+    ggrepel,
+    ggthemes,
+    graph,
+    httr,
+    meta,
+    png
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
