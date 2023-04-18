@@ -4,6 +4,7 @@ library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
 
+devtools::load_all()
 # generate a random gene expression matrix
 set.seed(123)
 exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
@@ -14,14 +15,14 @@ controlSamples <- paste0("sample", 1:5)
 conditionSamples <- paste0("sample", 6:10)
 
 colData <- data.frame(
-    row.names = colnames(exprs),
-    group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
-    pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
+  row.names = colnames(exprs),
+  group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
+  pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
 )
 
 summarizedExperiment <- SummarizedExperiment(
-    assays = list(counts = exprs),
-    colData = colData
+  assays = list(counts = exprs),
+  colData = colData
 )
 
 # control vs condition
@@ -29,16 +30,55 @@ design <- model.matrix(~0 + group, data = colData)
 contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
 annotation <- .getIDMappingAnnotation("GPL570")
-DERes <- runDEAnalysis(summarizedExperiment, method = "edgeR", design, contrast, annotation = annotation)
+DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
 
 genesets <- lapply(1:100, function(x) {
     sample(rownames(DERes), runif(1, 100, 500))
 })
 names(genesets) <- paste0("geneset", 1:100)
 
-test_that('ORA', {
-    oraRes <- .runORA(DERes, genesets, pThreshold = 0.05)
-    expect_true(all(c("pathway", "p.value", "ES", "NES") %in% colnames(oraRes)))
-    expect_true(all(oraRes$p.value <= 1))
-    expect_true(all(oraRes$p.value >= 0))
+spiaNetwork <- getSPIAKEGGNetwork("hsa", FALSE)
+cepaNetwork <- getCePaPathwayCatalogue("hsa")
+
+DE_data <- DERes %>% rowData()
+assay <- DERes %>% assay()
+group_data <- DERes %>% metadata()
+
+test_that('SPIA ', {
+    spiaRes <- .runSPIA(DERes, spiaNetwork, spia.args = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreashold = 0.05))
+    expect_true(all(c("pathway", "p.value", "score", "normalizedScore") %in% colnames(spiaRes)))
+    expect_true(all(spiaRes$p.value <= 1))
+    expect_true(all(spiaRes$p.value >= 0))
+})
+
+test_that('CePaORA ', {
+    cepaOraRes <- .runCePaORA(DERes, cepaNetwork, cepaORA.args = list(bk = NULL, cen = default.centralities,
+                                                                 cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)),
+                                                                 iter = 1000, pThreashold = 0.05))
+    expect_true(all(c("pathway", "p.value", "score", "normalizedScore") %in% colnames(cepaOraRes)))
+    expect_true(all(cepaOraRes$p.value <= 1))
+    expect_true(all(cepaOraRes$p.value >= 0))
+})
+
+test_that('CePaGSA ', {
+    cepaGsaRes <- .runCePaGSA(DERes, cepaNetwork, cepaGSA.args = list(mat = NULL, label = NULL, pc, cen = default.centralities,
+                                                                       cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)),
+                                                                       nlevel = "tvalue_abs", plevel = "mean", iter = 1000))
+    expect_true(all(c("pathway", "p.value", "score", "normalizedScore") %in% colnames(cepaGsaRes)))
+    expect_true(all(cepaGsaRes$p.value <= 1))
+    expect_true(all(cepaGsaRes$p.value >= 0))
+})
+
+test_that('Pathway Enrichment Analysis ', {
+    result <- runPathwayAnalysis(DERes, genesets, method = "spia")
+    expect_true(all(c("pathway", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
+    expect_true(all(result$p.value <= 1))
+    expect_true(all(result$p.value >= 0))
+})
+
+test_that('Pathway Enrichment Analysis ', {
+    result <- runPathwayAnalysis(DERes, genesets, method = "cepaORA")
+    expect_true(all(c("pathway", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
+    expect_true(all(result$p.value <= 1))
+    expect_true(all(result$p.value >= 0))
 })
