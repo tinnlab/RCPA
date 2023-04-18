@@ -2,6 +2,8 @@ library(testthat)
 library(RCyjs)
 library(RCPA)
 
+devtools::load_all()
+
 styleFile <- system.file(package="RCPA", "extdata", "pieStyle.js")
 
 gs <- getGeneSets("KEGG")
@@ -15,8 +17,8 @@ results <- lapply(1:3, function(i) {
         name = gs$names,
         p.value = runif(length(genesets))/10,
         pFDR = runif(length(genesets))/10,
-        ES = runif(length(genesets)),
-        NES = runif(length(genesets)),
+        ES = rnorm(length(genesets)),
+        NES = rnorm(length(genesets)),
         nDE = sample(1:1000, length(genesets))
     )
 })
@@ -59,6 +61,15 @@ test_that('plot pathway network with edgeThreshold is 0', {
 
 test_that('plot pathway network with custom labels', {
     rcy <- plotPathwayNetwork(results, genesets, pThreshold = pThreshold, labels = gs$names[IDs])
+    expect_true("RCyjs" %in% class(rcy))
+    expect_true(rcy@port > 10000)
+    expect_true(rcy@port < 20000)
+    expect_true(all(rcy@graph@nodes %in% names(genesets)))
+    expect_true(all(names(genesets) %in% rcy@graph@nodes))
+})
+
+test_that('plot pathway network discrete mode', {
+    rcy <- plotPathwayNetwork(results, genesets, mode = "discrete")
     expect_true("RCyjs" %in% class(rcy))
     expect_true(rcy@port > 10000)
     expect_true(rcy@port < 20000)
