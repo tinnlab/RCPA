@@ -6,7 +6,7 @@
 #' @return A dataframe of meta analysis results.
 #' @details This function is used internally by combinePathwayAnalysisResults.
 #' @importFrom dplyr %>%
-.combinePvalues <- function(inputData, method = "fisher"){
+.combinePvalues <- function(inputData, method){
 
     combineFunc <- switch(method,
            fisher = .runFisher,
