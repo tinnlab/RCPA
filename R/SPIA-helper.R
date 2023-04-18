@@ -6,14 +6,15 @@
 #' @examples
 #' getSPIAKEGGNetwork("hsa")
 #' @export
-#' @importFrom ROntoTools keggPathwayGraphs
+#' @importFrom ROntoTools keggPathwayGraphs keggPathwayNames
 #' @importFrom graph nodes edges
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom tidyr spread
 #' @importFrom stringr str_split str_length
-getSPIAKEGGNetwork <- function(org = "hsa") {
+getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
 
-    keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = T)
+    keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
+    pathwayNames <- keggPathwayNames(org)
 
     relationships <- c("activation", "compound", "binding/association",
                        "expression", "inhibition", "activation_phosphorylation",
@@ -118,7 +119,7 @@ getSPIAKEGGNetwork <- function(org = "hsa") {
         lapply(function(x) x$rels)
 
     for (pathwayId in names(pathInfo)) {
-        pathInfo[[pathwayId]]$title <- keggPathwayNames[pathwayId] %>% as.character()
+        pathInfo[[pathwayId]]$title <- pathwayNames[pathwayId] %>% as.character()
     }
 
     pathInfo
