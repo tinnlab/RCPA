@@ -26,12 +26,12 @@ summarizedExperiment <- SummarizedExperiment(
 )
 
 # # control vs condition
-# design <- model.matrix(~0 + group, data = colData)
-# contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+design <- model.matrix(~0 + group, data = colData)
+contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
 # two class paired
-design <- model.matrix(~0 + group + pair, data = colData)
-contrast <- makeContrasts("groupcondition-groupcontrol", levels = design.paired)
+# design <- model.matrix(~0 + group + pair, data = colData)
+# contrast <- makeContrasts("groupcondition-groupcontrol", levels = design.paired)
 
 annotation <- .getIDMappingAnnotation("GPL570")
 DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
@@ -95,13 +95,13 @@ test_that('GeneSet Enrichment Analysis with wilcox ', {
 })
 
 test_that('GeneSet Enrichment Analysis with fgsea ', {
-    result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea", fgsea.args = list(eps = 1e-50, scoreType = "std", nPermSimple = 1000))
+    result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea", FgseaArgs = list(eps = 1e-50, scoreType = "std", nPermSimple = 1000))
     expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
     expect_true(all(result$p.value <= 1))
     expect_true(all(result$p.value >= 0))
 })
 
 test_that('GeneSet Enrichment Analysis with fgsea with wrong arguments ', {
-    expect_error(runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea", fgsea.args = list(scoretype = "std", nPermSimple = 1000)))
-    expect_error(runGeneSetEnrichmentAnalysis(DERes, genesets = NULL, method = "fgsea", fgsea.args = list(scoreType = "std", nPermSimple = 1000)))
+    expect_error(runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea", FgseaArgs = list(scoretype = "std", nPermSimple = 1000)))
+    expect_error(runGeneSetEnrichmentAnalysis(DERes, genesets = NULL, method = "fgsea", FgseaArgs = list(scoreType = "std", nPermSimple = 1000)))
 })
