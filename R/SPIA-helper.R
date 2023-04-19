@@ -14,7 +14,7 @@
 getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
 
     keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
-    pathwayNames <- keggPathwayNames(org)
+    pathwayNames <- ROntoTools::keggPathwayNames(org)
 
     relationships <- c("activation", "compound", "binding/association",
                        "expression", "inhibition", "activation_phosphorylation",
@@ -125,6 +125,33 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
     pathInfo
 }
 
+#' @title SPIA combfunc method.
+#' @description This function is combfunc from the original SPIA method.
+#' @param p1 See SPIA function
+#' @param p2 See SPIA function
+#' @param combine See SPIA function
+#' @return See SPIA function
+combfunc <- function (p1 = NULL, p2 = NULL, combine)
+{
+    tm = na.omit(c(p1, p2))
+    if (!all(tm >= 0 & tm <= 1)) {
+        stop("values of p1 and p2 have to be >=0 and <=1 or NAs")
+    }
+    if (combine == "fisher") {
+        k = p1 * p2
+        comb = k - k * log(k)
+        comb[is.na(p1)] <- p2[is.na(p1)]
+        comb[is.na(p2)] <- p1[is.na(p2)]
+        return(comb)
+    }
+    if (combine == "norminv") {
+        comb = pnorm((qnorm(p1) + qnorm(p2))/sqrt(2))
+        comb[is.na(p1)] <- p2[is.na(p1)]
+        comb[is.na(p2)] <- p1[is.na(p2)]
+        return(comb)
+    }
+}
+
 #' @title SPIA method modified with inputs are KEGG pathway networks instead of a folder.
 #' @description This function is modified from the original SPIA method to accept KEGG pathway networks as inputs.
 #' @param de See SPIA function
@@ -154,8 +181,7 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
         beta = c(1, 0, 0, 1, -1, 1, 0, -1, -1, 0, 0, 1, 0, 1,
                  -1, 0, 1, -1, -1, 0, 0, 1, 0, 1, 1)
         names(beta) <- rel
-    }
-    else {
+    }else {
         if (!all(names(beta) %in% rel) | length(names(beta)) !=
             length(rel)) {
             stop(paste("beta must be a numeric vector of length",
@@ -174,6 +200,7 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
         s <- 0
         con <- 0
         for (bb in 1:length(rel)) {
+            if(is.null(datpT[[jj]][[rel[bb]]])) next()
             con = con + datpT[[jj]][[rel[bb]]] * abs(sign(beta[rel[bb]]))
             s = s + datpT[[jj]][[rel[bb]]] * beta[rel[bb]]
         }
@@ -221,8 +248,6 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
         pSize[i] <- length(okg)
         if ((noMy) > 0 & (abs(det(M)) > 1e-07)) {
             gnns <- paste(names(X)[!is.na(X)], collapse = "+")
-            KEGGLINK[i] <- paste("http://www.genome.jp/dbget-bin/show_pathway?",
-                                 organism, names(datp)[i], "+", gnns, sep = "")
             X[is.na(X)] <- 0
             pfs <- solve(M, -X)
             smPFS[i] <- sum(pfs - X)
@@ -275,7 +300,7 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
             pcomb[i] <- combfunc(pb[i], ph[i], combine)
         }
         else {
-            pb[i] <- ph[i] <- smPFS[i] <- pcomb[i] <- tAraw[i] <- tA[i] <- KEGGLINK[i] <- NA
+            pb[i] <- ph[i] <- smPFS[i] <- pcomb[i] <- tAraw[i] <- tA[i] <- NA
         }
         if (verbose) {
             cat("\n")
@@ -292,7 +317,7 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
     Status = ifelse(tA > 0, "Activated", "Inhibited")
     res <- data.frame(Name, ID = names(datp), pSize, NDE = nGP,
                       pNDE = ph, tA, pPERT = pb, pG = pcomb, pGFdr = pcombFDR,
-                      pGFWER = pcombfwer, Status, KEGGLINK, stringsAsFactors = FALSE)
+                      pGFWER = pcombfwer, Status, stringsAsFactors = FALSE)
     res <- res[!is.na(res$pNDE),]
     res <- res[order(res$pG),]
     rownames(res) <- NULL
