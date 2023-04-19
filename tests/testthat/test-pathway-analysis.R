@@ -32,12 +32,21 @@ contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 annotation <- .getIDMappingAnnotation("GPL570")
 DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
 
+genesets <- lapply(1:100, function(x) {
+    sample(rownames(DERes), runif(1, 100, 500))
+})
+names(genesets) <- paste0("geneset", 1:100)
+
 spiaNetwork <- getSPIAKEGGNetwork("hsa", FALSE)
-cepaNetwork <- getCePaPathwayCatalogue("hsa", FALSE)
+cepaNetwork <- getCePaPathwayCatalogue("hsa")
+
+DE_data <- DERes %>% rowData()
+assay <- DERes %>% assay()
+group_data <- DERes %>% metadata()
 
 test_that('SPIA ', {
-    spiaRes <- .runSPIA(summarizedExperiment = DERes, network = spiaNetwork[1:10], pThreshold = 0.05, all = NULL)
-    expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(spiaRes)))
+    spiaRes <- .runSPIA(DERes, spiaNetwork, spia.args = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreashold = 0.05))
+    expect_true(all(c("pathway", "p.value", "score", "normalizedScore") %in% colnames(spiaRes)))
     expect_true(all(spiaRes$p.value <= 1))
     expect_true(all(spiaRes$p.value >= 0))
 })
@@ -45,7 +54,7 @@ test_that('SPIA ', {
 test_that('CePaORA ', {
     cepaOraRes <- .runCePaORA(DERes, cepaNetwork, cepaORA.args = list(bk = NULL, cen = default.centralities,
                                                                  cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)),
-                                                                 iter = 1000, pThreshold = 0.05))
+                                                                 iter = 1000, pThreashold = 0.05))
     expect_true(all(c("pathway", "p.value", "score", "normalizedScore") %in% colnames(cepaOraRes)))
     expect_true(all(cepaOraRes$p.value <= 1))
     expect_true(all(cepaOraRes$p.value >= 0))

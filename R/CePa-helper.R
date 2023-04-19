@@ -11,8 +11,8 @@
 #' @importFrom graph nodes edges
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom stringr str_split
-getCePaPathwayCatalogue <- function(org = "hsa", updateCache = F){
-  keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
+getCePaPathwayCatalogue <- function(org = "hsa"){
+  keggPathway <- keggPathwayGraphs(org, updateCache = T)
 
   interactionList <- lapply(keggPathway, function(pathway){
     pathway@edgeData %>% names()
@@ -37,7 +37,7 @@ getCePaPathwayCatalogue <- function(org = "hsa", updateCache = F){
   mapping_modified <- mapping %>% strsplit(":") %>% sapply(function(x) x[2]) %>% as.character()
   mapping_modified <- data.frame(node.id = mapping_modified, symbol = mapping_modified, stringsAsFactors = FALSE)
 
-  cat <- CePa::set.pathway.catalogue(pathList, interactionList_modified, mapping_modified, min.node = 2, max.node = 1e+6)
+  cat <- set.pathway.catalogue(pathList, interactionList_modified, mapping_modified, min.node = 2, max.node = 1e+6)
 
   return(cat)
 }

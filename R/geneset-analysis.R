@@ -224,18 +224,18 @@
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
 #' @param genesets The genesets definition, ex. KEGG genesets from getGeneSets function.
 #' @param method The geneset analsyis method, including ORA, fgsea, GSA, ks, and wilcox.
-#' @param ORAArgs A list of other passed arguments to ORA. pThreshold is used as p.value cutoff to pick DE genes.
-#' @param FgseaArgs A list of other passed arguments to fgsea. See fgsea function.
-#' @param GSAArgs A list of other passed arguments to GSA. See GSA function.
+#' @param ora.args A list of other passed arguments to ORA. pThreshold is used as p.value cutoff to pick DE genes.
+#' @param fgsea.args A list of other passed arguments to fgsea. See fgsea function.
+#' @param gsa.args A list of other passed arguments to GSA. See GSA function.
 #' @return A dataframe of geneset analysis result
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay metadata
 #' @importFrom dplyr %>%
 #' @export
 runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method = c("ora", "fgsea", "gsa", "ks", "wilcox"),
-                                         ORAArgs = list(pThreshold = 0.05),
-                                         FgseaArgs = list(sampleSize = 101, minSize = 1, maxSize = Inf, eps = 1e-50, scoreType = "std",
+                                         ora.args = list(pThreshold = 0.05),
+                                         fgsea.args = list(sampleSize = 101, minSize = 1, maxSize = Inf, eps = 1e-50, scoreType = "std",
                                                            nproc = 0, gseaParam = 1, BPPARAM = NULL, nPermSimple = 1000, absEps = NULL),
-                                         GSAArgs = list(method = "maxmean", random.seed = NULL, knn.neighbors = 10,
+                                         gsa.args = list(method = "maxmean", random.seed = NULL, knn.neighbors = 10,
                                                          s0 = NULL, s0.perc = NULL, minsize = 15, maxsize = 500, restand = TRUE, restand.basis = "catalog",
                                                          nperms = 200, xl.mode = "regular", xl.time = NULL, xl.prevfit = NULL)
 ) {
@@ -253,104 +253,104 @@ runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method 
         stop("The length of genesets and their names do not match.")
     }
 
-    gsArgs <- NULL
+    gs.args <- NULL
 
     if (method == "fgsea") {
 
-        FgseaArgs.default <- list(sampleSize = 101, minSize = 1, maxSize = Inf, eps = 1e-50, scoreType = "std",
+        fgsea.args.default <- list(sampleSize = 101, minSize = 1, maxSize = Inf, eps = 1e-50, scoreType = "std",
                                    nproc = 0, gseaParam = 1, BPPARAM = NULL, nPermSimple = 1000, absEps = NULL)
 
-        if (any(!names(FgseaArgs) %in% names(FgseaArgs.default))) {
+        if (any(!names(fgsea.args) %in% names(fgsea.args.default))) {
             stop("The names of arguments should be matched with fgsea definition.")
         }
 
-        tmp <- FgseaArgs
-        FgseaArgs <- FgseaArgs.default
-        FgseaArgs[names(tmp)] <- FgseaArgs.default[names(tmp)]
+        tmp <- fgsea.args
+        fgsea.args <- fgsea.args.default
+        fgsea.args[names(tmp)] <- fgsea.args.default[names(tmp)]
 
-        if (!FgseaArgs$scoreType %in% c("std", "pos", "neg")) {
+        if (!fgsea.args$scoreType %in% c("std", "pos", "neg")) {
             stop("The scoreType value is not valid.")
         }
 
-        if (FgseaArgs$minSize < 0 | FgseaArgs$maxSize < 0) {
+        if (fgsea.args$minSize < 0 | fgsea.args$maxSize < 0) {
             stop("The minSize/maxSize cannot be negative.")
         }
 
-        if (FgseaArgs$nPermSimple <= 0) {
+        if (fgsea.args$nPermSimple <= 0) {
             stop("The number of permutations cannot be zero/negative.")
         }
 
-        if (FgseaArgs$nproc != 0 & is.null(FgseaArgs$BPPARAM)) {
+        if (fgsea.args$nproc != 0 & is.null(fgsea.args$BPPARAM)) {
             stop("Set BPPARAM to use nproc workers.")
         }
 
-        gsArgs <- FgseaArgs
+        gs.args <- fgsea.args
     }
 
     if (method == "gsa") {
-        GSAArgs.default <- list(method = "maxmean", random.seed = NULL, knn.neighbors = 10,
+        gsa.args.default <- list(method = "maxmean", random.seed = NULL, knn.neighbors = 10,
                                  s0 = NULL, s0.perc = NULL, minsize = 15, maxsize = 500, restand = TRUE, restand.basis = "catalog",
                                  nperms = 200, xl.mode = "regular", xl.time = NULL, xl.prevfit = NULL)
 
-        if (any(!names(GSAArgs) %in% names(GSAArgs.default))) {
+        if (any(!names(gsa.args) %in% names(gsa.args.default))) {
             stop("The names of arguments should be matched with GSA definition.")
         }
 
-        tmp <- GSAArgs
-        GSAArgs <- GSAArgs.default
-        GSAArgs[names(tmp)] <- GSAArgs.default[names(tmp)]
+        tmp <- gsa.args
+        gsa.args <- gsa.args.default
+        gsa.args[names(tmp)] <- gsa.args.default[names(tmp)]
 
-        if (!GSAArgs$method %in% c("maxmean", "mean", "absmean")) {
+        if (!gsa.args$method %in% c("maxmean", "mean", "absmean")) {
             stop("The method value in GSA is not valid.")
         }
 
-        if (!GSAArgs$restand.basis %in% c("catalog", "data")) {
+        if (!gsa.args$restand.basis %in% c("catalog", "data")) {
             stop("The restand.basis value is not valid.")
         }
 
-        if (!GSAArgs$xl.mode %in% c("regular", "firsttime", "next20", "lasttime")) {
+        if (!gsa.args$xl.mode %in% c("regular", "firsttime", "next20", "lasttime")) {
             stop("The xl.mode value is not valid.")
         }
 
-        if (GSAArgs$minsize < 0 | GSAArgs$maxsize < 0) {
+        if (gsa.args$minsize < 0 | gsa.args$maxsize < 0) {
             stop("The minsize/maxsize cannot be negative.")
         }
 
-        if (GSAArgs$knn.neighbors < 0) {
+        if (gsa.args$knn.neighbors < 0) {
             stop("The knn.neighbors cannot be negative.")
         }
 
-        if (GSAArgs$nperms <= 0) {
+        if (gsa.args$nperms <= 0) {
             stop("The number of permutations cannot be zero/negative.")
         }
 
-        gsArgs <- GSAArgs
+        gs.args <- gsa.args
     }
 
     if (method == "ora") {
-        ORAArgs.default <- list(pThreshold = 0.05)
+        ora.args.default <- list(pThreshold = 0.05)
 
-        if (any(!names(ORAArgs) %in% names(ORAArgs.default))) {
+        if (any(!names(ora.args) %in% names(ora.args.default))) {
             stop("The names of arguments should be matched with ORA definition.")
         }
 
-        tmp <- ORAArgs
-        ORAArgs <- ORAArgs.default
-        ORAArgs[names(tmp)] <- ORAArgs.default[names(tmp)]
+        tmp <- ora.args
+        ora.args <- ora.args.default
+        ora.args[names(tmp)] <- ora.args.default[names(tmp)]
 
-        if (ORAArgs$pThreshold < 0 | ORAArgs$pThreshold > 1) {
+        if (ora.args$pThreshold < 0 | ora.args$pThreshold > 1) {
             stop("The pThreshold must be between zero and one.")
         }
 
-        gsArgs <- ORAArgs
+        gs.args <- ora.args
     }
 
     if (method %in% c("ks", "wilcox")) {
-        gsArgs$sTest = method
+        gs.args$sTest = method
     }
 
-    gsArgs$summarizedExperiment <- summarizedExperiment
-    gsArgs$genesets <- genesets[["genesets"]]
+    gs.args$summarizedExperiment <- summarizedExperiment
+    gs.args$genesets <- genesets[["genesets"]]
 
     methodFnc <- switch(method,
                         ora = .runORA,
@@ -359,7 +359,7 @@ runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method 
                         ks = .runKsWilcox,
                         wilcox = .runKsWilcox)
 
-    result <- do.call(methodFnc, gsArgs)
+    result <- do.call(methodFnc, gs.args)
 
     if (is.null(result)) {
         stop("There is an error in geneset analysis procedure.")
