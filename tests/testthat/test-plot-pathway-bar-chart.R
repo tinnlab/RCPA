@@ -1,19 +1,23 @@
 library(testthat)
 library(ggplot2)
 
-results <- data.frame(
-    ID = paste0("geneset", 1:100),
-    name = paste0("Pathway ", 1:100),
-    description = paste0("Description ", 1:100),
-    p.value = runif(100) / 10,
-    pFDR = runif(100) / 5,
-    size = runif(100, 100, 500),
-    nDE = runif(100, 10, 100),
-    score = runif(100, -2, 2),
-    normalizedScore = runif(100)
-)
+results <- lapply(1:3, function(i) {
+    set.seed(i)
 
-devtools::document()
+    data.frame(
+        ID = paste0("geneset", 1:100),
+        name = paste0("Pathway ", 1:100),
+        description = paste0("Description ", 1:100),
+        p.value = runif(100) / 10,
+        pFDR = runif(100) / 5,
+        size = runif(100, 100, 500),
+        nDE = runif(100, 10, 100),
+        score = runif(100, -2, 2),
+        normalizedScore = runif(100)
+    )
+})
+
+# devtools::document()
 devtools::load_all()
 
 test_that("Plot bar plot default", {
