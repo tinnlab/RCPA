@@ -228,6 +228,8 @@
 #' @param fgsea.args A list of other passed arguments to fgsea. See fgsea function.
 #' @param gsa.args A list of other passed arguments to GSA. See GSA function.
 #' @return A dataframe of geneset analysis result
+#' 
+#' 
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay metadata
 #' @importFrom dplyr %>%
 #' @export

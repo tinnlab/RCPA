@@ -94,11 +94,59 @@
 #' @param nperm The number of permutations to run pathway analysis.
 #' @return A dataframe of pathway analysis result
 #' @examples
-#' #' \dontrun{
-#' #Loading necessary library
+#' \dontrun{
+#' # Loading libraries
+#' library(hgu133plus2.db)
+#' library(AnnotationDbi)
+#' library(SummarizedExperiment)
+#' library(limma)
 #' library(RCPA)
-#' # Download data from GEO
-#' data <- downloadGEO(GEOID = "GSE33970", platform = "GPL570", protocol = "affymetrix", destDir = getwd())
+#' # Set seed for reproducibilty
+#' set.seed(123)
+#' exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
+#' # Assign gene names
+#' rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
+#' # Assign sample names
+#' colnames(exprs) <- paste0("sample", 1:10)
+#' # Generate control and condition samples
+#' controlSamples <- paste0("sample", 1:5)
+#' conditionSamples <- paste0("sample", 6:10)
+#' # Get colData
+#' colData <- data.frame(
+#'     row.names = colnames(exprs),
+#'     group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
+#'     pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
+#' )
+#' 
+#' # Construct summarizedExperiment object
+#' summarizedExperiment <- SummarizedExperiment(
+#'     assays = list(counts = exprs),
+#'     colData = colData
+#' )
+#' # Construct design and contrast tables
+#' # control vs condition
+#' # design <- model.matrix(~0 + group, data = colData)
+#' # contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+#' 
+#' # Perform DE analysis
+#' DERes <- runDEAnalysis(summarizedExperiment, method = "limma", design, contrast, annotation = 'GPL570')
+#' 
+#' # Simulate genesets
+#' gs <- lapply(1:100, function(x) {
+#' sample(rownames(DERes), runif(1, 100, 500))
+#' })
+#' # Set names to genesets
+#' names(gs) <- paste0("geneset", 1:100)
+#' # Set descriptions to genesets
+#' gs_fullNames <- paste0("path:", 1:100)
+#' names(gs_fullNames) <- names(gs)
+#' # Store genesets information in a list
+#' genesets <- list(
+#'     database = "TEST",
+#'     genesets = gs,
+#'     names = gs_fullNames
+#' )
+#' result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "ora")
 #' }
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData

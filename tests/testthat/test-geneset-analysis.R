@@ -26,12 +26,12 @@ summarizedExperiment <- SummarizedExperiment(
 )
 
 # # control vs condition
-# design <- model.matrix(~0 + group, data = colData)
-# contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+design <- model.matrix(~0 + group, data = colData)
+contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
 # two class paired
-design <- model.matrix(~0 + group + pair, data = colData)
-contrast <- makeContrasts("groupcondition-groupcontrol", levels = design.paired)
+# design.paired <- model.matrix(~0 + group + pair, data = colData)
+# contrast <- makeContrasts("groupcondition-groupcontrol", levels = design.paired)
 
 annotation <- .getIDMappingAnnotation("GPL570")
 DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)

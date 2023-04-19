@@ -105,11 +105,11 @@
 #' # generate a random gene expression matrix
 #' set.seed(123)
 #' exprs <- round(matrix(2^abs(rnorm(1000, sd = 4)), nrow = 100, ncol = 10))
-#' # Assigned gene names
+#' # Assign gene names
 #' rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
-#' # Assinged sample names
+#' # Assign sample names
 #' colnames(exprs) <- paste0("sample", 1:10)
-#' # Generate comtrol and condition samples
+#' # Generate control and condition samples
 #' controlSamples <- paste0("sample", 1:5)
 #' conditionSamples <- paste0("sample", 6:10)
 #' # Get colData
@@ -128,7 +128,10 @@
 #' design <- model.matrix(~0 + group, data = colData)
 #' contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 #' # Perform DE analysis
-#' DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = NULL)
+#' DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = "GPL570")
+#' 
+#' # View DE analysis data frame
+#' rowData(DERes)
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
 #' @importFrom S4Vectors SimpleList metadata

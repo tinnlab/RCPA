@@ -4,7 +4,12 @@
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
 #' @return A named list of KEGG pathways catalouge for CePa.ORA and CePa.GSA methods.
 #' @examples
-#' getCePaPathwayCatalogue("hsa")
+#' @examples
+#' \dontrun{
+#' #Loading CPA library
+#' library(RCPA)
+#' genesets <- getCePaPathwayCatalogue("hsa")
+#' }
 #' @export
 #' @importFrom ROntoTools keggPathwayGraphs
 #' @importFrom CePa set.pathway.catalogue
