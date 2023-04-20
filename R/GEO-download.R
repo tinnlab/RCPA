@@ -90,6 +90,7 @@
 #' @importFrom oligo read.celfiles rma
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
+#' @importFrom Biobase exprs
 .processAffymetrix <- function(metadata, sampleIDs, destDir) {
 
     if (!dir.exists(destDir)) {
