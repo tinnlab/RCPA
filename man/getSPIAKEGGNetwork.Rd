@@ -4,7 +4,7 @@
 \alias{getSPIAKEGGNetwork}
 \title{Get KEGG pathway network for SPIA method}
 \usage{
-getSPIAKEGGNetwork(org = "hsa")
+getSPIAKEGGNetwork(org = "hsa", updateCache = F)
 }
 \arguments{
 \item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.

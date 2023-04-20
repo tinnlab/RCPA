@@ -8,7 +8,7 @@ plotPathwayNetwork(
   results,
   genesets,
   statistic = "pFDR",
-  mode = c("continous", "discrete"),
+  mode = c("continuous", "discrete"),
   labels = NULL,
   pThreshold = 0.05,
   useFDR = TRUE,
@@ -85,7 +85,7 @@ This function plots a pathway network.
 The function will plot a pathway network using the results of pathway analysis.
 The nodes of the network are the pathways and the edges are the pathways that have at least a certain number of genes in common defined by the edgeThreshold.
 The size of the nodes are proportional to the number of genes in the pathway.
-The color of the nodes are proportional to the statistic used if the mode is "continous".
+The color of the nodes are proportional to the statistic used if the mode is "continuous".
 If the mode is "discrete", the color of the nodes are determined by whether the p-value is significant or not.
 The width of the edges are proportional to the number of genes in common.
 }

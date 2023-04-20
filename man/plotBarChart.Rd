@@ -6,7 +6,7 @@
 \usage{
 plotBarChart(
   results,
-  limit = 50,
+  limit = 10,
   label = "name",
   by = c("pFDR", "p.value", "score", "normalizedScore"),
   maxNegLog10PValue = 5,
@@ -15,10 +15,11 @@ plotBarChart(
 )
 }
 \arguments{
-\item{results}{A data frame with pathway analysis results.
-The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.}
+\item{results}{A named list of data frame with pathway analysis results.
+The columns are ID, name, p.value, pFDR, size, nDE, score and normalizedScore.}
 
-\item{limit}{The maximum number of pathways to plot.}
+\item{limit}{The maximum number of pathways to plot.
+The pathway will be sorted by the average absolute value of the -log10(p-value) or -log10(pFDR) depending on the useFDR parameter.}
 
 \item{label}{The column to use for the labels.}
 
@@ -28,7 +29,8 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 
 \item{pThreshold}{The p-value threshold to use for significance.}
 
-\item{useFDR}{If TRUE, use FDR adjusted p-values. Otherwise, use raw p-values.}
+\item{useFDR}{If TRUE, use FDR adjusted p-values for the significance threshold. Otherwise, use raw p-values.
+This parameter is used to mark the color of the bars and is independent of the 'by' parameter.}
 }
 \value{
 A ggplot2 object.

@@ -5,28 +5,37 @@
 \title{Pathway Enrichment Analysis}
 \usage{
 runPathwayAnalysis(
-  summarizedExprimentObj,
-  genesets,
-  method = "ORA",
-  nperm = 1000
+  summarizedExperiment,
+  network,
+  method = c("SPIA", "cepaORA", "cepaGSA"),
+  SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher",
+    pThreshold = 0.05),
+  CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree",
+    "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree",
+    "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold =
+    0.05),
+  CePaGSAArgs = list(mat = NULL, label = NULL, pc, cen = list("equal.weight",
+    "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name =
+    list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach",
+    "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 )
 }
 \arguments{
-\item{summarizedExprimentObj}{The generated SummarizedExpriment object from DE analysis result.}
+\item{summarizedExperiment}{The generated SummarizedExpriment object from DE analysis result.}
 
-\item{genesets}{The genesets definition, ex. KEGG genesets from getGeneSets function.}
+\item{network}{The pathways network object.}
 
-\item{method}{The pathway analsyis method, including ORA, fgsea, and GSA.}
+\item{method}{The pathway analsyis method, including SPIA, cepaORA, and cepaGSA.}
 
-\item{nperm}{The number of permutations to run pathway analysis.}
+\item{SPIAArgs}{A list of other passed arguments to fgsea. See spia function.}
+
+\item{CePaORAArgs}{A list of other passed arguments to CePaORA. See CePa function.}
+
+\item{CePaGSAArgs}{A list of other passed arguments to CePaGSA. See CePa function.}
 }
 \value{
 A dataframe of pathway analysis result
 }
 \description{
-This function performs patwhay analysis using GSA method (GeneSet Analysis).
-This function is used internally by runPathwayAnalysis.
-}
-\details{
-This function is used internally by runPathwayAnalysis.
+This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods.
 }
