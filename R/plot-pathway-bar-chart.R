@@ -17,7 +17,6 @@
 #' @importFrom ggplot2 ggplot aes geom_bar theme_minimal theme geom_text coord_flip scale_x_discrete
 #' @importFrom ggplot2 scale_y_continuous guide_legend element_blank scale_fill_manual element_line labs geom_hline
 #' @importFrom dplyr %>% select mutate arrange desc
-#' @importFrom ggpattern geom_bar_pattern
 #' @importFrom utils head
 #' @importFrom rlang sym
 plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
@@ -89,7 +88,7 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
         select("ID", sym(label), sym(by), "isSignificant", "dataset")
 
     ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$dataset, color = .data$isSignificant)) +
-        geom_bar_pattern(
+        geom_bar(
             stat = "identity",
             position = if (length(results) > 1) "dodge" else "fill",
             width = ifelse(length(results) > 1, 0.9, 1)
