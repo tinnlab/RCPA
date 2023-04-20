@@ -239,5 +239,7 @@ downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), 
         stop("There is an error in processing and normalizing data.")
     }
 
+    metadata(summarizedExperimentObject)$platform <- platform
+
     return(summarizedExperimentObject)
 }
