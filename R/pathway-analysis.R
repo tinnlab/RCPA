@@ -44,24 +44,35 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select filter
 #' @importFrom CePa cepa.all p.table
-.runCePaORA <- function(summarizedExperiment, network, cepaORA.args = list()){
+.runCePaORA <- function(summarizedExperiment, network, pThreshold, bk, ...){
 
     DE_data <- rowData(summarizedExperiment)
-    dif <- DE_data %>% filter(p.value <= cepaORA.args$pThreshold) %>% rownames(.)
+    dif <- DE_data[DE_data$p.value <= pThreshold,] %>% rownames(.)
 
-    bk <- cepaORA.args$bk
     if(is.null(bk))
       bk <- rownames(DE_data)
 
-    res <- cepa.all(dif = dif, bk = bk, pc = network, iter = cepaORA.args$iter, cen = cepaORA.args$cen, cen.name = cepaORA.args$cen.name)
+    res <- CePa::cepa.all(dif = dif, bk = bk, pc = network, ...)
 
-    res.stats <- p.table(res) %>% apply(1, min) %>% data.frame(p.value = ., stringsAsFactors = FALSE)
+    res_stats <- res %>% lapply(function(pathData) {
+        path_res <- lapply(pathData, function(data){
+            data.frame(
+                p.value <- data[["p.value"]],
+                score <- data[["score"]],
+                stringsAsFactors = FALSE
+            )
+        }) %>% do.call(what = rbind)
+
+        path_res[which(path_res$p.value == min(path_res$p.value))[1],]
+    }) %>% do.call(what = rbind) %>% data.frame(pathway = names(res), stringsAsFactors = FALSE)
+
+    colnames(res_stats) <- c("p.value", "score", "pathway")
 
     data.frame(
-      pathway = rownames(res.stats),
-      p.value = res.stats$p.value,
-      score = rep(0, nrow(res.stats)),
-      normalizedScore = rep(0, nrow(res.stats)),
+      ID = res_stats$pathway,
+      p.value = res_stats$p.value,
+      score = res_stats$score,
+      normalizedScore = res_stats$score,
       stringsAsFactors = FALSE
     )
 }
@@ -77,13 +88,13 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
 #' @importFrom dplyr %>% select
 #' @importFrom CePa sampleLabel cepa.all p.table
-.runCePaGSA <- function(summarizedExperiment, network, cepaGSA.args){
+.runCePaGSA <- function(summarizedExperiment, network, ...){
 
     assay <- assay(summarizedExperiment)
 
-    metadata <- colData(summarizedExperiment)
-    contrast_mtx <- metadata$DEAnalysis$contrast
-    design_mtx <- metadata$DEAnalysis$design
+    metadata <- metadata(summarizedExperiment)
+    contrast_mtx <- metadata[["DEAnalysis.contrast"]]
+    design_mtx <- metadata[["DEAnalysis.design"]]
 
     firstCondition <- rownames(contrast_mtx)[which(contrast_mtx == 1)]
     secondCondition <- rownames(contrast_mtx)[which(contrast_mtx == -1)]
@@ -94,19 +105,30 @@
     group <- c(rep(1, length(firstSamples)), rep(0, length(secondSamples)))
     names(group) <- c(firstSamples, secondSamples)
 
-    label <- sampleLabel(group, treatment = "1", control = "0")
+    label <- CePa::sampleLabel(group, treatment = "1", control = "0")
 
-    res <- cepa.all(mat = assay, label = label, pc = network, cen = cepaGSA.args$cen, cen.name = cepaGSA.args$cen.name, nlevel = cepaGSA.args$nlevel,
-                          plevel = cepaGSA.args$plevel, iter = cepaGSA.args$iter)
+    res <- CePa::cepa.all(mat = assay, label = label, pc = network, ...)
 
-    res.stats <- p.table(res) %>% apply(1, min) %>% data.frame(p.value = ., stringsAsFactors = FALSE)
+    res_stats <- res %>% lapply(function(pathData) {
+        path_res <- lapply(pathData, function(data){
+            data.frame(
+                p.value <- data[["p.value"]],
+                score <- data[["score"]],
+                stringsAsFactors = FALSE
+            )
+        }) %>% do.call(what = rbind)
+
+        path_res[which(path_res$p.value == min(path_res$p.value))[1],]
+    }) %>% do.call(what = rbind) %>% data.frame(pathway = names(res), stringsAsFactors = FALSE)
+
+    colnames(res_stats) <- c("p.value", "score", "pathway")
 
     data.frame(
-      pathway = rownames(res.stats),
-      p.value = res.stats$p.value,
-      score = rep(0, nrow(res.stats)),
-      normalizedScore = rep(0, nrow(res.stats)),
-      stringsAsFactors = FALSE
+        ID = res_stats$pathway,
+        p.value = res_stats$p.value,
+        score = res_stats$score,
+        normalizedScore = res_stats$score,
+        stringsAsFactors = FALSE
     )
 }
 
@@ -124,8 +146,8 @@
 #' @export
 runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA", "cepaORA", "cepaGSA"),
                                SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreshold = 0.05),
-                              CePaORAArgs = list(bk = NULL, cen = default.centralities, cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)), iter = 1000, pThreshold = 0.05),
-                              CePaGSAArgs = list(mat = NULL, label = NULL, pc, cen = default.centralities, cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+                              CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold = 0.05),
+                              CePaGSAArgs = list(mat = NULL, label = NULL, pc, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 ){
     method <- match.arg(method)
 
@@ -169,12 +191,11 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA",
 
     if(method == "cepaORA"){
 
-
-
-        CePaORAArgs.default = list(bk = NULL, cen = default.centralities, cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)), iter = 1000, pThreshold = 0.05)
+        default.centralities <- list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach")
+        CePaORAArgs.default = list(bk = NULL, cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), iter = 1000, pThreshold = 0.05)
 
         if (any(!names(CePaORAArgs) %in% names(CePaORAArgs.default))) {
-            stop("The names of arguments should be matched with SPIA definition.")
+            stop("The names of arguments should be matched with CePaORA definition.")
         }
 
         tmp <- CePaORAArgs
@@ -190,19 +211,20 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA",
 
     if(method == "cepaGSA"){
 
-        CePaGSAArgs.default = list(mat = NULL, label = NULL, cen = default.centralities, cen.name = sapply(cen, function(x) ifelse(mode(x) == "name", deparse(x), x)), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+        default.centralities <- list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach")
+        CePaGSAArgs.default = list(mat = NULL, label = NULL, cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 
         if (any(!names(CePaGSAArgs) %in% names(CePaGSAArgs.default))) {
-            stop("The names of arguments should be matched with SPIA definition.")
+            stop("The names of arguments should be matched with CePaGSA definition.")
         }
 
         tmp <- CePaGSAArgs
         CePaGSAArgs <- CePaGSAArgs.default
         CePaGSAArgs[names(tmp)] <- CePaGSAArgs.default[names(tmp)]
 
-        if(CePaGSAArgs$pThreshold < 0 | CePaGSAArgs$pThreshold > 1){
-            stop("The pThreshold must be between zero and one.")
-        }
+        # if(CePaGSAArgs$pThreshold < 0 | CePaGSAArgs$pThreshold > 1){
+        #     stop("The pThreshold must be between zero and one.")
+        # }
 
         paArgs <- CePaGSAArgs
     }
