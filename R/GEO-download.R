@@ -228,18 +228,17 @@ downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), 
         stop("There is an error in downloading samples.")
     }
 
-    if (protocol == "affymetrix")
+    if (protocol == "affymetrix"){
         #Normalize expression data for affymetrix using RMA method
         summarizedExperimentObject <- .processAffymetrix(GEOObject.metadata, sampleIDs, destDir)
-    else
+    }else{
         #Normalize expression data for affymetrix using limma normexp, loess, and quantile methods
         summarizedExperimentObject <- .processAgilent(GEOObject.metadata, sampleIDs, destDir)
+    }
 
     if(is.null(summarizedExperimentObject)){
         stop("There is an error in processing and normalizing data.")
     }
-
-    metadata(summarizedExperimentObject)$platform <- platform
 
     return(summarizedExperimentObject)
 }
