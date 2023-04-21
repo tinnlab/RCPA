@@ -17,5 +17,7 @@ A named list with three elements: database, genesets and names.
 This function retrieves KEGG gene sets for a given organism.
 }
 \examples{
-getKEGGGeneSets("hsa")
+\dontrun{
+.getKEGGGeneSets("hsa")
+}
 }

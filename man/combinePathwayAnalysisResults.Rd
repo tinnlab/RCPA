@@ -11,6 +11,8 @@ combinePathwayAnalysisResults(
 }
 \arguments{
 \item{DFsList}{A list of dataframes obtained from runPathwayAnalysis.}
+
+\item{method}{A method used to combine pathway analysis results}
 }
 \value{
 A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
