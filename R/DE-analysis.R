@@ -6,7 +6,7 @@
 #' @param contrast A contrast matrix output by makeContrasts from limma package.
 #' @return A data frame with DE analysis results.
 #' Must contain the following columns: ID, p.value, logFC, statistic, dispersion.
-#' #' @examples
+#' @examples
 #' \dontrun{
 #' #Loading necessary libraries
 #' library(hgu133plus2.db)
@@ -154,7 +154,10 @@
 #' # Get colData
 #' colData <- data.frame(
 #'     row.names = colnames(exprs),
-#'     group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
+#'     group = factor(c(rep("control", 
+#'     length(controlSamples)), 
+#'     rep("condition", 
+#'     length(conditionSamples)))),
 #'     pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
 #' )
 #' # Construct summarizedExperiment object
@@ -167,7 +170,10 @@
 #' design <- model.matrix(~0 + group, data = colData)
 #' contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 #' # Perform DE analysis
-#' DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = "GPL570")
+#' DERes <- runDEAnalysis(summarizedExperiment, 
+#' method = "DESeq2", 
+#' design, contrast, 
+#' annotation = "GPL570")
 #' 
 #' # View DE analysis data frame
 #' rowData(DERes)

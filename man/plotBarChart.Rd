@@ -6,7 +6,7 @@
 \usage{
 plotBarChart(
   results,
-  limit = 50,
+  limit = 10,
   label = "name",
   by = c("pFDR", "p.value", "score", "normalizedScore"),
   maxNegLog10PValue = 5,
@@ -15,10 +15,11 @@ plotBarChart(
 )
 }
 \arguments{
-\item{results}{A data frame with pathway analysis results.
-The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.}
+\item{results}{A named list of data frame with pathway analysis results.
+The columns are ID, name, p.value, pFDR, size, nDE, score and normalizedScore.}
 
-\item{limit}{The maximum number of pathways to plot.}
+\item{limit}{The maximum number of pathways to plot.
+The pathway will be sorted by the average absolute value of the -log10(p-value) or -log10(pFDR) depending on the useFDR parameter.}
 
 \item{label}{The column to use for the labels.}
 
@@ -28,7 +29,8 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 
 \item{pThreshold}{The p-value threshold to use for significance.}
 
-\item{useFDR}{If TRUE, use FDR adjusted p-values. Otherwise, use raw p-values.}
+\item{useFDR}{If TRUE, use FDR adjusted p-values for the significance threshold. Otherwise, use raw p-values.
+This parameter is used to mark the color of the bars and is independent of the 'by' parameter.}
 }
 \value{
 A ggplot2 object.
@@ -37,5 +39,31 @@ A ggplot2 object.
 This function plots a bar chart of the pathway analysis results.
 }
 \examples{
-#TODO add example
+\dontrun{
+# Loading libraries
+library(ggplot2)
+library(ggpattern)
+library(RCPA)
+# Simulating DE analysis result
+results <- lapply(1:3, function(i) {
+  set.seed(i)
+  
+  data.frame(
+    ID = paste0("geneset", 1:100),
+    name = paste0("Pathway ", 1:100),
+    description = paste0("Description ", 1:100),
+    p.value = runif(100) / 10,
+    pFDR = runif(100) / 5,
+    size = runif(100, 100, 500),
+    nDE = runif(100, 10, 100),
+    score = runif(100, -2, 2),
+    normalizedScore = runif(100)
+  )
+})
+# Plot the barchart
+plotBarChart(results)
+
+# Plot barchart with p-value
+plotBarChart(results, by = "p.value")
+}
 }

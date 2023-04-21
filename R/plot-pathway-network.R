@@ -3,7 +3,7 @@
                    contains = "BrowserViz"
 )
 
-#' Plot a pathway network
+#' @title Plot a pathway network
 #' @description This function plots a pathway network.
 #' @param results A named list of data frame of Pathway analysis results.
 #' The columns of each data frame should be at least ID, name, p.value and pFDR and nDE.
@@ -21,7 +21,7 @@
 #' @param useFDR A logical value indicating whether to use FDR or not.
 #' This parameter is independent of the pThreshold.
 #' @param edgeThreshold A numeric from 0 to 1 indicating the threshold to draw edges.
-#' edgeThreshold of 0.1 means that edges are drawn if the number of genes in common is greater than 1% of the smaller gene set.
+#' edgeThreshold of 0.1 means that edges are drawn if the number of genes in common is greater than 1\% of the smaller gene set.
 #' @param statLimit A numeric value of the maximum absolute value of the statistic.
 #' If statistic is p.value or pFDR, this parameter is the limit of -log10(p-value).
 #' @param discreteColors A character vector of colors to use for the discrete mode.
@@ -45,7 +45,50 @@
 #' The width of the edges are proportional to the number of genes in common.
 #' @export
 #' @examples
-#' #TODO add examples
+#' \dontrun{
+#' # Loading libraries
+#' library(RCyjs)
+#' library(RCPA)
+#' styleFile <- system.file(package="RCPA", "extdata", "pieStyle.js")
+#' 
+#' # Obtaining KEGG genesets
+#' gs <- getGeneSets("KEGG")
+#' 
+#' # Simulating enrichment analysis results
+#' results <- lapply(1:3, function(i) {
+#'   set.seed(i)
+#'   
+#'   data.frame(
+#'     ID = names(gs$genesets),
+#'     name = gs$names,
+#'     p.value = runif(length(gs$genesets))/10,
+#'     pFDR = runif(length(gs$genesets))/10,
+#'     ES = rnorm(length(gs$genesets)),
+#'     NES = rnorm(length(gs$genesets)),
+#'     nDE = sample(1:1000, length(gs$genesets))
+#'   )
+#' })
+#' # Adding method names to the result
+#' names(results) <- c("ORA", "FGSEA", "GSA")
+#' # Assigning radome pathway names to enrichment analysis results
+#' IDs <- sample(names(gs$genesets), 10)
+#' 
+#' # Get genesets for each pathway
+#' genesets <- gs$genesets[IDs]
+#' # Set p-value threshold
+#' pThreshold <- 0.05
+#' # Disable use of FDR
+#' useFDR <- FALSE
+#' # Set edge threshold limit
+#' edgeThreshold <- 0.1
+#' 
+#' # Plot pathway network with default params
+#' plotPathwayNetwork(results, genesets, pThreshold = pThreshold, useFDR = useFDR)
+#' 
+#' # Plot pathway network without FDR
+#' plotPathwayNetwork(results, genesets, pThreshold = pThreshold, useFDR = FALSE)
+#' }
+#' 
 #' @importFrom RCyjs setGraph redraw layout loadStyleFile setDefaultEdgeColor
 #' @importFrom BrowserViz BrowserViz
 #' @importFrom graph graphNEL addEdge `nodeDataDefaults<-` `nodeData<-`

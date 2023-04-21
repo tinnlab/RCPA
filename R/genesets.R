@@ -4,7 +4,9 @@
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
 #' @return A named vector with KEGG gene sets names.
 #' @examples
-#' getKEGGPathwayNames("hsa")
+#' \dontrun{
+#' .getKEGGPathwayNames("hsa")
+#' }
 #' @importFrom stringr str_split
 #' @importFrom dplyr %>%
 #' @importFrom stats setNames
@@ -23,7 +25,9 @@
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
-#' getKEGGGeneSets("hsa")
+#' \dontrun{
+#' .getKEGGGeneSets("hsa")
+#' }
 #' @importFrom stringr str_split
 #' @importFrom dplyr %>% left_join group_by group_split mutate select
 #' @importFrom tidyr drop_na
@@ -143,9 +147,19 @@
 #' This parameter is only used when database is GO.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
+#' \dontrun{
+#' # Loading the RCPA package
 #' library(RCPA)
-#' KEGGGeneset <- getGeneSets("KEGG", "hsa")
-#' GOGeneset <- getGeneSets("GO", taxid = 9606, namespace = "biological_process")
+#' # Obtaining genesets from KEGG databases
+#' gensets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
+#' 
+#' # Obtaining genesets from GO databases
+#' gensets <- getGeneSets("GO", 
+#' taxid = 9606, 
+#' namespace = "biological_process", 
+#' minSize = 10, 
+#' maxSize = 1000)
+#' }
 #' @export
 getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 10, maxSize = 1000) {
     database <- match.arg(database)

@@ -5,28 +5,89 @@
 \title{Pathway Enrichment Analysis}
 \usage{
 runPathwayAnalysis(
-  summarizedExprimentObj,
-  genesets,
-  method = "ORA",
-  nperm = 1000
+  summarizedExperiment,
+  network,
+  method = c("SPIA", "cepaORA", "cepaGSA"),
+  SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher",
+    pThreshold = 0.05),
+  CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree",
+    "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree",
+    "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold =
+    0.05),
+  CePaGSAArgs = list(mat = NULL, label = NULL, pc, cen = list("equal.weight",
+    "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name =
+    list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach",
+    "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 )
 }
 \arguments{
-\item{summarizedExprimentObj}{The generated SummarizedExpriment object from DE analysis result.}
+\item{summarizedExperiment}{The generated SummarizedExpriment object from DE analysis result.}
 
-\item{genesets}{The genesets definition, ex. KEGG genesets from getGeneSets function.}
+\item{network}{The pathways network object.}
 
-\item{method}{The pathway analsyis method, including ORA, fgsea, and GSA.}
+\item{method}{The pathway analsyis method, including SPIA, cepaORA, and cepaGSA.}
 
-\item{nperm}{The number of permutations to run pathway analysis.}
+\item{SPIAArgs}{A list of other passed arguments to fgsea. See spia function.}
+
+\item{CePaORAArgs}{A list of other passed arguments to CePaORA. See CePa function.}
+
+\item{CePaGSAArgs}{A list of other passed arguments to CePaGSA. See CePa function.}
 }
 \value{
 A dataframe of pathway analysis result
 }
 \description{
-This function performs patwhay analysis using GSA method (GeneSet Analysis).
-This function is used internally by runPathwayAnalysis.
+This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods.
 }
-\details{
-This function is used internally by runPathwayAnalysis.
+\examples{
+\dontrun{
+# Loading library
+library(RCPA)
+library(hgu133plus2.db)
+library(AnnotationDbi)
+library(SummarizedExperiment)
+library(limma)
+
+# generate a random gene expression matrix
+set.seed(123)
+exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
+rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
+colnames(exprs) <- paste0("sample", 1:10)
+
+controlSamples <- paste0("sample", 1:5)
+conditionSamples <- paste0("sample", 6:10)
+
+colData <- data.frame(
+  row.names = colnames(exprs),
+  group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
+  pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
+)
+
+# Generate summarizedExperiment object
+summarizedExperiment <- SummarizedExperiment(
+  assays = list(counts = exprs),
+  colData = colData
+)
+
+# Construct design matrix
+design <- model.matrix(~0 + group, data = colData)
+# Construct contrast matrix
+contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+
+# Run DE analysis
+DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = "GPL570")
+
+# Get spia network
+spiaNetwork <- getSPIAKEGGNetwork("hsa", FALSE)
+# Get cepa network
+cepaNetwork <- getCePaPathwayCatalogue("hsa", FALSE)
+
+# Enrichment analysis using spia
+result <- runPathwayAnalysis(DERes, spiaNetwork, method = "SPIA")
+# Enrichment analysis using cepaORA
+result <- runPathwayAnalysis(DERes, cepaNetwork, method = "cepaORA")
+# Enrichment analysis using cepaGSA
+result <- runPathwayAnalysis(DERes, cepaNetwork, method = "cepaGSA")
+}
+
 }

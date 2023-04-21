@@ -45,8 +45,9 @@
 #' @param pvals The vector of P-Values to be combined.
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
+#' @importFrom stats qnorm pchisq
 .runFisher <- function(pvals){
-    p.value <- pchisq(-2 * sum(log(pvals)), df=2*length(pvals), lower=FALSE)
+    p.value <- pchisq(-2 * sum(log(pvals)), df=2*length(pvals), lower.tail=FALSE)
     return(p.value)
 }
 
@@ -56,6 +57,7 @@
 #' @param pvals The vector of P-Values to be combined.
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
+#' @importFrom stats pnorm qnorm
 .runStouffer <- function(pvals){
     p.value <- pnorm(sum(qnorm(pvals)) / sqrt(length(pvals)))
     return(p.value)
@@ -67,6 +69,7 @@
 #' @param pvals The vector of P-Values to be combined.
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
+#' @importFrom stats pnorm
 .runAddCLT <- function(pvals){
     n <- length(pvals)
     p.value <- 1
@@ -74,7 +77,7 @@
         x <- sum(pvals)
         p.value <- 1/factorial(n) * sum(sapply(0:floor(x), function(k) (-1)^k * choose(n,k) * (x-k)^(n)))
     }else{
-        p.value <- pnorm(sum(pvals),n/2,sqrt(n/12),lower=TRUE)
+        p.value <- pnorm(sum(pvals),n/2,sqrt(n/12),lower.tail=TRUE)
     }
     return(p.value)
 }
@@ -135,6 +138,7 @@
 #' @title Perform Meta Analysis
 #' @description This function performs mata analysis on multiple pathway analysis results.
 #' @param DFsList A list of dataframes obtained from runPathwayAnalysis.
+#' @param method A method used to combine pathway analysis results
 #' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
 #' @details This function performs mata analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows

@@ -89,8 +89,9 @@
 #' @return A dataframe of geneset analysis results
 #' @details This function is used internally by runGeneSetEnrichmentAnalysis.
 #' @importFrom dplyr %>%
-#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay metadata
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom GSA GSA
+#' @importFrom S4Vectors metadata
 .runGSA <- function(summarizedExperiment, genesets, ...) {
 
     assay <- assay(summarizedExperiment)
@@ -228,7 +229,85 @@
 #' @param FgseaArgs A list of other passed arguments to fgsea. See fgsea function.
 #' @param GSAArgs A list of other passed arguments to GSA. See GSA function.
 #' @return A dataframe of geneset analysis result
-#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay metadata
+#' @examples
+#' \dontrun{
+#' # Loading libraries
+#' library(testthat)
+#' library(hgu133plus2.db)
+#' library(AnnotationDbi)
+#' library(SummarizedExperiment)
+#' library(limma)
+#' library(RPCA)
+#' # Set seed for reproducibility
+#' set.seed(123)
+#' # Simulate a random gene expression matrix
+#' exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
+#' # Set row names for the expression matrix
+#' rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
+#' # Set column names for the expression matrix
+#' colnames(exprs) <- paste0("sample", 1:10)
+#' # Assign control samples
+#' controlSamples <- paste0("sample", 1:5)
+#' # Assign condition samples
+#' conditionSamples <- paste0("sample", 6:10)
+#' # Generate colData frame
+#' colData <- data.frame(
+#'   row.names = colnames(exprs),
+#'   group = factor(c(rep("control", 
+#'   length(controlSamples)), 
+#'   rep("condition", 
+#'   length(conditionSamples)))),
+#'   pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
+#' )
+#' # Generate summarizedExperiment object
+#' summarizedExperiment <- SummarizedExperiment(
+#'   assays = list(counts = exprs),
+#'   colData = colData
+#' )
+#' # # control vs condition
+#' design <- model.matrix(~0 + group, data = colData)
+#' contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+#' 
+#' # two class paired
+#' # design <- model.matrix(~0 + group + pair, data = colData)
+#' # contrast <- makeContrasts("groupcondition-groupcontrol", levels = design.paired)
+#' 
+#' # Run differential expression analysis
+#' DERes <- runDEAnalysis(summarizedExperiment, 
+#' method = "DESeq2", 
+#' design, 
+#' contrast, 
+#' annotation = "GPL570")
+#' 
+#' # Simulate geneset
+#' gs <- lapply(1:100, function(x) {
+#'   sample(rownames(DERes), runif(1, 100, 500))
+#' })
+#' 
+#' # Assign geneset names and descriptions
+#' names(gs) <- paste0("geneset", 1:100)
+#' gs_fullNames <- paste0("path:", 1:100)
+#' names(gs_fullNames) <- names(gs)
+#' 
+#' # Create genesets list
+#' genesets <- list(
+#'   database = "TEST",
+#'   genesets = gs,
+#'   names = gs_fullNames
+#' )
+#' 
+#' # Perform geneset enrichment analysis using wilcox test
+#' result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "wilcox")
+#' # Perform geneset enrichment analysis using over representation analysis
+#' result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "ora")
+#' # Perform geneset enrichment analysis using fgsea
+#' result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea")
+#' # Perform geneset enrichment analysis using ks test
+#' result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "ks")
+#' # Perform geneset enrichment analysis using gsa
+#' result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "gsa")
+#' }
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
 #' @export
 runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method = c("ora", "fgsea", "gsa", "ks", "wilcox"),
