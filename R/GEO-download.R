@@ -34,6 +34,7 @@
 #' @details This function is used internally by downloadGEO.
 #' @importFrom GEOquery getGEOSuppFiles
 #' @importFrom dplyr %>%
+#' @importFrom utils URLdecode
 .downloadSamples <- function(sampleIDs, protocol, destDir) {
 
     if (!dir.exists(destDir)) {
@@ -45,6 +46,8 @@
     }
 
     for (id in sampleIDs) {
+
+        id <- URLdecode(id)
 
         if(protocol == "affymetrix"){
 
