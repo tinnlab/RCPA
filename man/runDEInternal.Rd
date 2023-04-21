@@ -18,7 +18,7 @@
 
 \item{design}{A design model output by model.matrix.}
 
-\item{contrast}{A contrast matrix output by limma::makeContrasts.}
+\item{contrast}{A contrast matrix output by makeContrasts from limma package.}
 }
 \value{
 A data frame with DE analysis results.

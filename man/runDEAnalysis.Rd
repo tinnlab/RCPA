@@ -50,8 +50,41 @@ Other slots will be the same as in the input SummarizedExperiment object.
 This function performs differential expression analysis using either limma, DESeq2 or edgeR.
 }
 \examples{
-#TODO add examples
+\dontrun{
+#Loading necessary libraries
+library(hgu133plus2.db)
+library(AnnotationDbi)
+library(SummarizedExperiment)
+library(limma)
+library(RCPA)
+# generate a random gene expression matrix
+set.seed(123)
+exprs <- round(matrix(2^abs(rnorm(1000, sd = 4)), nrow = 100, ncol = 10))
+# Assign gene names
+rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
+# Assign sample names
+colnames(exprs) <- paste0("sample", 1:10)
+# Generate control and condition samples
+controlSamples <- paste0("sample", 1:5)
+conditionSamples <- paste0("sample", 6:10)
+# Get colData
+colData <- data.frame(
+    row.names = colnames(exprs),
+    group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
+    pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
+)
+# Construct summarizedExperiment object
+summarizedExperiment <- SummarizedExperiment(
+    assays = list(counts = exprs),
+    colData = colData
+)
+# control vs condition
+design <- model.matrix(~0 + group, data = colData)
+contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+# Perform DE analysis
+DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = "GPL570")
+
+# View DE analysis data frame
+rowData(DERes)
 }
-\seealso{
-\code{\link{limma::makeContrasts}}
 }

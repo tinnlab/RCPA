@@ -5,7 +5,7 @@
 \title{Plot gene heatmap from a SummarizedExperiment object with DE analysis results}
 \usage{
 plotDEGeneHeatmap(
-  summarizedExperiment,
+  DEResults,
   genes,
   useFDR = TRUE,
   labels = NULL,
@@ -14,10 +14,10 @@ plotDEGeneHeatmap(
 )
 }
 \arguments{
-\item{summarizedExperiment}{SummarizedExperiment object}
+\item{DEResults}{A named list of data frame of DE analysis results.}
 
 \item{genes}{A vector of gene id (e.g. Entrez IDs) to plot.
-The genes should be in the rownames of the SummarizedExperiment object.}
+The genes must be in the ID column of the data frame in DEResults.}
 
 \item{useFDR}{If TRUE, use FDR adjusted p-values. Otherwise, use raw p-values.}
 
