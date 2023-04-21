@@ -17,7 +17,6 @@ Depends: R (>= 4.0)
 biocViews:
     AnnotationDbi,
     Biobase,
-    BiocManager,
     DESeq2,
     GEOquery,
     SummarizedExperiment,
@@ -27,7 +26,9 @@ biocViews:
     limma,
     RCyjs,
     ROntoTools,
-    fgsea
+    fgsea,
+    BrowserViz,
+    oligo
 Imports:
     AnnotationDbi,
     Biobase,
@@ -63,7 +64,6 @@ Imports:
     meta,
     png,
     CePa,
-    ggpattern,
     gridExtra,
     rlang
 RoxygenNote: 7.2.3
