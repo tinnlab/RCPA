@@ -12,11 +12,38 @@
 #' This parameter is used to mark the color of the bars and is independent of the 'by' parameter.
 #' @return A ggplot2 object.
 #' @examples
-#' #TODO add example
+#' \dontrun{
+#' # Loading libraries
+#' library(ggplot2)
+#' library(ggpattern)
+#' library(RCPA)
+#' # Simulating DE analysis result
+#' results <- lapply(1:3, function(i) {
+#'   set.seed(i)
+#'   
+#'   data.frame(
+#'     ID = paste0("geneset", 1:100),
+#'     name = paste0("Pathway ", 1:100),
+#'     description = paste0("Description ", 1:100),
+#'     p.value = runif(100) / 10,
+#'     pFDR = runif(100) / 5,
+#'     size = runif(100, 100, 500),
+#'     nDE = runif(100, 10, 100),
+#'     score = runif(100, -2, 2),
+#'     normalizedScore = runif(100)
+#'   )
+#' })
+#' # Plot the barchart
+#' plotBarChart(results)
+#' 
+#' # Plot barchart with p-value
+#' plotBarChart(results, by = "p.value")
+#' }
 #' @export
-#' @importFrom ggplot2 ggplot aes geom_bar theme_minimal theme geom_text coord_flip scale_x_discrete
+#' @importFrom ggplot2 ggplot aes geom_bar theme_minimal theme geom_text coord_flip scale_x_discrete scale_colour_discrete scale_fill_discrete scale_color_manual
 #' @importFrom ggplot2 scale_y_continuous guide_legend element_blank scale_fill_manual element_line labs geom_hline
 #' @importFrom dplyr %>% select mutate arrange desc
+#' @importFrom ggpattern geom_bar_pattern
 #' @importFrom utils head
 #' @importFrom rlang sym
 plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
@@ -88,7 +115,7 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
         select("ID", sym(label), sym(by), "isSignificant", "dataset")
 
     ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$dataset, color = .data$isSignificant)) +
-        geom_bar(
+        geom_bar_pattern(
             stat = "identity",
             position = if (length(results) > 1) "dodge" else "fill",
             width = ifelse(length(results) > 1, 0.9, 1)

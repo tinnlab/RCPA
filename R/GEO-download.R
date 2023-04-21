@@ -214,12 +214,16 @@
 
 #' @title Download GEO data
 #' @description This function download and process data from GEO for microarray and RNASeq data.
-#' @param GEOID The ID of the GEO dataset
-#' @param platform The platform of selected GEO dataset
+#' @param GEOID The ID of the GEO dataset.
+#' @param platform The platform of selected GEO dataset.
+#' @param destDir A path to save downloaded data.
 #' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
-#' @return A SummarizedExperiment object including the processed data
+#' @return A SummarizedExperiment object including the processed data.
 #' @examples
+#' \dontrun{
+#' # Loading RCPA library
 #' downloadGEO("GSE20153", "GPL570", "affymetrix", getwd())
+#' }
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
 #' @importFrom Biobase pData
