@@ -57,7 +57,13 @@
                 stop("Check the specified samples IDs to be valid. No file is found.")
             }
 
-            downloadedFiles <- lapply(downloadedFiles, function(urlPath) URLdecode(urlPath)) %>% unlist() %>% as.vector()
+            downloadedFiles <- sapply(downloadedFiles, function(fileName){
+                if (!file.exists(fileName)) {
+                    URLdecode(fileName)
+                } else {
+                    fileName
+                }
+            }) %>% as.vector()
 
             downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
 
@@ -71,7 +77,13 @@
                 stop("Check the specified samples IDs to be valid. No file is found.")
             }
 
-            downloadedFiles <- lapply(downloadedFiles, function(urlPath) URLdecode(urlPath)) %>% unlist() %>% as.vector()
+            downloadedFiles <- sapply(downloadedFiles, function(fileName){
+                if (!file.exists(fileName)) {
+                    URLdecode(fileName)
+                } else {
+                    fileName
+                }
+            }) %>% as.vector()
 
             downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
         }
