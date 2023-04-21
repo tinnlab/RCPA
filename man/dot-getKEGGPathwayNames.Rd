@@ -17,7 +17,5 @@ A named vector with KEGG gene sets names.
 This function retrieves KEGG gene sets names for a given organism.
 }
 \examples{
-\dontrun{
-.getKEGGPathwayNames("hsa")
-}
+getKEGGPathwayNames("hsa")
 }

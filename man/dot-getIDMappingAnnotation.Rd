@@ -7,7 +7,7 @@
 .getIDMappingAnnotation(platform)
 }
 \arguments{
-\item{platform}{platform ID. E.g., GPL570}
+\item{GEO}{platform ID. E.g., GPL570}
 }
 \value{
 A data frame with ID mapping annotation and two columns: FROM and TO.

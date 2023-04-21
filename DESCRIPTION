@@ -61,11 +61,7 @@ Imports:
     graph,
     httr,
     meta,
-    png,
-    CePa,
-    ggpattern,
-    gridExtra,
-    rlang
+    png
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,

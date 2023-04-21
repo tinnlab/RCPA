@@ -14,9 +14,6 @@ plotKEGGMap(
 )
 }
 \arguments{
-\item{DEResults}{A named list of data frame of DE analysis results.
-The columns of each data frame should be at least ID, logFC, p.value and pFDR.}
-
 \item{KEGGPathwayID}{The KEGG pathway ID.}
 
 \item{statistic}{The column name of the statistic used to plot the DE genes.
@@ -31,6 +28,9 @@ Only used when statistic is not p.value or pFDR.}
 \item{statLimit}{The absolute value of the statistic to color the DE genes.
 If statistic is p.value or pFDR, this parameter is the limit of -log10(p-value).
 Otherwise, this parameter is the limit of the absolute value of the statistic.}
+
+\item{A}{named list of data frame of DE analysis results.
+The columns of each data frame should be at least ID, logFC, p.value and pFDR.}
 }
 \value{
 A list with the following elements:
@@ -42,53 +42,4 @@ A list with the following elements:
 }
 \description{
 This function plots KEGG map with DE genes.
-}
-\examples{
-\dontrun{
-# Loading libraries
-library(hgu133plus2.db)
-library(AnnotationDbi)
-library(SummarizedExperiment)
-library(limma)
-library(ggplot2)
-library(RCPA)
-# Simulate differential expression analysis from three different studies
-DEResults <- lapply(1:3, function(seed) {
-  set.seed(seed)
-  exprs <- round(matrix(abs(rnorm(20000 * 10, sd = 4)), nrow = 20000, ncol = 10))
-  rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
-  colnames(exprs) <- paste0("sample", 1:10)
-  
-  controlSamples <- paste0("sample", 1:5)
-  conditionSamples <- paste0("sample", 6:10)
-  
-  colData <- data.frame(
-    row.names = colnames(exprs),
-    group = factor(c(rep("control", 
-    length(controlSamples)), 
-    rep("condition", 
-    length(conditionSamples)))),
-    pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
-  )
-  
-  summarizedExperiment <- SummarizedExperiment(
-    assays = list(counts = exprs),
-    colData = colData
-  )
-  
-  # control vs condition
-  design <- model.matrix(~0 + group, data = colData)
-  contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
-  runDEAnalysis(summarizedExperiment, 
-  method = "limma", 
-  design, contrast, 
-  annotation = "GPL570") \%>\% rowData()
-})
-
-# Plot KEGG pathways heatmap using log fold change statistics
-plotKEGGMap(DEResults, "path:hsa05200", statistic = "logFC", useFDR = TRUE, pThreshold = 0.05)
-# Plot KEGG pathways heatmap using p-value statistics
-plotKEGGMap(DEResults, "path:hsa05200", statistic = "p.value", useFDR = FALSE, pThreshold = 0.05)
-
-}
 }

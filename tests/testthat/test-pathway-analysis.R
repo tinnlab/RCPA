@@ -57,7 +57,7 @@ test_that('CePaGSA ', {
 })
 
 test_that('Pathway Enrichment Analysis using SPIA', {
-    result <- runPathwayAnalysis(DERes, spiaNetwork, method = "SPIA")
+    result <- runPathwayAnalysis(DERes, spiaNetwork, method = "spia")
     expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
     expect_true(all(result$p.value <= 1))
     expect_true(all(result$p.value >= 0))

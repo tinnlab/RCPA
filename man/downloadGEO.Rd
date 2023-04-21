@@ -7,23 +7,18 @@
 downloadGEO(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir)
 }
 \arguments{
-\item{GEOID}{The ID of the GEO dataset.}
+\item{GEOID}{The ID of the GEO dataset}
 
-\item{platform}{The platform of selected GEO dataset.}
+\item{platform}{The platform of selected GEO dataset}
 
 \item{protocol}{The protocol of the selected GEO dataset, including affymetrix and agilent.}
-
-\item{destDir}{A path to save downloaded data.}
 }
 \value{
-A SummarizedExperiment object including the processed data.
+A SummarizedExperiment object including the processed data
 }
 \description{
 This function download and process data from GEO for microarray and RNASeq data.
 }
 \examples{
-\dontrun{
-# Loading RCPA library
 downloadGEO("GSE20153", "GPL570", "affymetrix", getwd())
-}
 }

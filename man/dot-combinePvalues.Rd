@@ -4,7 +4,7 @@
 \alias{.combinePvalues}
 \title{Combine PValues}
 \usage{
-.combinePvalues(inputData, method)
+.combinePvalues(inputData, method = "fisher")
 }
 \arguments{
 \item{inputData}{A dataframe of pathway analysis results from multiple studies.}
