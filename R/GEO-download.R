@@ -47,8 +47,6 @@
 
     for (id in sampleIDs) {
 
-        id <- URLdecode(id)
-
         if(protocol == "affymetrix"){
 
             if (file.exists(file.path(destDir, paste0(id, ".CEL.gz")))) next()
@@ -58,6 +56,8 @@
             if(is.null(downloadedFiles)){
                 stop("Check the specified samples IDs to be valid. No file is found.")
             }
+
+            downloadedFiles <- lapply(downloadedFiles, function(urlPath) URLdecode(urlPath)) %>% unlist() %>% as.vector()
 
             downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
 
@@ -70,6 +70,8 @@
             if(is.null(downloadedFiles)){
                 stop("Check the specified samples IDs to be valid. No file is found.")
             }
+
+            downloadedFiles <- lapply(downloadedFiles, function(urlPath) URLdecode(urlPath)) %>% unlist() %>% as.vector()
 
             downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
         }
