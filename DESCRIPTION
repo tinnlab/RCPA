@@ -62,7 +62,8 @@ Imports:
     graph,
     httr,
     meta,
-    png
+    png,
+    CePa
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
