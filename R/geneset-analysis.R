@@ -89,8 +89,9 @@
 #' @return A dataframe of geneset analysis results
 #' @details This function is used internally by runGeneSetEnrichmentAnalysis.
 #' @importFrom dplyr %>%
-#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay metadata
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom GSA GSA
+#' @importFrom S4Vectors metadata
 .runGSA <- function(summarizedExperiment, genesets, ...) {
 
     assay <- assay(summarizedExperiment)
@@ -228,8 +229,9 @@
 #' @param FgseaArgs A list of other passed arguments to fgsea. See fgsea function.
 #' @param GSAArgs A list of other passed arguments to GSA. See GSA function.
 #' @return A dataframe of geneset analysis result
-#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay metadata
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
+#' @importFrom S4Vectors metadata
 #' @export
 runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method = c("ora", "fgsea", "gsa", "ks", "wilcox"),
                                          ORAArgs = list(pThreshold = 0.05),

@@ -11,7 +11,8 @@
 #' @param topToLabel The number of top pathways to label when IDsToLabels is NULL.
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs
 #' @importFrom ggrepel geom_label_repel
-#' @importFrom dplyr %>% head pull
+#' @importFrom dplyr %>% pull
+#' @importFrom utils head
 plotVolcano <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
 
     xAxis <- match.arg(xAxis)
