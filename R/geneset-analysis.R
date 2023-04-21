@@ -309,6 +309,7 @@
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
+#' @importFrom S4Vectors metadata
 #' @export
 runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method = c("ora", "fgsea", "gsa", "ks", "wilcox"),
                                          ORAArgs = list(pThreshold = 0.05),

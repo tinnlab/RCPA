@@ -1,7 +1,7 @@
 #' @title Get ID mapping annotation from GEO platform
 #' @description This function gets ID mapping annotation from GEO platform.
 #' This function is used internally by runDEAnalysis.
-#' @param platform platform ID. E.g., GPL570
+#' @param GEO platform ID. E.g., GPL570
 #' @return A data frame with ID mapping annotation and two columns: FROM and TO.
 #' The first column is the probe ID and the second column is the entrez ID.
 #' @importFrom AnnotationDbi select keys

@@ -34,6 +34,7 @@
 #' @details This function is used internally by downloadGEO.
 #' @importFrom GEOquery getGEOSuppFiles
 #' @importFrom dplyr %>%
+#' @importFrom utils URLdecode
 .downloadSamples <- function(sampleIDs, protocol, destDir) {
 
     if (!dir.exists(destDir)) {
@@ -56,6 +57,14 @@
                 stop("Check the specified samples IDs to be valid. No file is found.")
             }
 
+            downloadedFiles <- sapply(downloadedFiles, function(fileName){
+                if (!file.exists(fileName)) {
+                    URLdecode(fileName)
+                } else {
+                    fileName
+                }
+            }) %>% as.vector()
+
             downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
 
         }else{
@@ -67,6 +76,14 @@
             if(is.null(downloadedFiles)){
                 stop("Check the specified samples IDs to be valid. No file is found.")
             }
+
+            downloadedFiles <- sapply(downloadedFiles, function(fileName){
+                if (!file.exists(fileName)) {
+                    URLdecode(fileName)
+                } else {
+                    fileName
+                }
+            }) %>% as.vector()
 
             downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
         }
@@ -90,7 +107,7 @@
 #' @importFrom oligo read.celfiles rma
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
-#' @importFrom rlang exprs
+#' @importFrom Biobase exprs
 .processAffymetrix <- function(metadata, sampleIDs, destDir) {
 
     if (!dir.exists(destDir)) {
@@ -232,12 +249,13 @@ downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), 
         stop("There is an error in downloading samples.")
     }
 
-    if (protocol == "affymetrix")
+    if (protocol == "affymetrix"){
         #Normalize expression data for affymetrix using RMA method
         summarizedExperimentObject <- .processAffymetrix(GEOObject.metadata, sampleIDs, destDir)
-    else
+    }else{
         #Normalize expression data for affymetrix using limma normexp, loess, and quantile methods
         summarizedExperimentObject <- .processAgilent(GEOObject.metadata, sampleIDs, destDir)
+    }
 
     if(is.null(summarizedExperimentObject)){
         stop("There is an error in processing and normalizing data.")
