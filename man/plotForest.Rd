@@ -31,5 +31,47 @@ A grid of one or more forest plots from grid.arrange.
 Plot forest plot from pathway/geneset/meta analysis results.
 }
 \examples{
-#TODO add example
+\dontrun{
+# Loading the library
+library(RCPA)
+library(ggplot2)
+# Set seed for repro
+set.seed(123)
+# Simulate the enrichment analysis for the study 1
+result1 <- data.frame(
+  ID = paste0("geneset", 1:100),
+  name = paste0("Pathway ", 1:100),
+  description = paste0("Description ", 1:100),
+  p.value = runif(100) / 10,
+  pFDR = runif(100) / 5,
+  size = runif(100, 100, 500),
+  nDE = runif(100, 10, 100),
+  score = runif(100, -2, 2),
+  normalizedScore = runif(100)
+)
+rownames(result1) <- result1$ID
+
+# Simulate the enrichment analysis for the study 2
+result2 <- data.frame(
+  ID = paste0("geneset", 1:100),
+  name = paste0("Pathway ", 1:100),
+  description = paste0("Description ", 1:100),
+  p.value = runif(100) / 10,
+  pFDR = runif(100) / 5,
+  size = runif(100, 100, 500),
+  nDE = runif(100, 10, 100),
+  score = runif(100, -2, 2),
+  normalizedScore = runif(100)
+)
+rownames(result2) <- result2$ID
+
+# Store results from two studies in a list
+resultsLst <- list(
+  "study1" = result1,
+  "study2" = result2
+)
+
+# Forest plot
+plotForest(resultsLst, yAxis = "ID")
+}
 }

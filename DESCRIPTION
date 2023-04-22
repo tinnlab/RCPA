@@ -63,7 +63,9 @@ Imports:
     httr,
     meta,
     png,
-    CePa
+    CePa,
+    gridExtra,
+    rlang
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,

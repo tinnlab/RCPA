@@ -7,7 +7,9 @@
 getSPIAKEGGNetwork(org = "hsa", updateCache = F)
 }
 \arguments{
-\item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.
+\item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.}
+
+\item{updateCache}{A parameter to disable/enable cache update.
 Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.}
 }
 \value{
