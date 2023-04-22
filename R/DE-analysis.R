@@ -172,6 +172,10 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
     # get expression matrix
     exprs <- assay(summarizedExperiment)
 
+    if (!is.null(annotation)){
+        exprs <- exprs[unique(annotation$FROM),]
+    }
+
     DEFunc <- switch(method,
                      limma = .runLimma,
                      DESeq2 = .runDESeq2,
