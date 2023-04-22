@@ -62,6 +62,8 @@
         stop("No differential analysis data is in input data.")
     }
 
+    DE_data <- DE_data[!is.na(DE_data$statistic),]
+
     statistic <- DE_data$statistic %>%
         unlist() %>%
         as.vector()
@@ -184,6 +186,8 @@
         dim(DE_data)[2] == 0) {
         stop("No differential analysis data is in input data.")
     }
+
+    DE_data <- DE_data[!is.na(DE_data$statistic),]
 
     ranks <- DE_data$statistic
     names(ranks) <- rownames(DE_data)

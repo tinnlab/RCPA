@@ -176,14 +176,14 @@
 
     raw.data <- read.maimages(file.path(destDir, paste0(sampleIDs, ".TXT.gz")),
                               source = "agilent",
-                              green.only = TRUE,
+                              #green.only = TRUE,
                               names = sampleIDs
     )
 
     #Correct expression for background using the normexp method
     background_corrected_data <- backgroundCorrect(raw.data, method = "normexp")
 
-    if (!is.null(background_corrected_data$G) & !is.null(background_corrected_data$R)) {
+    if(inherits(background_corrected_data, "RGList")){
         # Normalize background-corrected data using the loess method for two color array
         norm1.data <- normalizeWithinArrays(background_corrected_data, method = "loess")
 
@@ -192,13 +192,30 @@
 
         expression <- norm2.data$G
         rownames(expression) <- norm2.data$genes[, "ProbeName"]
-    } else {
+    }else{
         # Normalize background-corrected data using the quantile method
         norm.data <- normalizeBetweenArrays(background_corrected_data, method = "quantile")
 
         expression <- norm.data$E
         rownames(expression) <- norm.data$genes[, "ProbeName"]
     }
+
+    # if (!is.null(background_corrected_data$G) & !is.null(background_corrected_data$R)) {
+    #     # Normalize background-corrected data using the loess method for two color array
+    #     norm1.data <- normalizeWithinArrays(background_corrected_data, method = "loess")
+    #
+    #     # Normalize background-corrected data using the quantile method
+    #     norm2.data <- normalizeBetweenArrays(norm1.data, method = "quantile")
+    #
+    #     expression <- norm2.data$G
+    #     rownames(expression) <- norm2.data$genes[, "ProbeName"]
+    # } else {
+    #     # Normalize background-corrected data using the quantile method
+    #     norm.data <- normalizeBetweenArrays(background_corrected_data, method = "quantile")
+    #
+    #     expression <- norm.data$E
+    #     rownames(expression) <- norm.data$genes[, "ProbeName"]
+    # }
 
     if(dim(expression)[1] == 0 | dim(expression)[2] == 0){
         stop("The expression matrix is empty.")
