@@ -1,6 +1,7 @@
 #' @title Get KEGG pathway network for SPIA method
 #' @description Get KEGG pathway network for SPIA method
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
+#' @param updateCache A parameter to disable/enable cache update.
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
 #' @return A named list of KEGG pathway networks for SPIA method.
 #' @examples
@@ -131,6 +132,7 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
 #' @param p2 See SPIA function
 #' @param combine See SPIA function
 #' @return See SPIA function
+#' @importFrom stats pnorm qnorm na.omit
 combfunc <- function (p1 = NULL, p2 = NULL, combine)
 {
     tm = na.omit(c(p1, p2))
@@ -162,6 +164,7 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
 #' @param beta See SPIA function
 #' @param combine See SPIA function
 #' @return See SPIA function
+#' @importFrom stats median
 .SPIAMod <- function(de = NULL, all = NULL, path.info, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher") {
     if (is.null(de) | is.null(all)) {
         stop("de and all arguments can not be NULL!")

@@ -50,7 +50,7 @@ If the mode is "continous", the color of the nodes are proportional to the stati
 This parameter is independent of the pThreshold.}
 
 \item{edgeThreshold}{A numeric from 0 to 1 indicating the threshold to draw edges.
-edgeThreshold of 0.1 means that edges are drawn if the number of genes in common is greater than 1% of the smaller gene set.}
+edgeThreshold of 0.1 means that edges are drawn if the number of genes in common is greater than 1\% of the smaller gene set.}
 
 \item{statLimit}{A numeric value of the maximum absolute value of the statistic.
 If statistic is p.value or pFDR, this parameter is the limit of -log10(p-value).}
@@ -90,5 +90,48 @@ If the mode is "discrete", the color of the nodes are determined by whether the 
 The width of the edges are proportional to the number of genes in common.
 }
 \examples{
-#TODO add examples
+\dontrun{
+# Loading libraries
+library(RCyjs)
+library(RCPA)
+styleFile <- system.file(package="RCPA", "extdata", "pieStyle.js")
+
+# Obtaining KEGG genesets
+gs <- getGeneSets("KEGG")
+
+# Simulating enrichment analysis results
+results <- lapply(1:3, function(i) {
+  set.seed(i)
+  
+  data.frame(
+    ID = names(gs$genesets),
+    name = gs$names,
+    p.value = runif(length(gs$genesets))/10,
+    pFDR = runif(length(gs$genesets))/10,
+    ES = rnorm(length(gs$genesets)),
+    NES = rnorm(length(gs$genesets)),
+    nDE = sample(1:1000, length(gs$genesets))
+  )
+})
+# Adding method names to the result
+names(results) <- c("ORA", "FGSEA", "GSA")
+# Assigning radome pathway names to enrichment analysis results
+IDs <- sample(names(gs$genesets), 10)
+
+# Get genesets for each pathway
+genesets <- gs$genesets[IDs]
+# Set p-value threshold
+pThreshold <- 0.05
+# Disable use of FDR
+useFDR <- FALSE
+# Set edge threshold limit
+edgeThreshold <- 0.1
+
+# Plot pathway network with default params
+plotPathwayNetwork(results, genesets, pThreshold = pThreshold, useFDR = useFDR)
+
+# Plot pathway network without FDR
+plotPathwayNetwork(results, genesets, pThreshold = pThreshold, useFDR = FALSE)
+}
+
 }
