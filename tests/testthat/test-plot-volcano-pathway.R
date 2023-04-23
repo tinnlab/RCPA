@@ -14,32 +14,32 @@ results <- data.frame(
 )
 
 test_that("Plot volcano plot default", {
-    pl <- plotVolcano(results)
+    pl <- plotVolcanoPathway(results)
     expect_true(is.ggplot(pl))
     expect_equal(pl$labels$y, "-log10 pFDR")
     expect_equal(pl$labels$x, "Normalized score")
 })
 
 test_that("Plot volcano plot with score", {
-    pl <- plotVolcano(results, xAxis = "score")
+    pl <- plotVolcanoPathway(results, xAxis = "score")
     expect_true(is.ggplot(pl))
     expect_equal(pl$labels$x, "Score")
 })
 
 test_that("Plot volcano plot with normalizedScore", {
-    pl <- plotVolcano(results, xAxis = "normalizedScore")
+    pl <- plotVolcanoPathway(results, xAxis = "normalizedScore")
     expect_true(is.ggplot(pl))
     expect_equal(pl$labels$x, "Normalized score")
 })
 
 test_that("Plot volcano plot with p-value", {
-    pl <- plotVolcano(results, yAxis = "-log10(p.value)")
+    pl <- plotVolcanoPathway(results, yAxis = "-log10(p.value)")
     expect_true(is.ggplot(pl))
     expect_equal(pl$labels$y, "-log10 p-value")
 })
 
 test_that("Plot volcano plot with pFDR", {
-    pl <- plotVolcano(results, yAxis = "-log10(pFDR)")
+    pl <- plotVolcanoPathway(results, yAxis = "-log10(pFDR)")
     expect_true(is.ggplot(pl))
     expect_equal(pl$labels$y, "-log10 pFDR")
 })

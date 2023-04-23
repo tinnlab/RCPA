@@ -13,7 +13,7 @@
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
-plotVolcano <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
+plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
 
     xAxis <- match.arg(xAxis)
     yAxis <- match.arg(yAxis)
@@ -90,4 +90,76 @@ plotVolcano <- function(results, xAxis = c("normalizedScore", "score"), yAxis = 
             axis.line.y = element_line(color = "darkgray"),
             legend.position = "none"
         )
+}
+
+#' @title Plot volcano plot from Pathway analysis results
+#' @description Plot volcano plot from Pathway analysis results
+#' @param results A data frame with Pathway analysis results.
+#' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
+#' @param xAxis The column to use for the x-axis.
+#' @param yAxis The column to use for the y-axis.
+#' @param pThreshold The p-value threshold to use for the horizontal line.
+#' @param label The column to use for the labels. Default is "name".
+#' @param IDsToLabel A vector of IDs to label.
+#' When NULL, the top pathways are labeled. Default is NULL.
+#' @param topToLabel The number of top pathways to label when IDsToLabels is NULL.
+#' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs
+#' @importFrom ggrepel geom_label_repel
+#' @importFrom dplyr %>% pull
+#' @importFrom utils head
+plotVolcanoDE <- function(DEResult, xAxis = "logFC", yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, statThreshold = 2) {
+
+    yAxis <- match.arg(yAxis)
+
+    if (!xAxis %in% colnames(DEResult)) {
+        stop("The x-axis column is not in the results data frame.")
+    }
+
+    if (yAxis == "-log10(pFDR)" && !("pFDR" %in% colnames(DEResult))) {
+        stop("The y-axis column is not in the results data frame.")
+    }
+
+    if (yAxis == "-log10(p.value)" && !("p.value" %in% colnames(DEResult))) {
+        stop("The y-axis column is not in the results data frame.")
+    }
+
+    pvalues <- if (yAxis == "-log10(pFDR)") {
+        DEResult$pFDR
+    } else {
+        DEResult$p.value
+    }
+
+    plotDat <- data.frame(
+        x = DEResult[[xAxis]],
+        y = -log10(pvalues),
+        color = ifelse(abs(DEResult[[xAxis]]) > statThreshold & pvalues < pThreshold,  DEResult[[xAxis]], NA)
+    )
+
+    if (sum(is.na(plotDat$color)) == nrow(plotDat)) {
+        plotDat$color <- plotDat$x
+    }
+
+    ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$color)) +
+        geom_hline(yintercept = -log10(pThreshold), linetype = "dashed", color = "black") +
+        geom_vline(xintercept = -statThreshold, linetype = "dashed") +
+        geom_vline(xintercept = statThreshold, linetype = "dashed") +
+        geom_point() +
+        labs(
+            x = xAxis,
+            y = if (yAxis == "-log10(pFDR)") {
+                "-log10 pFDR"
+            } else {
+                "-log10 p-value"
+            }
+        ) +
+        theme_bw() +
+        theme(
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.line.x = element_line(color = "darkgray"),
+            axis.line.y = element_line(color = "darkgray"),
+            legend.position = "none"
+        ) +
+        scale_color_gradient(low = "blue", high = "red", na.value = "gray")
+
 }

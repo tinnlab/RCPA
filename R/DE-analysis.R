@@ -218,7 +218,7 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
     exprs <- assay(summarizedExperiment)
 
     if (!is.null(annotation)){
-        exprs <- exprs[unique(annotation$FROM),]
+        exprs <- exprs[intersect(unique(annotation$FROM), rownames(exprs)),]
     }
 
     DEFunc <- switch(method,
