@@ -190,7 +190,7 @@
         # Normalize background-corrected data using the quantile method
         norm2.data <- normalizeBetweenArrays(norm1.data, method = "quantile")
 
-        expression <- norm2.data$G
+        expression <- norm2.data$A
         rownames(expression) <- norm2.data$genes[, "ProbeName"]
     }else{
         # Normalize background-corrected data using the quantile method
