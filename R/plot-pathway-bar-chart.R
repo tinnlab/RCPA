@@ -45,16 +45,11 @@
 #' @importFrom dplyr %>% select mutate arrange desc
 #' @importFrom utils head
 #' @importFrom rlang sym
+#' @importFrom ggpattern geom_bar_pattern scale_pattern_manual
+#' @export
 plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
 
-    # by <- match.arg(by)
-
-    limit = 10
-    label = "name"
-    by = "pFDR"
-    maxNegLog10PValue = 5
-    pThreshold = 0.05
-    useFDR = TRUE
+    by <- match.arg(by)
 
     for (result in results) {
 
@@ -113,11 +108,15 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
         ) %>%
         select("ID", sym(label), sym(by), "isSignificant", "dataset")
 
-    ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$dataset, color = .data$isSignificant)) +
-        geom_bar(
+    pl <- ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$dataset, pattern = .data$isSignificant)) +
+        geom_bar_pattern(
             stat = "identity",
             position = if (length(results) > 1) "dodge" else "fill",
-            width = ifelse(length(results) > 1, 0.9, 1)
+            width = ifelse(length(results) > 1, 0.9, 1),
+            pattern_size = 0,
+            pattern_alpha = 0.4,
+            pattern_fill = "white",
+            pattern_spacing = 0.01
         ) +
         coord_flip() +
         theme(
@@ -132,8 +131,8 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
         scale_fill_discrete(
             guide = guide_legend(title = "Dataset")
         ) +
-        scale_color_manual(
-            values = c("Yes" = "black", "No" = "white"),
+        scale_pattern_manual(
+            values = c("Yes" = "stripe", "No" = "none"),
             guide = guide_legend(title = "Significant")
         ) +
         labs(x = element_blank())
