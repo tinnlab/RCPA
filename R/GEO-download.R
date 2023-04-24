@@ -238,8 +238,67 @@
 #' @return A SummarizedExperiment object including the processed data.
 #' @examples
 #' \dontrun{
-#' # Loading RCPA library
-#' downloadGEO("GSE20153", "GPL570", "affymetrix", getwd())
+#' # Load RCPA library
+#' library(RCPA)
+#' # Download affymetrix dataset with ID 'GSE5281', platform 'GPL570', protocol 'affymetrix', and detDir is '.tmp' folder in current path
+#' downloadPath <- file.path(getwd(), "GSE5281")
+#' if(!dir.exists(downloadPath)) dir.create(downloadPath)
+#' affyDataset <- RCPA::downloadGEO(GEOID = "GSE5281", 
+#'                                  platform ="GPL570", 
+#'                                  protocol ="affymetrix",
+#'                                  estDir = downloadPath)
+#' make.names(colData(affyDataset)$characteristics_ch1.4)
+#' # Add additional column to sample metadata to help with differential analysis
+#' colData(affyDataset)$condition <- ifelse(grepl("normal", colData(affyDataset)$characteristics_ch1.8), "normal", "alzheimer")
+#' colData(affyDataset)$condition <- factor(colData(affyDataset)$condition)
+#' colData(affyDataset)$region <- make.names(colData(affyDataset)$characteristics_ch1.4)
+#' colData(affyDataset)$region <- factor(colData(affyDataset)$region)
+#' colData(affyDataset)[, c("condition", "region")]
+#' 
+#' # Download agilent dataset
+#' # Download agilent dataset with ID 'GSE61196', platform 'GPL6480', protocol 'agilent', and detDir is '.tmp' folder in current path
+#' downloadPath <- file.path(getwd(), "GSE61196")
+#' if(!dir.exists(downloadPath)) dir.create(downloadPath)
+#' agilDataset <- RCPA::downloadGEO(GEOID = "GSE61196", 
+#'                                  platform ="GPL4133", 
+#'                                  protocol ="agilent",
+#'                                  destDir = downloadPath)
+#' 
+#' # Add additional column to sample metadata to help with differential analysis
+#' colData(agilDataset)$condition <- ifelse(grepl("healthy", colData(agilDataset)$source_name_ch1), "normal", "alzheimer")
+#' colData(agilDataset)$condition <- factor(colData(agilDataset)$condition)
+#' 
+#' 
+#' # Download RNA-Seq dataset with ID 'GSE165082' and platform 'GPL11154'
+#' GEOID <- "GSE153873"
+#' downloadPath <- getwd()
+#' if(!dir.exists(downloadPath)) dir.create(downloadPath)
+#' 
+#' # Download raw counts matrix
+#' GEOquery::getGEOSuppFiles(GEOID, fetch_files = TRUE, baseDir = downloadPath)
+#' countsFile <- file.path(getwd(), GEOID, "GSE153873_summary_count.star.txt.gz")
+#' countsData <- read.table(countsFile, 
+#'                          header = TRUE, 
+#'                          sep = "\t", fill = 0, 
+#'                          row.names = 1, 
+#'                          check.names = FALSE)
+#' 
+#' # Download the GEO object to get metadata
+#' GEOObject <- GEOquery::getGEO(GEOID, GSEMatrix = T, getGPL = T, destdir = downloadPath)[[1]]
+#' metadata <- Biobase::pData(GEOObject)
+#' 
+#' # Update rownames/colnames to be consistent
+#' countsData <- countsData[, metadata$title]
+#' colnames(countsData) <- rownames(metadata)
+#' 
+#' # Create the SummarizedExperiment object 
+#' RNASeqDataset <- SummarizedExperiment::SummarizedExperiment(
+#'   assays = as.matrix(countsData),
+#'   colData = metadata
+#' )
+#' 
+#' # Add additional column to sample metadata to help with differential analysis
+#' colData(RNASeqDataset)$condition <- ifelse(grepl("Alzheimer", colData(RNASeqDataset)$characteristics_ch1.1), "alzheimer", "normal")
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
