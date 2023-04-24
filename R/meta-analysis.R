@@ -142,7 +142,8 @@
 #' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
 #' @details This function performs mata analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows
-combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffer", "min", "ES", "geoMean", "addCLT", "minP")){
+#' @export
+combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffer", "min", "score", "geoMean", "addCLT", "minP")){
 
     method <- match.arg(method)
 
@@ -172,7 +173,7 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
     allData <- bind_rows(DFsList)
 
     metaResult <- NULL
-    if(method == "ES")
+    if(method == "score")
       metaResult <- .combineEnrichmentScores(allData)
     else metaResult <- .combinePvalues(allData)
 
