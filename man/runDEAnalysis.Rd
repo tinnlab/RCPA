@@ -35,11 +35,14 @@ A SummarizedExperiment object with DE analysis results appended to the rowData s
 \item{p.value}{p-value from the DE analysis using the specified method}
 \item{pFDR}{p-value adjusted for multiple testing using Benjamini-Hochberg method}
 \item{statistic}{statistic from the DE analysis using the specified method.
-\item{dispersion}{dispersion from the DE analysis using the specified method}
 For limma, this is the t-statistic.
 For DESeq2, this is the Wald statistic.
 For edgeR, this is the log fold change.}
-\item{dispersion}{dispersion from the DE analysis using the specified method}
+\item{avgExpr}{
+For limma, it is the average expression.
+For DESeq2, it is the base mean.
+For edgeR, it is the log CPM.
+}
 }
 The assay slot will contain the input expression/count matrix,
 and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object

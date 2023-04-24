@@ -13,6 +13,7 @@
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
+#' @export
 plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
 
     xAxis <- match.arg(xAxis)
@@ -104,6 +105,7 @@ plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), y
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
+#' @export
 plotVolcanoDE <- function(DEResult, xAxis = "logFC", yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, statThreshold = 2) {
 
     yAxis <- match.arg(yAxis)
