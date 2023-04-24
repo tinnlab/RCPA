@@ -134,11 +134,13 @@ plotVolcanoDE <- function(DEResult, xAxis = "logFC", yAxis = c("-log10(pFDR)", "
         color = ifelse(abs(DEResult[[xAxis]]) > statThreshold & pvalues < pThreshold,  DEResult[[xAxis]], NA)
     )
 
+    isNoSig <- FALSE
     if (sum(is.na(plotDat$color)) == nrow(plotDat)) {
-        plotDat$color <- plotDat$x
+        isNoSig <- TRUE
+        plotDat$color <- "gray"
     }
 
-    ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$color)) +
+    pl <- ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$color)) +
         geom_hline(yintercept = -log10(pThreshold), linetype = "dashed", color = "black") +
         geom_vline(xintercept = -statThreshold, linetype = "dashed") +
         geom_vline(xintercept = statThreshold, linetype = "dashed") +
@@ -158,7 +160,15 @@ plotVolcanoDE <- function(DEResult, xAxis = "logFC", yAxis = c("-log10(pFDR)", "
             axis.line.x = element_line(color = "darkgray"),
             axis.line.y = element_line(color = "darkgray"),
             legend.position = "none"
-        ) +
-        scale_color_gradient(low = "blue", high = "red", na.value = "gray")
+        )
+
+
+    if (!isNoSig) {
+        pl <- pl + scale_color_gradient(low = "blue", high = "red", na.value = "gray")
+    } else {
+        pl <- pl + scale_color_manual(values = "gray")
+    }
+
+    pl
 
 }

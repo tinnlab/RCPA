@@ -107,7 +107,7 @@
 
     resTable <- DERes %>%
         as.data.frame() %>%
-        mutate(ID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange, avgExpr = .$baseMean)
+        mutate(ID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange, avgExpr = log2(.$baseMean + 1))
 
     resTable$p.value[is.na(resTable$p.value)] <- 1
     # resTable$dispersion <- resTable$lfcSE
@@ -154,7 +154,7 @@
 #' For edgeR, this is the log fold change.}
 #' \item{avgExpr}{
 #' For limma, it is the average expression.
-#' For DESeq2, it is the base mean.
+#' For DESeq2, it is the log base mean.
 #' For edgeR, it is the log CPM.
 #' }
 #' }
