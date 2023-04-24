@@ -9,7 +9,7 @@
 #' @param fitMethod The method to use for fitting the loess line.
 #' If NULL then no line is drawn.
 #' @return A ggplot object.
-#' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_x_continuous scale_color_manual labs
+#' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_x_continuous scale_color_manual labs geom_smooth
 #' @importFrom ggrepel geom_label_repel
 #' @export
 plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, log2FCThreshold = 1, labels = NULL, fitMethod = "loess") {
