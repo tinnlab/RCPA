@@ -1,9 +1,9 @@
 library(testthat)
-library(ggplot2)
+# library(ggplot2)
 library(hgu133plus2.db)
 library(AnnotationDbi)
 
-# devtools::load_all()
+devtools::load_all()
 
 set.seed(1)
 exprs <- round(matrix(abs(rnorm(20000 * 10, sd = 4)), nrow = 20000, ncol = 10))
@@ -37,23 +37,17 @@ test_that("Plot volcano plot default", {
   pl <- plotVolcanoDE(DEResult)
   expect_true(is.ggplot(pl))
   expect_equal(pl$labels$y, "-log10 pFDR")
-  expect_equal(pl$labels$x, "logFC")
-})
-
-test_that("Plot volcano plot with statistic", {
-  pl <- plotVolcanoDE(DEResult, xAxis = "statistic")
-  expect_true(is.ggplot(pl))
-  expect_equal(pl$labels$x, "statistic")
+  expect_equal(pl$labels$x, "log2 fold change")
 })
 
 test_that("Plot volcano plot with p-value", {
-  pl <- plotVolcanoDE(DEResult, yAxis = "-log10(p.value)")
+  pl <- plotVolcanoDE(DEResult, useFDR = FALSE)
   expect_true(is.ggplot(pl))
   expect_equal(pl$labels$y, "-log10 p-value")
 })
 
 test_that("Plot volcano plot with pFDR", {
-  pl <- plotVolcanoDE(DEResult, yAxis = "-log10(pFDR)")
+  pl <- plotVolcanoDE(DEResult, useFDR = TRUE)
   expect_true(is.ggplot(pl))
   expect_equal(pl$labels$y, "-log10 pFDR")
 })

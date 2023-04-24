@@ -97,41 +97,36 @@ plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), y
 #' @description Plot volcano plot from Pathway analysis results
 #' @param results A data frame with Pathway analysis results.
 #' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
-#' @param xAxis The column to use for the x-axis.
-#' @param yAxis The column to use for the y-axis.
 #' @param pThreshold The p-value threshold to use for the horizontal line.
-#' @param statThreshold The absolute value of the statistic threshold to use for the vertical line.
+#' @param useFDR Whether to use the pFDR column instead of the p.value column.
+#' @param logFCThreshold The logFC threshold to use for the vertical line.
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
 #' @export
-plotVolcanoDE <- function(DEResult, xAxis = "logFC", yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, statThreshold = 2) {
+plotVolcanoDE <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, logFCThreshold = 1) {
 
-    yAxis <- match.arg(yAxis)
-
-    if (!xAxis %in% colnames(DEResult)) {
-        stop("The x-axis column is not in the results data frame.")
+    if (!"logFC" %in% colnames(DEResult)) {
+        stop("The logFC column is not in the results data frame.")
     }
 
-    if (yAxis == "-log10(pFDR)" && !("pFDR" %in% colnames(DEResult))) {
-        stop("The y-axis column is not in the results data frame.")
+    if (useFDR && !("pFDR" %in% colnames(DEResult))) {
+        stop("The pFDR column is not in the results data frame.")
+    } else if (!("p.value" %in% colnames(DEResult))) {
+        stop("The p.value column is not in the results data frame.")
     }
 
-    if (yAxis == "-log10(p.value)" && !("p.value" %in% colnames(DEResult))) {
-        stop("The y-axis column is not in the results data frame.")
-    }
-
-    pvalues <- if (yAxis == "-log10(pFDR)") {
+    pvalues <- if (useFDR) {
         DEResult$pFDR
     } else {
         DEResult$p.value
     }
 
     plotDat <- data.frame(
-        x = DEResult[[xAxis]],
+        x = DEResult$logFC,
         y = -log10(pvalues),
-        color = ifelse(abs(DEResult[[xAxis]]) > statThreshold & pvalues < pThreshold,  DEResult[[xAxis]], NA)
+        color = ifelse(abs(DEResult$logFC) > logFCThreshold & pvalues < pThreshold,  DEResult$logFC, NA)
     )
 
     isNoSig <- FALSE
@@ -142,12 +137,12 @@ plotVolcanoDE <- function(DEResult, xAxis = "logFC", yAxis = c("-log10(pFDR)", "
 
     pl <- ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$color)) +
         geom_hline(yintercept = -log10(pThreshold), linetype = "dashed", color = "black") +
-        geom_vline(xintercept = -statThreshold, linetype = "dashed") +
-        geom_vline(xintercept = statThreshold, linetype = "dashed") +
+        geom_vline(xintercept = -logFCThreshold, linetype = "dashed") +
+        geom_vline(xintercept = logFCThreshold, linetype = "dashed") +
         geom_point() +
         labs(
-            x = xAxis,
-            y = if (yAxis == "-log10(pFDR)") {
+            x = "log2 fold change",
+            y = if (useFDR) {
                 "-log10 pFDR"
             } else {
                 "-log10 p-value"
