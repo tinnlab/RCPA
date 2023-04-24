@@ -156,8 +156,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
             panel.grid.minor = element_blank()
         ) +
         scale_x_discrete(
-            labels = labels,
-            expand = expansion(mult = c(0, 1/length(labels)))
+            labels = labels
         ) +
         scale_y_continuous(
             breaks = uniqueY,
@@ -165,14 +164,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
                 paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
                 "log2 FC"
             ), length(DEdfs)),
-            expand = c(0, 0)
-        ) +
-        annotate(
-            "text",
-            x = length(labels) + 0.5,
-            y = sapply(seq_along(DEdfs), function(i) mean(uniqueY[(i-1)*2 + 1:2])),
-            label = names(DEdfs),
-            hjust = 0.5,
-            vjust = -0.5
+            expand = c(0, 0),
+            sec.axis = sec_axis(~., breaks = sapply(seq_along(DEdfs), function(i) mean(uniqueY[(i-1)*2 + 1:2])), labels = names(DEdfs))
         )
 }

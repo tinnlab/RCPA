@@ -18,7 +18,7 @@ results <- lapply(1:3, function(i) {
 })
 
 # devtools::document()
-devtools::load_all()
+# devtools::load_all()
 
 test_that("Plot bar plot default", {
     pl <- plotBarChart(results)

@@ -13,6 +13,7 @@
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
+#' @export
 plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
 
     xAxis <- match.arg(xAxis)
@@ -99,14 +100,12 @@ plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), y
 #' @param xAxis The column to use for the x-axis.
 #' @param yAxis The column to use for the y-axis.
 #' @param pThreshold The p-value threshold to use for the horizontal line.
-#' @param label The column to use for the labels. Default is "name".
-#' @param IDsToLabel A vector of IDs to label.
-#' When NULL, the top pathways are labeled. Default is NULL.
-#' @param topToLabel The number of top pathways to label when IDsToLabels is NULL.
+#' @param statThreshold The absolute value of the statistic threshold to use for the vertical line.
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
+#' @export
 plotVolcanoDE <- function(DEResult, xAxis = "logFC", yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, statThreshold = 2) {
 
     yAxis <- match.arg(yAxis)

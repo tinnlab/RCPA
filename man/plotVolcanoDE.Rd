@@ -19,15 +19,10 @@ plotVolcanoDE(
 
 \item{pThreshold}{The p-value threshold to use for the horizontal line.}
 
+\item{statThreshold}{The absolute value of the statistic threshold to use for the vertical line.}
+
 \item{results}{A data frame with Pathway analysis results.
 The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.}
-
-\item{label}{The column to use for the labels. Default is "name".}
-
-\item{IDsToLabel}{A vector of IDs to label.
-When NULL, the top pathways are labeled. Default is NULL.}
-
-\item{topToLabel}{The number of top pathways to label when IDsToLabels is NULL.}
 }
 \description{
 Plot volcano plot from Pathway analysis results
