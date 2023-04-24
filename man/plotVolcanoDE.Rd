@@ -4,22 +4,14 @@
 \alias{plotVolcanoDE}
 \title{Plot volcano plot from Pathway analysis results}
 \usage{
-plotVolcanoDE(
-  DEResult,
-  xAxis = "logFC",
-  yAxis = c("-log10(pFDR)", "-log10(p.value)"),
-  pThreshold = 0.05,
-  statThreshold = 2
-)
+plotVolcanoDE(DEResult, pThreshold = 0.05, useFDR = TRUE, logFCThreshold = 1)
 }
 \arguments{
-\item{xAxis}{The column to use for the x-axis.}
-
-\item{yAxis}{The column to use for the y-axis.}
-
 \item{pThreshold}{The p-value threshold to use for the horizontal line.}
 
-\item{statThreshold}{The absolute value of the statistic threshold to use for the vertical line.}
+\item{useFDR}{Whether to use the pFDR column instead of the p.value column.}
+
+\item{logFCThreshold}{The logFC threshold to use for the vertical line.}
 
 \item{results}{A data frame with Pathway analysis results.
 The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.}

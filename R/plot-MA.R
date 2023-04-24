@@ -4,7 +4,7 @@
 #' The columns are ID, p.value, pFDR, logFC, and aveExpr.
 #' @param pThreshold The p-value threshold to color significant points.
 #' @param useFDR Use FDR instead of p-value for significance.
-#' @param log2FCThreshold The log2 fold change threshold to color significant points.
+#' @param logFCThreshold The log2 fold change threshold to color significant points.
 #' @param labels named vector of labels to use for points, e.g., c("gene1" = "Gene 1", "gene2" = "Gene 2")
 #' @param fitMethod The method to use for fitting the loess line.
 #' If NULL then no line is drawn.
@@ -12,7 +12,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_x_continuous scale_color_manual labs geom_smooth
 #' @importFrom ggrepel geom_label_repel
 #' @export
-plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, log2FCThreshold = 1, labels = NULL, fitMethod = "loess") {
+plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, logFCThreshold = 1, labels = NULL, fitMethod = "loess") {
 
     plotDat <- data.frame(
         x = DEResult$avgExpr,
@@ -26,7 +26,7 @@ plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, log2FCThreshold =
         )
     )
 
-    plotDat$color <- factor(plotDat$isSig * (abs(plotDat$y) > log2FCThreshold) * sign(plotDat$y), levels = c(1, -1, 0))
+    plotDat$color <- factor(plotDat$isSig * (abs(plotDat$y) > logFCThreshold) * sign(plotDat$y), levels = c(1, -1, 0))
 
     if (!is.null(labels)) {
         plotDat$label <- labels[DEResult$ID]
@@ -47,9 +47,9 @@ plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, log2FCThreshold =
                 "0" = "darkgray"
             ),
             labels = c(
-                "1" = paste0("Up-regulated (", sum(plotDat$color == 1), ")"),
-                "-1" = paste0("Down-regulated (", sum(plotDat$color == -1), ")"),
-                "0" = paste0("Not significant (", sum(plotDat$color == 0), ")")
+                "1" = paste0("Up-regulated (", sum(plotDat$color == 1, na.rm = T), ")"),
+                "-1" = paste0("Down-regulated (", sum(plotDat$color == -1, na.rm = T), ")"),
+                "0" = paste0("Not significant (", sum(plotDat$color == 0, na.rm = T), ")")
             ),
             guide = guide_legend(override.aes = list(size = 3), title = "Significance")
         ) +
@@ -60,8 +60,8 @@ plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, log2FCThreshold =
             x = "Average expression",
             y = "Log2 fold change"
         ) +
-        geom_hline(yintercept = -log2FCThreshold, linetype = "dashed") +
-        geom_hline(yintercept = log2FCThreshold, linetype = "dashed")
+        geom_hline(yintercept = -logFCThreshold, linetype = "dashed") +
+        geom_hline(yintercept = logFCThreshold, linetype = "dashed")
 
     if (!is.null(labels)) {
         labelDat <- filter(plotDat, !is.na(.data$label))

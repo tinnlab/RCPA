@@ -8,7 +8,7 @@ plotMA(
   DEResult,
   pThreshold = 0.05,
   useFDR = TRUE,
-  log2FCThreshold = 1,
+  logFCThreshold = 1,
   labels = NULL,
   fitMethod = "loess"
 )
@@ -21,7 +21,7 @@ The columns are ID, p.value, pFDR, logFC, and aveExpr.}
 
 \item{useFDR}{Use FDR instead of p-value for significance.}
 
-\item{log2FCThreshold}{The log2 fold change threshold to color significant points.}
+\item{logFCThreshold}{The log2 fold change threshold to color significant points.}
 
 \item{labels}{named vector of labels to use for points, e.g., c("gene1" = "Gene 1", "gene2" = "Gene 2")}
 
