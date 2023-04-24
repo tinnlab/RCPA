@@ -5,7 +5,7 @@
 #' @param design A design model output by model.matrix.
 #' @param contrast A contrast matrix output by makeContrasts from limma package.
 #' @return A data frame with DE analysis results.
-#' Must contain the following columns: ID, p.value, logFC, statistic, dispersion.
+#' Must contain the following columns: ID, p.value, logFC, statistic, avgExpr
 #' @examples
 #' \dontrun{
 #' #Loading necessary libraries
@@ -86,11 +86,12 @@
         topTable(coef = 1, number = nrow(exprs)) %>%
         mutate(ID = rownames(.),
                p.value = .$P.Value,
-               statistic = .$t
+               statistic = .$t,
+               avgExpr = .$AveExpr
         )
 
-    resTable$dispersion <- (DERes$stdev.unscaled * sqrt(DERes$s2.post))[rownames(resTable), 1]
-    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "dispersion")]
+    # resTable$dispersion <- (DERes$stdev.unscaled * sqrt(DERes$s2.post))[rownames(resTable), 1]
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr")]
 }
 
 #' @rdname runDEInternal
@@ -106,11 +107,11 @@
 
     resTable <- DERes %>%
         as.data.frame() %>%
-        mutate(ID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange)
+        mutate(ID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange, avgExpr = .$baseMean)
 
     resTable$p.value[is.na(resTable$p.value)] <- 1
-    resTable$dispersion <- resTable$lfcSE
-    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "dispersion")]
+    # resTable$dispersion <- resTable$lfcSE
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr")]
 }
 
 #' @rdname runDEInternal
@@ -123,11 +124,11 @@
         glmQLFTest(contrast = contrast)
 
     resTable <- DERes$table %>%
-        mutate(ID = rownames(.), p.value = .$PValue, statistic = .$logFC, logFC = .$logFC)
+        mutate(ID = rownames(.), p.value = .$PValue, statistic = .$logFC, logFC = .$logFC, avgExpr = .$logCPM)
 
     resTable$p.value[is.na(resTable$p.value)] <- 1
-    resTable$dispersion <- DERes$dispersion
-    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "dispersion")]
+    # resTable$dispersion <- DERes$dispersion
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr")]
 }
 
 #' @title Differential expression analysis
@@ -148,11 +149,14 @@
 #' \item{p.value}{p-value from the DE analysis using the specified method}
 #' \item{pFDR}{p-value adjusted for multiple testing using Benjamini-Hochberg method}
 #' \item{statistic}{statistic from the DE analysis using the specified method.
-#' \item{dispersion}{dispersion from the DE analysis using the specified method}
 #' For limma, this is the t-statistic.
 #' For DESeq2, this is the Wald statistic.
 #' For edgeR, this is the log fold change.}
-#' \item{dispersion}{dispersion from the DE analysis using the specified method}
+#' \item{avgExpr}{
+#' For limma, it is the average expression.
+#' For DESeq2, it is the base mean.
+#' For edgeR, it is the log CPM.
+#' }
 #' }
 #' The assay slot will contain the input expression/count matrix,
 #' and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object

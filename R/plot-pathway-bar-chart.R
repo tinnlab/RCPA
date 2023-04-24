@@ -46,7 +46,6 @@
 #' @importFrom utils head
 #' @importFrom rlang sym
 #' @importFrom ggpattern geom_bar_pattern scale_pattern_manual
-#' @export
 plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
 
     by <- match.arg(by)

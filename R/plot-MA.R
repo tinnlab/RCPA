@@ -1,0 +1,83 @@
+#' @title Plot MA plot from DE analysis results
+#' @description Plot MA plot from DE analysis results
+#' @param DEResult A data frame with DE analysis results.
+#' The columns are ID, p.value, pFDR, logFC, and aveExpr.
+#' @param pThreshold The p-value threshold to color significant points.
+#' @param useFDR Use FDR instead of p-value for significance.
+#' @param log2FCThreshold The log2 fold change threshold to color significant points.
+#' @param labels named vector of labels to use for points, e.g., c("gene1" = "Gene 1", "gene2" = "Gene 2")
+#' @return A ggplot object.
+#' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_x_continuous scale_color_manual labs
+#' @importFrom ggrepel geom_label_repel
+#' @export
+plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, log2FCThreshold = 2, labels = NULL) {
+
+    plotDat <- data.frame(
+        x = DEResult$avgExpr,
+        y = DEResult$logFC,
+        isSig = (
+            if (useFDR) {
+                DEResult$pFDR < pThreshold
+            } else {
+                DEResult$p.value < pThreshold
+            }
+        )
+    )
+
+    plotDat$color <- factor(plotDat$isSig * (abs(plotDat$y) > log2FCThreshold) * sign(plotDat$y))
+
+    if (!is.null(labels)) {
+        plotDat$label <- labels[DEResult$ID]
+    }
+
+    pl <- ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$color)) +
+        geom_hline(yintercept = -log2FCThreshold, linetype = "dashed") +
+        geom_hline(yintercept = log2FCThreshold, linetype = "dashed") +
+        geom_point() +
+        theme_bw() +
+        theme_minimal() +
+        theme(
+            axis.line.x = element_blank(),
+            axis.line.y = element_blank(),
+        ) +
+        scale_x_continuous(breaks = c(0, round(seq(min(plotDat$x), max(plotDat$x), length.out = 10))), limits = c(0, max(plotDat$x))) +
+        scale_color_manual(
+            values = c(
+                "1" = "#B80F0A",
+                "-1" = "#004F98",
+                "0" = "darkgray"
+            ),
+            labels = c(
+                paste0("Up-regulated (", sum(plotDat$color == 1), ")"),
+                paste0("Down-regulated (", sum(plotDat$color == -1), ")"),
+                paste0("Not significant (", sum(plotDat$color == 0), ")")
+            ),
+            guide = guide_legend(override.aes = list(size = 3), title = "Significance")
+        ) +
+        theme(
+            legend.position = "bottom"
+        ) +
+        labs(
+            x = "Average expression",
+            y = "Log2 fold change"
+        )
+
+    if (!is.null(labels)) {
+        labelDat <- filter(plotDat, !is.na(.data$label))
+
+        pl <- pl + geom_label_repel(
+            labelDat,
+            mapping = aes(x = .data$x, y = .data$y, label = .data$label),
+            size = 3,
+            segment.size = 0.75,
+            segment.color = "#888888",
+            color = "black",
+            box.padding = 1,
+            force = 3,
+            point.size = NA
+        )
+    }
+
+    pl
+
+}

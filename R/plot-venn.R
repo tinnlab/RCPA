@@ -54,6 +54,7 @@
 #' @importFrom ggplot2 scale_fill_gradient theme
 #' @importFrom dplyr %>% filter
 #' @importFrom scales trans_new
+#' @export
 plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logFC", statThreshold = 0) {
 
     if (length(DEResults) < 2) {
