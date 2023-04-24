@@ -41,53 +41,32 @@ This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods
 }
 \examples{
 \dontrun{
-# Loading library
-library(RCPA)
-library(hgu133plus2.db)
+#Loading necessary libraries
 library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
-
-# generate a random gene expression matrix
-set.seed(123)
-exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
-rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
-colnames(exprs) <- paste0("sample", 1:10)
-
-controlSamples <- paste0("sample", 1:5)
-conditionSamples <- paste0("sample", 6:10)
-
-colData <- data.frame(
-  row.names = colnames(exprs),
-  group = factor(c(rep("control", length(controlSamples)), rep("condition", length(conditionSamples)))),
-  pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
-)
-
-# Generate summarizedExperiment object
-summarizedExperiment <- SummarizedExperiment(
-  assays = list(counts = exprs),
-  colData = colData
-)
-
-# Construct design matrix
-design <- model.matrix(~0 + group, data = colData)
-# Construct contrast matrix
-contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
-
-# Run DE analysis
-DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = "GPL570")
-
+library(RCPA)
+data("data")
+# Get affymetrix dataset
+affyDataset <- data$affyDataset
+# Create the analysis design
+affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
+affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
+# Perform DE analysis affymetrix dataset
+affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
+                                        method = "limma", 
+                                        design = affyDesign, 
+                                        contrast = affyContrast, 
+                                        annotation = "GPL570")
+rowData(affyDEExperiment)
 # Get spia network
 spiaNetwork <- getSPIAKEGGNetwork("hsa", FALSE)
 # Get cepa network
 cepaNetwork <- getCePaPathwayCatalogue("hsa", FALSE)
 
 # Enrichment analysis using spia
-result <- runPathwayAnalysis(DERes, spiaNetwork, method = "SPIA")
+result <- runPathwayAnalysis(affyDEExperiment, spiaNetwork, method = "SPIA")
 # Enrichment analysis using cepaORA
-result <- runPathwayAnalysis(DERes, cepaNetwork, method = "cepaORA")
-# Enrichment analysis using cepaGSA
-result <- runPathwayAnalysis(DERes, cepaNetwork, method = "cepaGSA")
+result <- runPathwayAnalysis(affyDEExperiment, cepaNetwork, method = "cepaORA")
 }
-
 }
