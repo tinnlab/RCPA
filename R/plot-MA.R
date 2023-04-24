@@ -79,7 +79,7 @@ plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, log2FCThreshold =
         )
     }
 
-    if (!is.null(fit)) {
+    if (!is.null(fitMethod)) {
         pl <- pl + geom_smooth(
             method = fitMethod,
             se = FALSE,
