@@ -6,6 +6,50 @@
 #' @param stat The additional statistis column to use for filtering differentially expressed genes.
 #' @param statThreshold The absolute value of the statistic threshold to use for filtering differentially expressed genes.
 #' Default is 0, which means no filtering.
+#' @examples
+#' \dontrun{
+#' #' #Load necessary libraries
+#' library(SummarizedExperiment)
+#' library(limma)
+#' library(RCPA)
+#' library(ggplot2)
+#' # Load dataset
+#' data("data")
+#' # Get affymetrix dataset
+#' affyDataset <- data$affyDataset
+#' # Create the analysis design
+#' affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
+#' affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
+#' # Perform DE analysis affymetrix dataset
+#' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset,
+#'                                         method = "limma",
+#'                                         design = affyDesign,
+#'                                         contrast = affyContrast,
+#'                                         annotation = "GPL570")
+#'
+#' # Get Agilent dataset
+#' agilDataset <- data$agilDataset
+#' # Create the analysis design
+#' agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
+#' agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
+#' # Perform genID mapping
+#' GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
+#' GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
+#'                                  TO = as.character(GPL4133Anno$GENE), 
+#'                                  stringsAsFactors = F)
+#' GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
+#' # Perform DE analysis for agilent dataset
+#' agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, 
+#'                                         method = "limma", 
+#'                                         design = agilDesign, 
+#'                                         contrast = agilContrast, 
+#'                                         annotation = GPL4133GeneMapping)
+#' 
+#' 
+#' rest <- list(affyDE = rowData(affyDEExperiment), agilDE = rowData(agilDEExperiment))
+#' # Plot venn diagram
+#' plotVennDE(rest)
+#' }
 #' @importFrom ggvenn ggvenn
 #' @importFrom ggplot2 scale_fill_gradient theme
 #' @importFrom dplyr %>% filter
