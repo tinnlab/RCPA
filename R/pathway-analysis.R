@@ -279,7 +279,7 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
     paArgs$network <- network_obj
 
     methodFnc <- switch(method,
-                     SPIA = .runSPIA,
+                     spia = .runSPIA,
                      cepaORA = .runCePaORA,
                      cepaGSA = .runCePaGSA
                      )
