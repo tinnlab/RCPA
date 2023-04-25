@@ -1,6 +1,8 @@
 library(testthat)
 library(ggplot2)
 
+devtools::load_all()
+
 results <- lapply(1:3, function(i) {
     set.seed(i)
 
@@ -13,7 +15,7 @@ results <- lapply(1:3, function(i) {
         size = runif(100, 100, 500),
         nDE = runif(100, 10, 100),
         score = runif(100, -2, 2),
-        normalizedScore = runif(100)
+        normalizedScore = runif(100, -2, 2)
     )
 })
 
