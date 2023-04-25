@@ -21,22 +21,22 @@
       all = rownames(DE_data)
 
     res <- .SPIAMod(de = DE_stat, all = all, pathInfo = network, ...)
-    res <- res[, c('ID', 'pG')]
-    colnames(res) <- c("ID", "p.value")
+    res <- res[, c('ID', 'pG', 'tA')]
+    colnames(res) <- c("ID", "p.value", "score")
 
-    constructed_genesets <- network %>% lapply(function(path){
-        path$nodes %>% as.list %>% as.vector()
-    }) %>% `names<-`(names(network))
-
-    oraRes <- .runORA(summarizedExperiment, constructed_genesets, pThreshold = pThreshold)
-    oraRes <- oraRes[oraRes$ID %in% res$ID,] %>% `rownames<-`(.$ID)
-    oraRes <- oraRes[res$ID,]
+    # constructed_genesets <- network %>% lapply(function(path){
+    #     path$nodes %>% as.list %>% as.vector()
+    # }) %>% `names<-`(names(network))
+    #
+    # oraRes <- .runORA(summarizedExperiment, constructed_genesets, pThreshold = pThreshold)
+    # oraRes <- oraRes[oraRes$ID %in% res$ID,] %>% `rownames<-`(.$ID)
+    # oraRes <- oraRes[res$ID,]
 
     data.frame(
       ID = res$ID,
       p.value = res$p.value,
-      score = oraRes$score,
-      normalizedScore = oraRes$normalizedScore,
+      score = res$score,
+      normalizedScore = res$score,
       stringsAsFactors = FALSE
     )
 }
