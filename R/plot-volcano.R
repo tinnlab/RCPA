@@ -20,24 +20,30 @@ plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), y
     yAxis <- match.arg(yAxis)
 
     if (!label %in% colnames(results)) {
-        stop("The label column is not in the results data frame.")
+        stop(paste0("The label column '", label, "' is not in the results data frame."))
     }
 
     if (!xAxis %in% colnames(results)) {
-        stop("The x-axis column is not in the results data frame.")
+        stop(paste0("The xAxis column '", xAxis, "' is not in the results data frame."))
     }
 
     if (yAxis == "-log10(pFDR)" && !("pFDR" %in% colnames(results))) {
-        stop("The y-axis column is not in the results data frame.")
+        stop("The pFDR column is not in the results data frame")
     }
 
     if (yAxis == "-log10(p.value)" && !("p.value" %in% colnames(results))) {
-        stop("The y-axis column is not in the results data frame.")
+        stop("The p.value column is not in the results data frame")
     }
 
     if (is.null(IDsToLabel)) {
         IDsToLabel <- results %>%
-            arrange(.data$pFDR) %>%
+            arrange(
+                if (yAxis == "-log10(pFDR)") {
+                    .data$pFDR
+                } else {
+                    .data$p.value
+                }
+            ) %>%
             head(topToLabel) %>%
             pull(.data$ID)
     }
