@@ -248,6 +248,14 @@ plotPathwayNetwork <- function(results, genesets,
     graphObj <- graphNEL(pathwayInfo$ID, edgemode = "undirected")
     graphObj <- graph::addEdge(graphEdges$from, graphEdges$to, graphObj, graphEdges$weight)
 
+    if (is.null(names(results))) {
+        names(results) <- paste0("Result ", seq_along(results))
+    }
+
+    for (i in seq_along(results)) {
+        pathwayInfo[[paste0("resultName", i)]] <- names(results)[i]
+    }
+
     for (attr in colnames(pathwayInfo)) {
         nodeDataDefaults(graphObj, attr = attr) <- NA
         nodeData(graphObj, pathwayInfo$ID, attr) <- pathwayInfo[[attr]]
@@ -261,7 +269,7 @@ plotPathwayNetwork <- function(results, genesets,
     ) %>% .RCyjs(graph = graphObj)
 
     RCyjs::setGraph(rCy, graph = graphObj)
-    RCyjs::loadStyleFile(rCy, styleFile)
+    try({RCyjs::loadStyleFile(rCy, styleFile)})
     RCyjs::setDefaultEdgeColor(rCy, edgeColor)
     RCyjs::redraw(rCy)
     Sys.sleep(2)
