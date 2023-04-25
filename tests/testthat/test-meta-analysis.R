@@ -17,9 +17,9 @@ nDEs <- ceiling(runif(30, 0, 100))
 sample.sizes <- c(rep(10, 10), rep(12, 10), rep(50, 10))
 
 DF1 <- data.frame(
-  pathway = names(genesets),
-  pathway.name = names(genesets),
-  pathway.size = genesets.size,
+  ID = names(genesets),
+  name = names(genesets),
+  size = genesets.size,
   p.value = p.values[1:10],
   score = scores[1:10],
   normalizedScore = normalizedScores[1:10],
@@ -29,9 +29,9 @@ DF1 <- data.frame(
 )
 
 DF2 <- data.frame(
-  pathway = names(genesets),
-  pathway.name = names(genesets),
-  pathway.size = genesets.size,
+  ID = names(genesets),
+  name = names(genesets),
+  size = genesets.size,
   p.value = p.values[11:20],
   score = scores[11:20],
   normalizedScore = normalizedScores[11:20],
@@ -41,9 +41,9 @@ DF2 <- data.frame(
 )
 
 DF3 <- data.frame(
-  pathway = names(genesets),
-  pathway.name = names(genesets),
-  pathway.size = genesets.size,
+  ID = names(genesets),
+  name = names(genesets),
+  size = genesets.size,
   p.value = p.values[21:30],
   score = scores[21:30],
   normalizedScore = normalizedScores[21:30],

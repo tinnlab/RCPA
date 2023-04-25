@@ -452,6 +452,7 @@ runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method 
     result$sample.size = ncol(assay(summarizedExperiment))
     genesets_names <- genesets[["names"]]
     result$name = genesets_names[as.character(result$ID)]
+    result$pFDR <- p.adjust(result$p.value, method = "BH")
 
     return(result)
 }

@@ -277,8 +277,9 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA",
         stop("There is an error in geneset analysis procedure.")
     }
 
-    result$sample.size = ncol(assay(summarizedExperiment))
-    result$name = result$ID
+    result$sample.size <- ncol(assay(summarizedExperiment))
+    result$name <- result$ID
+    result$pFDR <- p.adjust(result$p.value, method = "BH")
 
     return(result)
 }
