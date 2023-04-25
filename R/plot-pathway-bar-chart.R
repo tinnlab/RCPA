@@ -3,7 +3,8 @@
 #' @param results A named list of data frame with pathway analysis results.
 #' The columns are ID, name, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param limit The maximum number of pathways to plot.
-#' The pathway will be sorted by the average absolute value of the -log10(p-value) or -log10(pFDR) depending on the useFDR parameter.
+#' The pathway will be sorted by the average absolute value of the -log10(p-value) or -log10(pFDR) if the 'by' parameter is 'p.value' or 'pFDR'.
+#' Otherwise, the pathway will be sorted by the average value of the 'by' parameter.
 #' @param label The column to use for the labels.
 #' @param by The column to use for the bar heights.
 #' @param maxNegLog10PValue The maximum -log10(p-value) to plot.
@@ -46,9 +47,13 @@
 #' @importFrom utils head
 #' @importFrom rlang sym
 #' @importFrom ggpattern geom_bar_pattern scale_pattern_manual
-plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
+plotBarChart <- function(results, limit = 10, label = "name", by = c("normalizedScore", "score", "pFDR", "p.value"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
 
     by <- match.arg(by)
+
+    if (!"list" %in% class(results)) {
+        results <- list(results)
+    }
 
     for (result in results) {
 
@@ -74,20 +79,35 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
 
     commonColNames <- Reduce(intersect, lapply(results, colnames))
 
-    pathwayOrder <- lapply(results, function(r){
-        r[, c("ID", ifelse(useFDR, "pFDR", "p.value"))]
-    }) %>%
-        do.call(rbind, .) %>%
-        mutate(
-            logP = if (useFDR) -log10(.data$pFDR) else -log10(.data$p.value)
-        ) %>%
-        group_by(.data$ID) %>%
-        dplyr::summarize(
-            avgLogP = mean(.data$logP, na.rm = TRUE)
-        ) %>%
-        arrange(desc(.data$avgLogP)) %>%
-        head(limit) %>%
-        pull(.data$ID)
+    if (by %in% c("p.value", "pFDR")) {
+        pathwayOrder <- lapply(results, function(r) {
+            r[, c("ID", by)] %>% `colnames<-`(c("ID", "value"))
+        }) %>%
+            do.call(rbind, .) %>%
+            mutate(
+                logP = -log10(.data$value)
+            ) %>%
+            group_by(.data$ID) %>%
+            dplyr::summarize(
+                avgLogP = mean(.data$logP, na.rm = TRUE)
+            ) %>%
+            arrange(desc(.data$avgLogP)) %>%
+            head(limit) %>%
+            pull(.data$ID)
+    } else {
+        pathwayOrder <- lapply(results, function(r) {
+            r[, c("ID", by)] %>% `colnames<-`(c("ID", "value"))
+        }) %>%
+            do.call(rbind, .) %>%
+            group_by(.data$ID) %>%
+            dplyr::summarize(
+                avgValue = mean(.data$value, na.rm = TRUE)
+            ) %>%
+            arrange(desc(abs(.data$avgValue))) %>%
+            head(limit) %>%
+            pull(.data$ID)
+    }
+
 
     plotData <- names(results) %>%
         lapply(function(n) {
@@ -99,24 +119,46 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
         do.call(rbind, .) %>%
         filter(.data$ID %in% pathwayOrder) %>%
         mutate(
-            isSignificant = ifelse(ifelse(rep(useFDR, nrow(.)), .data$pFDR, .data$p.value) <= pThreshold, "Yes", "No"),
+            isSignificant = ifelse((if (useFDR) .data$pFDR else .data$p.value) <= pThreshold, "Yes", "No"),
+        ) %>%
+        mutate(
             p.value = pmin(-log10(.data$p.value), maxNegLog10PValue),
             pFDR = pmin(-log10(.data$pFDR), maxNegLog10PValue),
-            ID = factor(.data$ID, levels = pathwayOrder),
+            ID = factor(.data$ID, levels = rev(pathwayOrder)),
             dataset = factor(.data$dataset, levels = names(results))
         ) %>%
         select("ID", sym(label), sym(by), "isSignificant", "dataset")
 
-    pl <- ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$dataset, pattern = .data$isSignificant)) +
-        geom_bar_pattern(
-            stat = "identity",
-            position = if (length(results) > 1) "dodge" else "fill",
-            width = ifelse(length(results) > 1, 0.9, 1),
-            pattern_size = 0,
-            pattern_alpha = 0.4,
-            pattern_fill = "white",
-            pattern_spacing = 0.01
-        ) +
+    if (length(results) == 1) {
+        pl <- ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$isSignificant)) +
+            geom_bar(
+                stat = "identity"
+            ) +
+            scale_fill_manual(
+                values = c("Yes" = "#316b9d", "No" = "gray"),
+                guide = guide_legend(title = "Significant")
+            )
+    } else {
+        pl <- ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$dataset, pattern = .data$isSignificant)) +
+            geom_bar_pattern(
+                stat = "identity",
+                position = if (length(results) > 1) "dodge" else "fill",
+                width = ifelse(length(results) > 1, 0.9, 1),
+                pattern_size = 0,
+                pattern_alpha = 0.4,
+                pattern_fill = "white",
+                pattern_spacing = 0.01
+            ) +
+            scale_fill_discrete(
+                guide = guide_legend(title = "Dataset")
+            ) +
+            scale_pattern_manual(
+                values = c("Yes" = "stripe", "No" = "none"),
+                guide = guide_legend(title = "Significant")
+            )
+    }
+
+    pl <- pl +
         coord_flip() +
         theme(
             panel.grid.major = element_blank(),
@@ -127,13 +169,6 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
         ) +
         scale_x_discrete(labels = plotData[[label]], expand = expansion(add = c(0.75, 0))) +
         scale_y_continuous(expand = c(0, 0)) +
-        scale_fill_discrete(
-            guide = guide_legend(title = "Dataset")
-        ) +
-        scale_pattern_manual(
-            values = c("Yes" = "stripe", "No" = "none"),
-            guide = guide_legend(title = "Significant")
-        ) +
         labs(x = element_blank())
 
     if (by == "p.value" | by == "pFDR") {

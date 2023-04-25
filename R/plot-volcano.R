@@ -1,7 +1,7 @@
 #' @title Plot volcano plot from Pathway analysis results
 #' @description Plot volcano plot from Pathway analysis results
 #' @param PAResult A data frame with Pathway analysis results.
-#' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
+#' The columns are ID, name, description, p.value, pFDR, pathwaySize, nDE, score and normalizedScore.
 #' @param xAxis The column to use for the x-axis.
 #' @param yAxis The column to use for the y-axis.
 #' @param pThreshold The p-value threshold to use for the horizontal line.
@@ -60,7 +60,7 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
     }
 
     if (!"pathwaySize" %in% colnames(PAResult)) {
-        stop("The size column is not in the results data frame")
+        stop("The pathwaySize column is not in the results data frame")
     }
 
     if (is.null(IDsToLabel)) {
