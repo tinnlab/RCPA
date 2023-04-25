@@ -47,7 +47,7 @@
 #' @importFrom utils head
 #' @importFrom rlang sym
 #' @importFrom ggpattern geom_bar_pattern scale_pattern_manual
-plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.value", "score", "normalizedScore"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
+plotBarChart <- function(results, limit = 10, label = "name", by = c("normalizedScore", "score", "pFDR", "p.value"), maxNegLog10PValue = 5, pThreshold = 0.05, useFDR = TRUE) {
 
     by <- match.arg(by)
 
@@ -103,7 +103,7 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("pFDR", "p.
             dplyr::summarize(
                 avgValue = mean(.data$value, na.rm = TRUE)
             ) %>%
-            arrange(desc(.data$avgValue)) %>%
+            arrange(desc(abs(.data$avgValue))) %>%
             head(limit) %>%
             pull(.data$ID)
     }
