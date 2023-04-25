@@ -6,7 +6,7 @@
 #' @title Plot a pathway network
 #' @description This function plots a pathway network.
 #' @param results A named list of data frame of Pathway analysis results.
-#' The columns of each data frame should be at least ID, name, p.value and pFDR and nDE.
+#' The columns of each data frame should be at least ID, name, p.value and pFDR.
 #' An optional column "color" can be used to specify the color of the nodes.
 #' If the column "color" is not specified, the color of the nodes will be determined by the mode and the statistic.
 #' @param genesets A named list of character vectors of gene sets.
@@ -64,8 +64,7 @@
 #'     p.value = runif(length(gs$genesets))/10,
 #'     pFDR = runif(length(gs$genesets))/10,
 #'     ES = rnorm(length(gs$genesets)),
-#'     NES = rnorm(length(gs$genesets)),
-#'     nDE = sample(1:1000, length(gs$genesets))
+#'     NES = rnorm(length(gs$genesets))
 #'   )
 #' })
 #' # Adding method names to the result
@@ -139,8 +138,8 @@ plotPathwayNetwork <- function(results, genesets,
     }
 
     for (res in results) {
-        if (!all(c("ID", "name", "p.value", "pFDR", "nDE") %in% colnames(res))) {
-            stop("The columns of the data frame in the results should be at least ID, name, p.value, pFDR, and nDE.")
+        if (!all(c("ID", "name", "p.value", "pFDR") %in% colnames(res))) {
+            stop("The columns of the data frame in the results should be at least ID, name, p.value, and pFDR")
         }
 
         if (!statistic %in% colnames(res)) {

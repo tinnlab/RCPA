@@ -81,15 +81,22 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
         })
         names(rels) <- keggRels
         rels <- rels[relationships]
-        rels$dissociation_phosphorylation = matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
-        rels$nodes <- nodes
-        rels$NumberOfReactions = 0
+        rels$dissociation_phosphorylation <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
+
+        for (i in seq_along(rels)) {
+            if (is.null(rels[[i]])) next()
+            colnames(rels[[i]]) <- gsub("^.*:", "", colnames(rels[[i]]))
+            rownames(rels[[i]]) <- gsub("^.*:", "", rownames(rels[[i]]))
+        }
+
+        rels$nodes <- gsub("^.*:", "", nodes)
+        rels$NumberOfReactions <- 0
 
         return(rels)
     })
 
     for (pathwayId in names(pathInfo)) {
-        pathInfo[[pathwayId]]$title = keggPathwayNames[pathwayId] %>% as.character()
+        pathInfo[[pathwayId]]$title <- keggPathwayNames[pathwayId] %>% as.character()
     }
 
     pathways_size <- pathInfo %>% lapply(function (path) length(path[["nodes"]])) %>% unlist() %>% as.vector()
@@ -277,8 +284,7 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
             }
 
             pcomb[i] <- combfunc(pb[i], ph[i], combine)
-        }
-        else {
+        } else {
             pb[i] <- ph[i] <- smPFS[i] <- pcomb[i] <- tAraw[i] <- tA[i] <- NA
         }
         if (verbose) {
