@@ -38,79 +38,33 @@ This function performs geneset analysis using either ORA, fgsea, GSA, ks, or wil
 \examples{
 \dontrun{
 # Loading libraries
-library(testthat)
-library(hgu133plus2.db)
-library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
-library(RPCA)
-# Set seed for reproducibility
-set.seed(123)
-# Simulate a random gene expression matrix
-exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
-# Set row names for the expression matrix
-rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
-# Set column names for the expression matrix
-colnames(exprs) <- paste0("sample", 1:10)
-# Assign control samples
-controlSamples <- paste0("sample", 1:5)
-# Assign condition samples
-conditionSamples <- paste0("sample", 6:10)
-# Generate colData frame
-colData <- data.frame(
-  row.names = colnames(exprs),
-  group = factor(c(rep("control", 
-  length(controlSamples)), 
-  rep("condition", 
-  length(conditionSamples)))),
-  pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
-)
-# Generate summarizedExperiment object
-summarizedExperiment <- SummarizedExperiment(
-  assays = list(counts = exprs),
-  colData = colData
-)
-# # control vs condition
-design <- model.matrix(~0 + group, data = colData)
-contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
+library(RCPA)
+data("data")
+# Get affymetrix dataset
+affyDataset <- data$affyDataset
+# Create the analysis design
+affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
+affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
+# Perform DE analysis affymetrix dataset
+affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
+                                        method = "limma", 
+                                        design = affyDesign, 
+                                        contrast = affyContrast, 
+                                        annotation = "GPL570")
 
-# two class paired
-# design <- model.matrix(~0 + group + pair, data = colData)
-# contrast <- makeContrasts("groupcondition-groupcontrol", levels = design.paired)
-
-# Run differential expression analysis
-DERes <- runDEAnalysis(summarizedExperiment, 
-method = "DESeq2", 
-design, 
-contrast, 
-annotation = "GPL570")
-
-# Simulate geneset
-gs <- lapply(1:100, function(x) {
-  sample(rownames(DERes), runif(1, 100, 500))
-})
-
-# Assign geneset names and descriptions
-names(gs) <- paste0("geneset", 1:100)
-gs_fullNames <- paste0("path:", 1:100)
-names(gs_fullNames) <- names(gs)
-
-# Create genesets list
-genesets <- list(
-  database = "TEST",
-  genesets = gs,
-  names = gs_fullNames
-)
+genesets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
 
 # Perform geneset enrichment analysis using wilcox test
-result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "wilcox")
+result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "wilcox")
 # Perform geneset enrichment analysis using over representation analysis
-result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "ora")
+result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "ora")
 # Perform geneset enrichment analysis using fgsea
-result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea")
+result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "fgsea")
 # Perform geneset enrichment analysis using ks test
-result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "ks")
+result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "ks")
 # Perform geneset enrichment analysis using gsa
-result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "gsa")
+result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "gsa")
 }
 }
