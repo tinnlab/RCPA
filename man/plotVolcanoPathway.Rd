@@ -34,3 +34,28 @@ When NULL, the top pathways are labeled. Default is NULL.}
 \description{
 Plot volcano plot from Pathway analysis results
 }
+\examples{
+\dontrun{
+library(AnnotationDbi)
+library(SummarizedExperiment)
+library(limma)
+library(RCPA)
+data("data")
+# Get affymetrix dataset
+affyDataset <- data$affyDataset
+# Create the analysis design
+affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
+affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
+# Perform DE analysis affymetrix dataset
+affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
+                                        method = "limma", 
+                                        design = affyDesign, 
+                                        contrast = affyContrast, 
+                                        annotation = "GPL570")
+# Get DE data frame
+DEResult <- rowData(affyDEExperiment)
+# Plot volcano
+plotVolcanoDE(DEResult)
+}
+
+}
