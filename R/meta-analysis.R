@@ -181,8 +181,8 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
         stop("There is an error in meta analysis.")
     }
 
-    metaResult$name <- allData$name[match(allData$ID, metaResult$ID)][1]
-    metaResult$size <- allData$size[match(allData$ID, metaResult$ID)][1]
+    metaResult$name <- allData$name[match(metaResult$ID, allData$ID)]
+    metaResult$pathway.size <- allData$pathway.size[match(metaResult$ID, allData$ID)]
 
     return(metaResult)
 }

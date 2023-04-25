@@ -123,7 +123,14 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
         pathInfo[[pathwayId]]$title <- pathwayNames[pathwayId] %>% as.character()
     }
 
-    pathInfo
+    pathways_size <- pathInfo %>% lapply(function (path) length(path[["nodes"]])) %>% unlist() %>% as.vector()
+    names(pathways_size) <- names(pathInfo)
+
+    list(
+        network = pathInfo,
+        names = .getKEGGPathwayNames(org)[names(pathInfo)],
+        sizes = pathways_size
+    )
 }
 
 #' @title SPIA combfunc method.

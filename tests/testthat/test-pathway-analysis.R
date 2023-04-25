@@ -36,7 +36,7 @@ spiaNetwork <- getSPIAKEGGNetwork("hsa", FALSE)
 cepaNetwork <- getCePaPathwayCatalogue("hsa", FALSE)
 
 test_that('SPIA ', {
-    spiaRes <- .runSPIA(summarizedExperiment = DERes, network = spiaNetwork[1:10], pThreshold = 0.05, all = NULL)
+    spiaRes <- .runSPIA(summarizedExperiment = DERes, network = spiaNetwork, pThreshold = 0.05, all = NULL)
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(spiaRes)))
     expect_true(all(spiaRes$p.value <= 1))
     expect_true(all(spiaRes$p.value >= 0))

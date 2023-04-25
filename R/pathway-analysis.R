@@ -176,7 +176,7 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment assay
 #' @importFrom dplyr %>%
 #' @export
-runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA", "cepaORA", "cepaGSA"),
+runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia", "cepaORA", "cepaGSA"),
                                SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreshold = 0.05),
                               CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold = 0.05),
                               CePaGSAArgs = list(mat = NULL, label = NULL, pc, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
@@ -194,9 +194,16 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA",
 
     paArgs <- NULL
 
-    if(method == "SPIA"){
+    pathways_names <- network[["names"]]
+    network_obj <- network[["network"]]
 
-        if(any(sapply(network, function(x) length(x)) != 28)){
+    if(length(network_obj$pathList) != length(pathways_names)){
+        stop("The network definition does not match with the names attribute.")
+    }
+
+    if(method == "spia"){
+
+        if(any(sapply(network_obj, function(x) length(x)) != 28)){
             stop("The network definition for SPIA should be matched with the returned network object from getSPIAKEGGNetwork().")
         }
 
@@ -262,7 +269,7 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA",
     }
 
     paArgs$summarizedExperiment <- summarizedExperiment
-    paArgs$network <- network
+    paArgs$network <- network_obj
 
     methodFnc <- switch(method,
                      SPIA = .runSPIA,
@@ -277,9 +284,12 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("SPIA",
         stop("There is an error in geneset analysis procedure.")
     }
 
+    pathways_size <- network[["sizes"]]
+
     result$sample.size <- ncol(assay(summarizedExperiment))
-    result$name <- result$ID
-    result$pFDR <- p.adjust(result$p.value, method = "BH")
+    result$name <- pathways_names[as.character(result$ID)]
+    result$pFDR <- p.adjust(result$p.value, method = "fdr")
+    result$pathway.size <- pathways_size[result$ID]
 
     return(result)
 }

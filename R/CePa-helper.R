@@ -40,5 +40,12 @@ getCePaPathwayCatalogue <- function(org = "hsa", updateCache = F){
 
   cat <- CePa::set.pathway.catalogue(pathList, interactionList_modified, mapping_modified, min.node = 2, max.node = 1e+6)
 
-  return(cat)
+  pathways_size <- cat %>% lapply(function (path) length(path)) %>% unlist() %>% as.vector()
+  names(pathways_size) <- names(cat)
+
+  list(
+      network = cat,
+      names = .getKEGGPathwayNames(org)[names(cat$pathList)],
+      sizes = pathways_size
+  )
 }
