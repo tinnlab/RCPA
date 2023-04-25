@@ -17,7 +17,6 @@
 getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
 
     keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
-    pathwayNames <- ROntoTools::keggPathwayNames(org)
 
     relationships <- c("activation", "compound", "binding/association",
                        "expression", "inhibition", "activation_phosphorylation",
@@ -36,93 +35,68 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
         c('compound,activation', 'activation,compound')
     )
 
-    keggPathwayEntrez <- lapply(keggPathway, function(g) {
-        graph::nodes(g) <- graph::nodes(g) %>%
-            strsplit(":") %>%
-            sapply(function(x) x[2]) %>%
-            as.character()
-        g
-    })
+    keggRels <- keggPathway %>%
+        lapply(function(e) e@edgeData@data %>% lapply(function(e) {
+            s <- e$subtype
+            for (r in replacements) {
+                s <- sub(r[1], r[2], s)
+            }
+            s
+        })) %>%
+        unlist() %>%
+        unique() %>%
+        sub(pattern = ",", replacement = "_") %>%
+        strsplit(',') %>%
+        unlist() %>%
+        unique()
 
-    allRelationships <- lapply(names(keggPathwayEntrez), function(pathway) {
-        rels <- keggPathwayEntrez[[pathway]]@edgeData@data %>% sapply(function(s) s$subtype)
+    keggPathwayNames <- ROntoTools::keggPathwayNames(org)
 
-        fromTo <- names(rels) %>%
-            strsplit("\\|") %>%
-            do.call(what = rbind) %>%
-            as.data.frame() %>%
-            `colnames<-`(c("to", "from"))
+    pathInfo <- lapply(keggPathway, function(pathway) {
+        nodes <- pathway@nodes
+        edgeData <- pathway@edgeData@data
 
-        data.frame(
-            pathway = pathway,
-            relationship = rels,
-            from = fromTo$from,
-            to = fromTo$to
-        )
-    }) %>%
-        do.call(what = rbind) %>%
-        filter(.data$relationship %in% relationships)
+        rels <- lapply(keggRels, function(relationship) {
+            dat <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
 
-    for (r in replacements) {
-        allRelationships$relationship <- sub(r[1], r[2], allRelationships$relationship)
-    }
-
-    allRelationships$relationship <- sub(pattern = ",", replacement = "_", allRelationships$relationship)
-
-    allRelationships <- allRelationships %>% filter(str_length(.data$relationship) > 0)
-
-    uniqueRelationships <- unique(allRelationships$relationship)
-
-    pathInfo <- allRelationships %>%
-        group_by(.data$pathway) %>%
-        group_split() %>%
-        lapply(function(df) {
-            nodes <- graph::nodes(keggPathwayEntrez[[df$pathway[1]]])
-
-            rels <- df %>%
-                group_by(.data$relationship) %>%
-                group_split() %>%
-                lapply(function(dfRel) {
-                    reactions <- dfRel %>%
-                        select(.data$from, .data$to) %>%
-                        tidyr::spread(key = .data$from, value = .data$from)
-
-                    dat <- matrix(NA, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
-
-                    from <- colnames(reactions)[-1]
-                    to <- reactions$to
-                    dat[to, from] <- as.numeric(as.matrix(reactions[, -1]))
-                    dat[!is.na(dat)] <- 1
-                    dat[is.na(dat)] <- 0
-                    list(
-                        relationship = dfRel$relationship[1],
-                        dat = t(dat)
-                    )
+            reactions <- edgeData %>%
+                lapply(function(e) {
+                    s <- e$subtype
+                    for (r in replacements) {
+                        s <- sub(r[1], r[2], s)
+                    }
+                    s <- sub(',', '_', s)
+                    relationship %in% (strsplit(s, ",") %>% unlist())
                 }) %>%
-                setNames(sapply(., function(x) x$relationship)) %>%
-                lapply(function(x) x$dat)
+                unlist() %>%
+                which() %>%
+                names() %>%
+                strsplit('\\|')
 
-            remainingRels <- setdiff(uniqueRelationships, names(rels))
-
-            for (r in remainingRels) {
-                rels[[r]] <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
+            for (r in reactions) {
+                dat[r[2], r[1]] <- 1
             }
 
-            rels$dissociation_phosphorylation <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
-            rels <- rels[relationships]
-            rels$nodes <- nodes
-            rels$NumberOfReactions <- 0
+            return(dat)
+        })
+        names(rels) <- keggRels
+        rels <- rels[relationships]
+        rels$dissociation_phosphorylation <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
 
-            list(
-                pathway = df$pathway[1],
-                rels = rels
-            )
-        }) %>%
-        setNames(sapply(., function(x) x$pathway)) %>%
-        lapply(function(x) x$rels)
+        for (i in seq_along(rels)) {
+            if (is.null(rels[[i]])) next()
+            colnames(rels[[i]]) <- gsub("^.*:", "", colnames(rels[[i]]))
+            rownames(rels[[i]]) <- gsub("^.*:", "", rownames(rels[[i]]))
+        }
+
+        rels$nodes <- gsub("^.*:", "", nodes)
+        rels$NumberOfReactions <- 0
+
+        return(rels)
+    })
 
     for (pathwayId in names(pathInfo)) {
-        pathInfo[[pathwayId]]$title <- pathwayNames[pathwayId] %>% as.character()
+        pathInfo[[pathwayId]]$title <- keggPathwayNames[pathwayId] %>% as.character()
     }
 
     pathways_size <- pathInfo %>% lapply(function (path) length(path[["nodes"]])) %>% unlist() %>% as.vector()
@@ -167,14 +141,14 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
 #' @description This function is modified from the original SPIA method to accept KEGG pathway networks as inputs.
 #' @param de See SPIA function
 #' @param all See SPIA function
-#' @param path.info pathway information generated by getSPIAKEGGNetwork function
+#' @param pathInfo pathway information generated by getSPIAKEGGNetwork function
 #' @param nB See SPIA function
 #' @param verbose See SPIA function
 #' @param beta See SPIA function
 #' @param combine See SPIA function
 #' @return See SPIA function
 #' @importFrom stats median
-.SPIAMod <- function(de = NULL, all = NULL, path.info, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher") {
+.SPIAMod <- function(de = NULL, all = NULL, pathInfo, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher") {
     if (is.null(de) | is.null(all)) {
         stop("de and all arguments can not be NULL!")
     }
@@ -202,7 +176,7 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
         }
     }
 
-    datpT <- path.info
+    datpT <- pathInfo
 
     datp <- list()
     path.names <- NULL
@@ -310,14 +284,12 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
             }
 
             pcomb[i] <- combfunc(pb[i], ph[i], combine)
-        }
-        else {
+        } else {
             pb[i] <- ph[i] <- smPFS[i] <- pcomb[i] <- tAraw[i] <- tA[i] <- NA
         }
         if (verbose) {
             cat("\n")
-            cat(paste("Done pathway ", i, " : ", substr(path.names[names(datp)[i]],
-                                                        1, 30), "..", sep = ""))
+            cat(paste("Done pathway ", i, " : ", substr(path.names[names(datp)[i]], 1, 30), "..", sep = ""))
         }
     }
 

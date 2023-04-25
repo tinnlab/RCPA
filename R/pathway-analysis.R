@@ -20,7 +20,7 @@
     if(is.null(all))
       all = rownames(DE_data)
 
-    res <- .SPIAMod(de = DE_stat, all = all, path.info = network, ...)
+    res <- .SPIAMod(de = DE_stat, all = all, pathInfo = network, ...)
     res <- res[, c('ID', 'pG')]
     colnames(res) <- c("ID", "p.value")
 
@@ -28,12 +28,12 @@
         path$nodes %>% as.list %>% as.vector()
     }) %>% `names<-`(names(network))
 
-    oraRes <- .runORA(summarizedExperiment, constructed_genesets, pThreshold = 0.05)
+    oraRes <- .runORA(summarizedExperiment, constructed_genesets, pThreshold = pThreshold)
     oraRes <- oraRes[oraRes$ID %in% res$ID,] %>% `rownames<-`(.$ID)
     oraRes <- oraRes[res$ID,]
 
     data.frame(
-      ID = res$pathway,
+      ID = res$ID,
       p.value = res$p.value,
       score = oraRes$score,
       normalizedScore = oraRes$normalizedScore,
@@ -211,9 +211,9 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
             stop("The network definition does not match with the names attribute.")
         }
 
-        if(any(sapply(network_obj, function(x) length(x)) != 28)){
-            stop("The network definition for SPIA should be matched with the returned network object from getSPIAKEGGNetwork().")
-        }
+        # if(any(sapply(network_obj, function(x) length(x)) != 29)){
+        #     stop("The network definition for SPIA should be matched with the returned network object from getSPIAKEGGNetwork().")
+        # }
 
         SPIAArgs.default <- list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreshold = 0.05)
 
@@ -285,6 +285,8 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
 
     paArgs$summarizedExperiment <- summarizedExperiment
     paArgs$network <- network_obj
+
+    paArgs$network <- pathInfo[1:2]
 
     methodFnc <- switch(method,
                      spia = .runSPIA,

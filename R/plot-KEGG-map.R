@@ -53,6 +53,7 @@
 #' @importFrom ggplot2 ggplot annotation_custom theme_void scale_x_continuous annotation_raster geom_rect scale_fill_gradient guide_colorbar annotate element_text margin
 #' @importFrom utils globalVariables
 #' @importFrom ggthemes tableau_gradient_pal
+#' @export
 plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = TRUE, pThreshold = 0.05, statLimit = 3) {
 
     for (DERes in DEResults) {

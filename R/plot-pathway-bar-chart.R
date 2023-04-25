@@ -145,16 +145,22 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("normalized
                 position = if (length(results) > 1) "dodge" else "fill",
                 width = ifelse(length(results) > 1, 0.9, 1),
                 pattern_size = 0,
-                pattern_alpha = 0.4,
-                pattern_fill = "white",
+                pattern_alpha = 0.75,
+                pattern_fill = "black",
                 pattern_spacing = 0.01
             ) +
             scale_fill_discrete(
-                guide = guide_legend(title = "Dataset")
+                guide = guide_legend(
+                    title = "Dataset",
+                    override.aes = list(pattern = "none", color = "black")
+                )
             ) +
             scale_pattern_manual(
                 values = c("Yes" = "stripe", "No" = "none"),
-                guide = guide_legend(title = "Significant")
+                guide = guide_legend(
+                    title = "Significant",
+                    override.aes = list(fill = "white", color = "black")
+                )
             )
     }
 
