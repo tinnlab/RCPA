@@ -136,7 +136,7 @@
 }
 
 #' @title Perform Meta Analysis
-#' @description This function performs mata analysis on multiple pathway analysis results.
+#' @description This function performs meta analysis on multiple pathway analysis results.
 #' @param DFsList A list of dataframes obtained from runPathwayAnalysis.
 #' @param method A method used to combine pathway analysis results
 #' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.

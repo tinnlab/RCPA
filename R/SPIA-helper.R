@@ -5,7 +5,9 @@
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
 #' @return A named list of KEGG pathway networks for SPIA method.
 #' @examples
+#' \dontrun{
 #' getSPIAKEGGNetwork("hsa")
+#' }
 #' @export
 #' @importFrom ROntoTools keggPathwayGraphs keggPathwayNames
 #' @importFrom graph nodes edges
