@@ -2,6 +2,7 @@ library(testthat)
 library(ggplot2)
 
 devtools::load_all()
+plotBarChart(results)
 
 results <- lapply(1:3, function(i) {
     set.seed(i)

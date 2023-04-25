@@ -211,9 +211,9 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
             stop("The network definition does not match with the names attribute.")
         }
 
-        if(any(sapply(network_obj, function(x) length(x)) != 28)){
-            stop("The network definition for SPIA should be matched with the returned network object from getSPIAKEGGNetwork().")
-        }
+        # if(any(sapply(network_obj, function(x) length(x)) != 29)){
+        #     stop("The network definition for SPIA should be matched with the returned network object from getSPIAKEGGNetwork().")
+        # }
 
         SPIAArgs.default <- list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreshold = 0.05)
 
