@@ -19,5 +19,7 @@ A named list of KEGG pathway networks for SPIA method.
 Get KEGG pathway network for SPIA method
 }
 \examples{
+\dontrun{
 getSPIAKEGGNetwork("hsa")
+}
 }
