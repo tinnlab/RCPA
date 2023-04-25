@@ -36,55 +36,53 @@ The heatmap contains p-values and log fold changes from the DE analysis.
 }
 \examples{
 \dontrun{
-library(hgu133plus2.db)
-library(AnnotationDbi)
+#Load necessary libraries
 library(SummarizedExperiment)
 library(limma)
-library(ggplot2)
 library(RCPA)
+library(ggplot2)
+# Load dataset
+data("data")
+# Get affymetrix dataset
+affyDataset <- data$affyDataset
+# Create the analysis design
+affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
+affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
+# Perform DE analysis affymetrix dataset
+affyDEExperiment <- RCPA::runDEAnalysis(affyDataset,
+                                        method = "limma",
+                                        design = affyDesign,
+                                        contrast = affyContrast,
+                                        annotation = "GPL570")
 
-# generate diferential expression analysis using a random gene expression matrix
-DEResults <- lapply(1:3, function(seed) {
-  set.seed(seed)
-  exprs <- round(matrix(abs(rnorm(20000 * 10, sd = 4)), nrow = 20000, ncol = 10))
-  rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
-  colnames(exprs) <- paste0("sample", 1:10)
-  
-  controlSamples <- paste0("sample", 1:5)
-  conditionSamples <- paste0("sample", 6:10)
-  
-  exprs[, conditionSamples] <- exprs[, conditionSamples] + 
-  2*sample(c(1,-1), nrow(exprs), replace = TRUE)
-  
-  colData <- data.frame(
-    row.names = colnames(exprs),
-    group = factor(c(rep("control", length(controlSamples)), rep("condition", 
-    length(conditionSamples)))),
-    pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
-  )
-  
-  summarizedExperiment <- SummarizedExperiment(
-    assays = list(counts = exprs),
-   colData = colData
-)
- 
- # control vs condition
- design <- model.matrix(~0 + group, data = colData)
- contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
- runDEAnalysis(summarizedExperiment,
-  method = "limma", 
-  design, 
-  contrast, 
-  annotation = "GPL570") \%>\% rowData()
-})
+# Get Agilent dataset
+agilDataset <- data$agilDataset
+# Create the analysis design
+agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
+agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
+# Perform genID mapping
+GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
+GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
+                                 TO = as.character(GPL4133Anno$GENE), 
+                                 stringsAsFactors = F)
+GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
+# Perform DE analysis for agilent dataset
+agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, 
+                                        method = "limma", 
+                                        design = agilDesign, 
+                                        contrast = agilContrast, 
+                                        annotation = GPL4133GeneMapping)
+
+
+rest <- list(affyDE = rowData(affyDEExperiment), agilDE = rowData(agilDEExperiment))
 
 # Get common genes from different studies
-genes <- sample(Reduce(intersect, lapply(DEResults, function(res) res$ID)), 30)
+genes <- sample(Reduce(intersect, lapply(rest, function(res) res$ID)), 30)
 # Get gene annotation
 annotation <- getEntrezAnnotation(genes)
 # Get gene description
 labels <- annotation[genes, "Description"]
 # Plot gene heatmap
-plotDEGeneHeatmap(DEResults, genes, labels = labels)
+plotDEGeneHeatmap(rest, genes, labels = labels)
 }
 }

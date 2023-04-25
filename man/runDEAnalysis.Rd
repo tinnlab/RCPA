@@ -40,7 +40,7 @@ For DESeq2, this is the Wald statistic.
 For edgeR, this is the log fold change.}
 \item{avgExpr}{
 For limma, it is the average expression.
-For DESeq2, it is the base mean.
+For DESeq2, it is the log base mean.
 For edgeR, it is the log CPM.
 }
 }

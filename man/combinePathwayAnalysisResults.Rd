@@ -6,7 +6,7 @@
 \usage{
 combinePathwayAnalysisResults(
   DFsList,
-  method = c("fisher", "stouffer", "min", "ES", "geoMean", "addCLT", "minP")
+  method = c("fisher", "stouffer", "min", "score", "geoMean", "addCLT", "minP")
 )
 }
 \arguments{

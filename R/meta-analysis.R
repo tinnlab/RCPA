@@ -16,11 +16,11 @@
            geoMean = .runGeoMean
           )
 
-    metaPvalRes <- inputData %>% group_by(pathway) %>% group_split() %>% lapply(function (data){
+    metaPvalRes <- inputData %>% group_by(ID) %>% group_split() %>% lapply(function (data){
                 pValues <- data$p.value
                 meta.Pval <- combineFunc(pValues)
                 data.frame(
-                  pathway = data$pathway[1],
+                  ID = data$ID[1],
                   p.value = meta.Pval,
                   stringsAsFactors = FALSE
                 )
@@ -30,11 +30,11 @@
 
     metaRes <- metaPvalRes
     metaRes$score <- metaRes$score.sd <- metaRes$count <- 0
-    metaRes$score <- metaScoreRes$score[match(metaScoreRes$pathway, metaRes$pathway)]
-    metaRes$score.sd <- metaScoreRes$score.sd[match(metaScoreRes$pathway, metaRes$pathway)]
-    metaRes$count <- metaScoreRes$count[match(metaScoreRes$pathway, metaRes$pathway)]
+    metaRes$score <- metaScoreRes$score[match(metaScoreRes$ID, metaRes$ID)]
+    metaRes$score.sd <- metaScoreRes$score.sd[match(metaScoreRes$ID, metaRes$ID)]
+    metaRes$count <- metaScoreRes$count[match(metaScoreRes$ID, metaRes$ID)]
 
-    metaRes <- metaRes[, c("pathway", "p.value", "score", "score.sd", "count")]
+    metaRes <- metaRes[, c("ID", "p.value", "score", "score.sd", "count")]
 
     return(metaRes)
 }
@@ -103,10 +103,10 @@
 #' @importFrom dplyr %>%
 .combineEnrichmentScores <- function(inputData){
 
-    metaRes <- inputData %>% group_by(pathway) %>% group_split() %>% lapply(function(data){
+    metaRes <- inputData %>% group_by(ID) %>% group_split() %>% lapply(function(data){
         data$normalizedScore.sd <- abs((data$normalizedScore - ifelse(data$normalizedScore > 0, 1, -1))/qnorm(data$p.value))
         meta.res <- metagen(data = data,
-                            studlab = pathway,
+                            studlab = ID,
                             TE = normalizedScore ,
                             seTE = normalizedScore.sd,
                             sm = "SMD",
@@ -121,7 +121,7 @@
         if (normalizedScore.combined < 0) pval <- 1 - pval
 
         data.frame(
-          pathway = data$pathway[1],
+          ID = data$ID[1],
           p.value = pval,
           score = normalizedScore.combined,
           score.sd = normalizedScore.combined.sd,
@@ -130,7 +130,7 @@
         )
       }) %>% do.call(what = rbind) %>% as.data.frame()
 
-    metaRes <- metaRes[, c("pathway", "p.value", "score", "score.sd", "count")]
+    metaRes <- metaRes[, c("ID", "p.value", "score", "score.sd", "count")]
 
     return(metaRes)
 }
@@ -142,7 +142,8 @@
 #' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
 #' @details This function performs mata analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows
-combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffer", "min", "ES", "geoMean", "addCLT", "minP")){
+#' @export
+combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffer", "min", "score", "geoMean", "addCLT", "minP")){
 
     method <- match.arg(method)
 
@@ -172,7 +173,7 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
     allData <- bind_rows(DFsList)
 
     metaResult <- NULL
-    if(method == "ES")
+    if(method == "score")
       metaResult <- .combineEnrichmentScores(allData)
     else metaResult <- .combinePvalues(allData)
 
@@ -180,8 +181,8 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
         stop("There is an error in meta analysis.")
     }
 
-    metaResult$pathway.name <- allData$pathway.name[match(allData$pathway, metaResult$pathway)][1]
-    metaResult$pathway.size <- allData$pathway.size[match(allData$pathway, metaResult$pathway)][1]
+    metaResult$name <- allData$name[match(allData$ID, metaResult$ID)][1]
+    metaResult$size <- allData$size[match(allData$ID, metaResult$ID)][1]
 
     return(metaResult)
 }
