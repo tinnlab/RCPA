@@ -406,11 +406,11 @@ runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method 
     genesets_size <- genesets[["genesets"]] %>% lapply(function (gs) length(gs)) %>% unlist() %>% as.vector()
     names(genesets_size) <- names(genesets[["genesets"]])
 
-    result$sample.size = ncol(assay(summarizedExperiment))
+    result$sampleSize = ncol(assay(summarizedExperiment))
     genesets_names <- genesets[["names"]]
     result$name = genesets_names[as.character(result$ID)]
     result$pFDR <- p.adjust(result$p.value, method = "fdr")
-    result$pathway.size <- genesets_size[result$ID]
+    result$pathwaySize <- genesets_size[result$ID]
 
     return(result)
 }
