@@ -3,7 +3,7 @@
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
 #' @param updateCache A parameter to enable/disable cache update.
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
-#' @return A named list of KEGG pathways catalouge for CePa.ORA and CePa.GSA methods.
+#' @return A named list with three elements: network, names and sizes for CePa.ORA and CePa.GSA methods.
 #' @examples
 #' getCePaPathwayCatalogue("hsa")
 #' @export
@@ -40,8 +40,8 @@ getCePaPathwayCatalogue <- function(org = "hsa", updateCache = F){
 
   cat <- CePa::set.pathway.catalogue(pathList, interactionList_modified, mapping_modified, min.node = 2, max.node = 1e+6)
 
-  pathways_size <- cat %>% lapply(function (path) length(path)) %>% unlist() %>% as.vector()
-  names(pathways_size) <- names(cat)
+  pathways_size <- cat[["pathList"]] %>% lapply(function (path) length(path)) %>% unlist() %>% as.vector()
+  names(pathways_size) <- names(cat[["pathList"]])
 
   list(
       network = cat,

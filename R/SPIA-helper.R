@@ -3,7 +3,7 @@
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
 #' @param updateCache A parameter to disable/enable cache update.
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
-#' @return A named list of KEGG pathway networks for SPIA method.
+#' @return A named list with three elements: network, names and sizes.
 #' @examples
 #' \dontrun{
 #' getSPIAKEGGNetwork("hsa")

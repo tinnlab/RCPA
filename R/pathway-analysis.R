@@ -139,7 +139,7 @@
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
 #' @param network The pathways network object.
 #' @param method The pathway analsyis method, including SPIA, cepaORA, and cepaGSA.
-#' @param SPIAArgs A list of other passed arguments to fgsea. See spia function.
+#' @param SPIAArgs A list of other passed arguments to spia. See spia function.
 #' @param CePaORAArgs A list of other passed arguments to CePaORA. See CePa function.
 #' @param CePaGSAArgs A list of other passed arguments to CePaGSA. See CePa function.
 #' @return A dataframe of pathway analysis result
@@ -197,11 +197,11 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
     pathways_names <- network[["names"]]
     network_obj <- network[["network"]]
 
-    if(length(network_obj$pathList) != length(pathways_names)){
-        stop("The network definition does not match with the names attribute.")
-    }
-
     if(method == "spia"){
+
+        if(length(network_obj) != length(pathways_names)){
+            stop("The network definition does not match with the names attribute.")
+        }
 
         if(any(sapply(network_obj, function(x) length(x)) != 28)){
             stop("The network definition for SPIA should be matched with the returned network object from getSPIAKEGGNetwork().")
@@ -229,6 +229,9 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
     }
 
     if(method == "cepaORA"){
+        if(length(network_obj$pathList) != length(pathways_names)){
+            stop("The network definition does not match with the names attribute.")
+        }
 
         default.centralities <- list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach")
         CePaORAArgs.default = list(bk = NULL, cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), iter = 1000, pThreshold = 0.05)
@@ -249,6 +252,10 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
     }
 
     if(method == "cepaGSA"){
+
+        if(length(network_obj$pathList) != length(pathways_names)){
+            stop("The network definition does not match with the names attribute.")
+        }
 
         default.centralities <- list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach")
         CePaGSAArgs.default = list(mat = NULL, label = NULL, cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
