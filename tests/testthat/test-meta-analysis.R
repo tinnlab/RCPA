@@ -118,7 +118,7 @@ test_that('Combine Enrichment Scores ', {
 })
 
 test_that('Combine Pathway Analysis Results ', {
-  metaRes <- combinePathwayAnalysisResults(allDFs, method = "ES")
+  metaRes <- combinePathwayAnalysisResults(allDFs, method = "score")
   selected_pval <- metaRes$p.value[metaRes$pathway == "geneset1"]
   DFs_pvals <- c(DF1$p.value[DF1$pathway == "geneset1"], DF2$p.value[DF2$pathway == "geneset1"], DF3$p.value[DF3$pathway == "geneset1"])
   expect_true(all(c("pathway", "p.value", "score", "score.sd", "count") %in% colnames(metaRes)))
@@ -130,7 +130,7 @@ test_that('Combine Pathway Analysis Results ', {
 })
 
 test_that('Combine Pathway Analysis Results ', {
-  metaRes <- combinePathwayAnalysisResults(allDFs, method = "ES")
+  metaRes <- combinePathwayAnalysisResults(allDFs, method = "score")
   selected_pval <- metaRes$p.value[metaRes$pathway == "geneset1"]
   DFs_pvals <- c(DF1$p.value[DF1$pathway == "geneset1"], DF2$p.value[DF2$pathway == "geneset1"], DF3$p.value[DF3$pathway == "geneset1"])
   expect_true(all(c("pathway", "p.value", "score", "score.sd", "count") %in% colnames(metaRes)))
@@ -161,10 +161,10 @@ test_that('Combine Pathway Analysis Results ', {
   notCompatibleRownames <- list(DF1, DF2.tmp)
   DF4 <- NULL
   nullList <- list(DF1, DF2, DF4, DF3)
-  expect_error(combinePathwayAnalysisResults(singleList, method = "ES"), "Meta analysis is valid for two or more studies.")
-  expect_error(combinePathwayAnalysisResults(notCompatibleDim, method = "ES"), "All the dataframes in the input list must have the same dimension.")
-  expect_error(combinePathwayAnalysisResults(notCompatibleRownames, method = "ES"), "All the dataframes in the input list must have the same row names.")
-  expect_error(combinePathwayAnalysisResults(nullList, method = "ES"), "There is null object in the input list.")
+  expect_error(combinePathwayAnalysisResults(singleList, method = "score"), "Meta analysis is valid for two or more studies.")
+  expect_error(combinePathwayAnalysisResults(notCompatibleDim, method = "score"), "All the dataframes in the input list must have the same dimension.")
+  expect_error(combinePathwayAnalysisResults(notCompatibleRownames, method = "score"), "All the dataframes in the input list must have the same row names.")
+  expect_error(combinePathwayAnalysisResults(nullList, method = "score"), "There is null object in the input list.")
 })
 
 
