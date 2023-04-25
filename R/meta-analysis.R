@@ -110,7 +110,7 @@
                             TE = normalizedScore ,
                             seTE = normalizedScore.sd,
                             sm = "SMD",
-                            n.e = sample.size,
+                            n.e = sampleSize,
                             method.tau = "REML",
                             hakn = TRUE)
 
@@ -262,7 +262,7 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
     }
 
     metaResult$name <- allData$name[match(metaResult$ID, allData$ID)]
-    metaResult$pathway.size <- allData$pathway.size[match(metaResult$ID, allData$ID)]
+    metaResult$pathwaySize <- allData$pathwaySize[match(metaResult$ID, allData$ID)]
 
     return(metaResult)
 }

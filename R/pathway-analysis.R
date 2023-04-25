@@ -286,10 +286,10 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
 
     pathways_size <- network[["sizes"]]
 
-    result$sample.size <- ncol(assay(summarizedExperiment))
+    result$sampleSize <- ncol(assay(summarizedExperiment))
     result$name <- pathways_names[as.character(result$ID)]
     result$pFDR <- p.adjust(result$p.value, method = "fdr")
-    result$pathway.size <- pathways_size[result$ID]
+    result$pathwaySize <- pathways_size[result$ID]
 
     return(result)
 }

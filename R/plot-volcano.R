@@ -59,6 +59,10 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
         stop("The p.value column is not in the results data frame")
     }
 
+    if (!"size" %in% colnames(PAResult)) {
+        stop("The size column is not in the results data frame")
+    }
+
     if (is.null(IDsToLabel)) {
         IDsToLabel <- PAResult %>%
             arrange(
