@@ -1,6 +1,6 @@
 #' @title Plot volcano plot from Pathway analysis results
 #' @description Plot volcano plot from Pathway analysis results
-#' @param results A data frame with Pathway analysis results.
+#' @param PAResult A data frame with Pathway analysis results.
 #' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param xAxis The column to use for the x-axis.
 #' @param yAxis The column to use for the y-axis.
@@ -14,29 +14,29 @@
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
 #' @export
-plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
+plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
 
     xAxis <- match.arg(xAxis)
     yAxis <- match.arg(yAxis)
 
-    if (!label %in% colnames(results)) {
+    if (!label %in% colnames(PAResult)) {
         stop(paste0("The label column '", label, "' is not in the results data frame."))
     }
 
-    if (!xAxis %in% colnames(results)) {
+    if (!xAxis %in% colnames(PAResult)) {
         stop(paste0("The xAxis column '", xAxis, "' is not in the results data frame."))
     }
 
-    if (yAxis == "-log10(pFDR)" && !("pFDR" %in% colnames(results))) {
+    if (yAxis == "-log10(pFDR)" && !("pFDR" %in% colnames(PAResult))) {
         stop("The pFDR column is not in the results data frame")
     }
 
-    if (yAxis == "-log10(p.value)" && !("p.value" %in% colnames(results))) {
+    if (yAxis == "-log10(p.value)" && !("p.value" %in% colnames(PAResult))) {
         stop("The p.value column is not in the results data frame")
     }
 
     if (is.null(IDsToLabel)) {
-        IDsToLabel <- results %>%
+        IDsToLabel <- PAResult %>%
             arrange(
                 if (yAxis == "-log10(pFDR)") {
                     .data$pFDR
@@ -49,22 +49,22 @@ plotVolcanoPathway <- function(results, xAxis = c("normalizedScore", "score"), y
     }
 
     plotDat <- data.frame(
-        x = results[[xAxis]],
+        x = PAResult[[xAxis]],
         y = if (yAxis == "-log10(pFDR)") {
-            -log10(results$pFDR)
+            -log10(PAResult$pFDR)
         } else {
-            -log10(results$p.value)
+            -log10(PAResult$p.value)
         },
-        size = results$size,
-        label = ifelse(results$ID %in% IDsToLabel, results[[label]], "")
+        size = PAResult$size,
+        label = ifelse(PAResult$ID %in% IDsToLabel, PAResult[[label]], "")
     )
 
     ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$x)) +
-        geom_hline(yintercept = -log10(pThreshold), linetype = "dashed", color = "red") +
-        geom_vline(xintercept = 0, linetype = "dashed") +
         geom_point(
             aes(size = .data$size)
         ) +
+        geom_hline(yintercept = -log10(pThreshold), linetype = "dashed", color = "red") +
+        geom_vline(xintercept = 0, linetype = "dashed") +
         geom_label_repel(
             aes(label = .data$label),
             # point.padding = 0.5,
@@ -142,10 +142,10 @@ plotVolcanoDE <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, logFCThres
     }
 
     pl <- ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$color)) +
+        geom_point() +
         geom_hline(yintercept = -log10(pThreshold), linetype = "dashed", color = "black") +
         geom_vline(xintercept = -logFCThreshold, linetype = "dashed") +
         geom_vline(xintercept = logFCThreshold, linetype = "dashed") +
-        geom_point() +
         labs(
             x = "log2 fold change",
             y = if (useFDR) {
