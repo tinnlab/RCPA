@@ -38,7 +38,7 @@
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
 #' @export
-plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 20) {
+plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 10) {
 
     xAxis <- match.arg(xAxis)
     yAxis <- match.arg(yAxis)
@@ -97,10 +97,11 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
             aes(label = .data$label),
             # point.padding = 0.5,
             # segment.alpha = 0.5,
-            # force = 0.5,
+            force = 0.5,
             # nudge_x = -0.25,
-            # nudge_y = 0.01,
+            # nudge_y = 0,
             color = "black",
+            max.overlaps = Inf
 
         ) +
         scale_color_gradient(low = "blue", high = "red") +

@@ -13,7 +13,7 @@ getCePaPathwayCatalogue(org = "hsa", updateCache = F)
 Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.}
 }
 \value{
-A named list of KEGG pathways catalouge for CePa.ORA and CePa.GSA methods.
+A named list with three elements: network, names and sizes for CePa.ORA and CePa.GSA methods.
 }
 \description{
 Get KEGG pathway catalouge for CePa.ORA and CePa.GSA methods
