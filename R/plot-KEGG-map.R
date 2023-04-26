@@ -221,7 +221,7 @@ plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = 
     }
 
 
-    p + theme(
+    p <- p + theme(
         legend.text = element_text(size = 4 * scale),
         legend.title = element_text(size = 4 * scale),
         legend.position = c(1, 0),

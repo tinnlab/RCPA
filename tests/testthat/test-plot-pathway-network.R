@@ -15,7 +15,8 @@ results <- lapply(1:3, function(i) {
         ID = names(gs$genesets),
         name = gs$names,
         p.value = runif(length(gs$genesets))/10,
-        pFDR = runif(length(gs$genesets))/10
+        pFDR = runif(length(gs$genesets))/10,
+        score = runif(length(gs$genesets), -2, 2)
     )
 })
 
@@ -29,7 +30,6 @@ edgeThreshold <- 0.1
 
 test_that('plot pathway network with default params', {
     rcy <- plotPathwayNetwork(results, genesets, pThreshold = pThreshold, useFDR = useFDR)
-    RCyjs::layout(rcy, "cose")
     expect_true("RCyjs" %in% class(rcy))
     expect_true(rcy@port > 10000)
     expect_true(rcy@port < 20000)

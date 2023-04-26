@@ -185,7 +185,18 @@ plotPathwayNetwork <- function(results, genesets,
         size = sapply(names(genesets), nodeSizeFnc),
         borderWidth = sapply(names(genesets), borderWidthFnc),
         borderColor = borderColor,
-        nResult = length(results)
+        nResult = length(results),
+        legendTitle = (
+            if (statistic == "p.value") "-log10 p-value"
+            else if (statistic == "pFDR") "-log10 FDR"
+            else statistic
+        ),
+        statLimitUpper = statLimit,
+        statLimitLower = (
+            if (statistic == "p.value") 0
+            else if (statistic == "pFDR") 0
+            else -statLimit
+        )
     )
 
     for (i in seq_along(results)) {

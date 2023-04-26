@@ -66,22 +66,72 @@ legendDiv.innerHTML = `
     ${
     transforms.map((e, i) => `
         <div style="position: absolute; transform-origin: bottom left; bottom: 50%; left: 50%; width: 0px; height: 52px; border: solid 1px #777; transform: rotate(${i * 360 / nResult}deg);"></div>
-        <div style="position: absolute; transform-origin: bottom left; bottom: 50%; left: 50%; height: 50px; transform: rotate(${i * 360 / nResult + 360 / nResult/2 }deg);">
+        <div style="position: absolute; transform-origin: bottom left; bottom: 50%; left: 50%; height: 50px; transform: rotate(${i * 360 / nResult + 360 / nResult / 2}deg);">
             <div style="margin-top: 5px">
-                <div style="transform: rotate(-${i * 360 / nResult + 360 / nResult/2 }deg)">
+                <div style="transform: rotate(-${i * 360 / nResult + 360 / nResult / 2}deg)">
                     ${i + 1}
                 </div>
             </div>
         </div>
         `).join("")
-    }
+}
     </div>
     
     <div style="margin-top: 110px">
         ${resultNames.map((name, i) => `<div>${i + 1}. ${name}</div>`).join("")}
     </div>
 </div>
+`
+
+cyDiv.appendChild(legendDiv);
+
+legendDiv = document.createElement("div");
+
+legendDiv.style.position = "absolute";
+legendDiv.style.bottom = "0px";
+legendDiv.style.right = "200px";
+legendDiv.style.width = "200px";
+legendDiv.style.height = "50px";
+
+legendTitle = rcy.cy.nodes()[0].data("legendTitle");
+statLimitUpper = rcy.cy.nodes()[0].data("statLimitUpper");
+statLimitLower = rcy.cy.nodes()[0].data("statLimitLower");
+
+legendDiv.innerHTML = `
 <div>
+    <div style=" margin-left: 15px; margin-bottom: 5px">
+        ${legendTitle}
+    </div>
+    <div style="width: 175px;">
+        <div style="float: left">
+            ${statLimitLower}
+        </div>
+        <div style="float: right">
+            ${statLimitUpper}
+        </div>
+    </div>
+    ${
+    statLimitLower < 0 ?
+        `
+        <div style="
+            margin-left: 15px;
+            background: linear-gradient(90deg, rgba(0,0,255,1) 0%, rgba(255,255,255,1) 50%, rgba(255,0,0,1) 100%);
+            width: 150px;
+            height: 20px;
+        "></div>
+        `
+        :
+        `
+        <div style="
+            margin-left: 15px;
+            background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,0,0,1) 100%);
+            width: 150px;
+            height: 20px;
+        "></div>
+        `
+}
+    
+</div>
 `
 
 cyDiv.appendChild(legendDiv);
