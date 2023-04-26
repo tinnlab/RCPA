@@ -35,7 +35,7 @@
     data.frame(
       ID = res$ID,
       p.value = res$p.value,
-      score = res$score/res$NDE,
+      score = res$score,
       normalizedScore = res$score/res$NDE,
       stringsAsFactors = FALSE
     )
