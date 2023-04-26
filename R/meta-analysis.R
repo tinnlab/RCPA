@@ -255,7 +255,7 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
     metaResult <- NULL
     if(method == "score")
       metaResult <- .combineEnrichmentScores(allData)
-    else metaResult <- .combinePvalues(allData)
+    else metaResult <- .combinePvalues(allData, method)
 
     if(is.null(metaResult)){
         stop("There is an error in meta analysis.")
