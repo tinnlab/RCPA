@@ -21,8 +21,8 @@
       all = rownames(DE_data)
 
     res <- .SPIAMod(de = DE_stat, all = all, pathInfo = network, ...)
-    res <- res[, c('ID', 'pG', 'tA')]
-    colnames(res) <- c("ID", "p.value", "score")
+    res <- res[, c('ID', 'pG', 'tA', 'NDE')]
+    colnames(res) <- c("ID", "p.value", "score", "NDE")
 
     # constructed_genesets <- network %>% lapply(function(path){
     #     path$nodes %>% as.list %>% as.vector()
@@ -35,8 +35,8 @@
     data.frame(
       ID = res$ID,
       p.value = res$p.value,
-      score = res$score,
-      normalizedScore = res$score,
+      score = res$score/res$NDE,
+      normalizedScore = res$score/res$NDE,
       stringsAsFactors = FALSE
     )
 }
