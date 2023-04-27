@@ -3,10 +3,8 @@
 #' @param resultsList A named list of dataframes from pathway analysis, geneset analysis, and/or meta analysis results.
 #' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param yAxis The column to use for the y-axis.
-#' @param axisFontSize The font size of axis labels.
-#' @param titleFontSize The font size for plot title.
-#' @param pointSize The red point size in the plot.
-#' @return A grid of one or more forest plots from grid.arrange.
+#' @param statLims A vector of length 2 specifying the limits for score to use in the x axis.
+#' @return A list of ggplot objects.
 #' @examples
 #' \dontrun{
 #' # Loading the library
@@ -55,7 +53,7 @@
 #' @importFrom gridExtra grid.arrange
 #' @importFrom dplyr %>%
 #' @export
-plotForest <- function(resultsList, yAxis = c("ID", "name"), axisFontSize = 10, titleFontSize = 12, pointSize = 7) {
+plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5,2.5)) {
 
   yAxis = match.arg(yAxis)
 
@@ -82,21 +80,30 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), axisFontSize = 10, 
     stop("All dataframes in the input list must have the same set of pathways.")
   }
 
+  if(!is.numeric(statLims[1]) | !is.numeric(statLims[2])){
+    stop("statLims should be a numeric vector of length two.")
+  }
+
+  if(statLims[1] >= statLims[2]){
+    stop("statLims parameter must be a vector of two values with minimum as the first value and maximum as the second value. ")
+  }
+
   sorted_data <- lapply(resultsList, function (data){
+    rownames(data) <- data$ID
     data <- data[initial_names,] %>% data.frame(stringsAsFactors = FALSE)
   })
 
   plotData <- lapply(sorted_data, function(data){
 
-    sd <- data$normalizedScore
+    sd <- abs((data$normalizedScore - ifelse(data$normalizedScore > 0, 1, -1))/qnorm(data$p.value))
 
     sd[sd > 0.5] <- 0.5
 
     data$min <- data$normalizedScore - sd*2
     data$max <- data$normalizedScore + sd*2
 
-    data$min[data$min < -2.5] <- -2.5
-    data$max[data$max > 2.5] <- 2.5
+    data$min[data$min < statLims[1]] <- statLims[1]
+    data$max[data$max > statLims[2]] <- statLims[2]
 
     if(yAxis == "ID")
       data$yLabel <- data$ID
@@ -112,8 +119,8 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), axisFontSize = 10, 
 
   plts <- lapply(1:length(plotData), function(i){
     pltDat <- plotData[[i]]
-    ggplot(pltDat, aes(y = yLabel, x = normalizedScore, xmin = min, xmax = max)) +
-      geom_point(size = pointSize, color = "red") +
+    ggplot(pltDat, aes(y = pltDat$yLabel, x = pltDat$normalizedScore, xmin = pltDat$min, xmax = pltDat$max)) +
+      geom_point(color = "red") +
       geom_rect(
         aes(
           xmin = -Inf,
@@ -124,23 +131,18 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), axisFontSize = 10, 
         fill = ifelse((as.numeric(pltDat$yLabel) %% 2 == 0), "white", "#eeeeee"),
         color = "white"
       ) +
-      geom_point(size = pointSize, color = "red") +
-      geom_vline(xintercept = c(-1,1), colour="#FA8072", linetype = "longdash") +
       geom_vline(xintercept = c(0), colour="grey", linetype = "solid") +
-      coord_cartesian(clip = "off", xlim = c(-2.5,2.5))+
-      geom_errorbarh(height=.2, linewidth=1) +
+      coord_cartesian(clip = "off", xlim = c(statLims[1],statLims[2]))+
+      geom_errorbarh(height=0.2) +
+        geom_point(color = "red") +
       theme_bw() +
       theme(
         axis.text.y = if (i == 1) {
-          element_text(size = axisFontSize, face = "bold")
+          element_text()
         } else {
           element_blank()
         },
-        axis.title.y = if (i == 1) {
-          element_text(size = titleFontSize, face = "bold")
-        } else {
-          element_blank()
-        },
+        axis.title.y = element_blank(),
         axis.ticks.y = if (i == 1) {
           NULL
         } else {
@@ -151,20 +153,15 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), axisFontSize = 10, 
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         legend.position = "none",
-        text = element_text(size = axisFontSize, face = "bold"),
-        plot.title = element_text(size = titleFontSize, face = "bold", hjust = 0.5),
-        axis.text = element_text(size = axisFontSize, face = "bold", hjust = 0.5),
+        plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(hjust = 0.5),
         axis.text.x = element_text(vjust = -0.75)
       ) +
       labs(
-        x = "Normalized score",
-        y = ifelse(yAxis == "ID", "ID", "name")
+        x = "Normalized score"
       ) +
       ggtitle(names(plotData)[i])
   })
 
-  gridExtra::grid.arrange(grobs = plts,
-  nrow = 1,
-  widths = c(1.3, rep(1, length(plts) - 1))
-  )
+  plts
 }
