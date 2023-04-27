@@ -4,6 +4,7 @@
 #' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param yAxis The column to use for the y-axis.
 #' @param statLims A vector of length 2 specifying the limits for score to use in the x axis.
+#' @param useFDR A boolean parameter to specify if adjusted p-value should be considered.
 #' @return A list of ggplot objects.
 #' @examples
 #' \dontrun{
@@ -53,7 +54,7 @@
 #' @importFrom gridExtra grid.arrange
 #' @importFrom dplyr %>%
 #' @export
-plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 2.5)) {
+plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 2.5), useFDR = TRUE) {
     yAxis <- match.arg(yAxis)
 
     for (result in resultsList) {
