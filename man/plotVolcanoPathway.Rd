@@ -5,18 +5,18 @@
 \title{Plot volcano plot from Pathway analysis results}
 \usage{
 plotVolcanoPathway(
-  results,
+  PAResult,
   xAxis = c("normalizedScore", "score"),
   yAxis = c("-log10(pFDR)", "-log10(p.value)"),
   pThreshold = 0.05,
   label = "name",
   IDsToLabel = NULL,
-  topToLabel = 20
+  topToLabel = 10
 )
 }
 \arguments{
-\item{results}{A data frame with Pathway analysis results.
-The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.}
+\item{PAResult}{A data frame with Pathway analysis results.
+The columns are ID, name, description, p.value, pFDR, pathwaySize, nDE, score and normalizedScore.}
 
 \item{xAxis}{The column to use for the x-axis.}
 

@@ -8,7 +8,7 @@ plotBarChart(
   results,
   limit = 10,
   label = "name",
-  by = c("pFDR", "p.value", "score", "normalizedScore"),
+  by = c("normalizedScore", "score", "pFDR", "p.value"),
   maxNegLog10PValue = 5,
   pThreshold = 0.05,
   useFDR = TRUE
@@ -19,7 +19,8 @@ plotBarChart(
 The columns are ID, name, p.value, pFDR, size, nDE, score and normalizedScore.}
 
 \item{limit}{The maximum number of pathways to plot.
-The pathway will be sorted by the average absolute value of the -log10(p-value) or -log10(pFDR) depending on the useFDR parameter.}
+The pathway will be sorted by the average absolute value of the -log10(p-value) or -log10(pFDR) if the 'by' parameter is 'p.value' or 'pFDR'.
+Otherwise, the pathway will be sorted by the average value of the 'by' parameter.}
 
 \item{label}{The column to use for the labels.}
 

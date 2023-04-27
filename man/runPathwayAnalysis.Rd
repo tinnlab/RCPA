@@ -7,7 +7,7 @@
 runPathwayAnalysis(
   summarizedExperiment,
   network,
-  method = c("SPIA", "cepaORA", "cepaGSA"),
+  method = c("spia", "cepaORA", "cepaGSA"),
   SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher",
     pThreshold = 0.05),
   CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree",
@@ -27,7 +27,7 @@ runPathwayAnalysis(
 
 \item{method}{The pathway analsyis method, including SPIA, cepaORA, and cepaGSA.}
 
-\item{SPIAArgs}{A list of other passed arguments to fgsea. See spia function.}
+\item{SPIAArgs}{A list of other passed arguments to spia. See spia function.}
 
 \item{CePaORAArgs}{A list of other passed arguments to CePaORA. See CePa function.}
 

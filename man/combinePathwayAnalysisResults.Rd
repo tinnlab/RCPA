@@ -6,7 +6,7 @@
 \usage{
 combinePathwayAnalysisResults(
   DFsList,
-  method = c("fisher", "stouffer", "min", "score", "geoMean", "addCLT", "minP")
+  method = c("fisher", "stouffer", "score", "geoMean", "addCLT", "minP")
 )
 }
 \arguments{
@@ -60,6 +60,7 @@ agilDEExperiment <- RCPA::runDEAnalysis(agilDataset,
                                         annotation = GPL4133GeneMapping)
 # Get RNA-Seq dataset
 RNASeqDataset <- data$RNASeqDataset
+# perform geneID mapping
 if (!require("org.Hs.eg.db", quietly = TRUE)) {
   BiocManager::install("org.Hs.eg.db")
 }

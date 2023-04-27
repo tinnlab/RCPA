@@ -28,7 +28,7 @@ plotPathwayNetwork(
 }
 \arguments{
 \item{results}{A named list of data frame of Pathway analysis results.
-The columns of each data frame should be at least ID, name, p.value and pFDR and nDE.
+The columns of each data frame should be at least ID, name, p.value and pFDR.
 An optional column "color" can be used to specify the color of the nodes.
 If the column "color" is not specified, the color of the nodes will be determined by the mode and the statistic.}
 
@@ -109,8 +109,7 @@ results <- lapply(1:3, function(i) {
     p.value = runif(length(gs$genesets))/10,
     pFDR = runif(length(gs$genesets))/10,
     ES = rnorm(length(gs$genesets)),
-    NES = rnorm(length(gs$genesets)),
-    nDE = sample(1:1000, length(gs$genesets))
+    NES = rnorm(length(gs$genesets))
   )
 })
 # Adding method names to the result

@@ -13,7 +13,7 @@ getSPIAKEGGNetwork(org = "hsa", updateCache = F)
 Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.}
 }
 \value{
-A named list of KEGG pathway networks for SPIA method.
+A named list with three elements: network, names and sizes.
 }
 \description{
 Get KEGG pathway network for SPIA method
