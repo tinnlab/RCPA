@@ -14,8 +14,8 @@ runPathwayAnalysis(
     "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree",
     "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold =
     0.05),
-  CePaGSAArgs = list(mat = NULL, label = NULL, pc, cen = list("equal.weight",
-    "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name =
+  CePaGSAArgs = list(mat = NULL, label = NULL, cen = list("equal.weight", "in.degree",
+    "out.degree", "betweenness", "in.reach", "out.reach"), cen.name =
     list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach",
     "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 )

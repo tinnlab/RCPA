@@ -7,7 +7,6 @@
 plotPathwayHeatmap(
   resultsList,
   yAxis = c("ID", "name"),
-  axisFontSize = 12,
   negLog10pValueLims = c(0, 5)
 )
 }
@@ -17,12 +16,10 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 
 \item{yAxis}{The column to use for the y-axis.}
 
-\item{axisFontSize}{The font size of axis labels.}
-
 \item{negLog10pValueLims}{A vector of length 2 specifying the minimum and maximum -log10(p-value) to plot.}
 }
 \value{
-A heatmap of the pathways from ggplot2.
+A ggplot2 object for presenting the heatmap of the pathways.
 }
 \description{
 pathways heatmap forest plot from pathway/geneset/meta analysis results.

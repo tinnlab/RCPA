@@ -7,9 +7,8 @@
 plotForest(
   resultsList,
   yAxis = c("ID", "name"),
-  axisFontSize = 10,
-  titleFontSize = 12,
-  pointSize = 7
+  statLims = c(-2.5, 2.5),
+  useFDR = TRUE
 )
 }
 \arguments{
@@ -18,14 +17,12 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 
 \item{yAxis}{The column to use for the y-axis.}
 
-\item{axisFontSize}{The font size of axis labels.}
+\item{statLims}{A vector of length 2 specifying the limits for score to use in the x axis.}
 
-\item{titleFontSize}{The font size for plot title.}
-
-\item{pointSize}{The red point size in the plot.}
+\item{useFDR}{A boolean parameter to specify if adjusted p-value should be considered.}
 }
 \value{
-A grid of one or more forest plots from grid.arrange.
+A list of ggplot objects.
 }
 \description{
 Plot forest plot from pathway/geneset/meta analysis results.
