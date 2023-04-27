@@ -187,7 +187,7 @@
 runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia", "cepaORA", "cepaGSA"),
                                SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreshold = 0.05),
                               CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold = 0.05),
-                              CePaGSAArgs = list(mat = NULL, label = NULL, pc, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+                              CePaGSAArgs = list(mat = NULL, label = NULL, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 ){
     method <- match.arg(method)
 

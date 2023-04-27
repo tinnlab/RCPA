@@ -29,7 +29,7 @@
     metaScoreRes <- .combineEnrichmentScores(inputData)
 
     metaRes <- metaPvalRes
-    metaRes$score <- metaRes$score.sd <- metaRes$count <- 0
+    metaRes$score  <- metaRes$count <- 0
     metaRes$score <- metaScoreRes$score[match(metaScoreRes$ID, metaRes$ID)]
     #metaRes$score.sd <- metaScoreRes$score.sd[match(metaScoreRes$ID, metaRes$ID)]
     metaRes$count <- metaScoreRes$count[match(metaScoreRes$ID, metaRes$ID)]
