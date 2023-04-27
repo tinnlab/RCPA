@@ -53,115 +53,126 @@
 #' @importFrom gridExtra grid.arrange
 #' @importFrom dplyr %>%
 #' @export
-plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5,2.5)) {
+plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 2.5)) {
+    yAxis <- match.arg(yAxis)
 
-  yAxis = match.arg(yAxis)
+    for (result in resultsList) {
+        if (is.null(result$ID) |
+            is.null(result$name) |
+            is.null(result$normalizedScore)) {
+            stop("All dataframes in the input list must have 'ID', 'name', 'normalizedScore' columns.")
+        }
 
-  studyIDs <- names(resultsList)
-  if(any(sapply(studyIDs, is.null))){
-    stop("The names of the input list should be specified.")
-  }
+        if (useFDR & is.null(result$pFDR)) {
+            stop("All dataframes in the input list must have 'pFDR' column.")
+        }
 
-  cols_list <- lapply(resultsList, function(data) colnames(data))
+        if (!useFDR & is.null(result$p.value)) {
+            stop("All dataframes in the input list must have 'p.value' column.")
+        }
+    }
 
-  if(!all(sapply(cols_list, function(x) c("ID", "name", "normalizedScore") %in% x))){
-    stop("All dataframes in the input list must have 'ID', 'name', 'normalizedScore' columns.")
-  }
+    commonIds <- Reduce(intersect, lapply(resultsList, function(x) x$ID))
+    if (length(commonIds) == 0) {
+        stop("All dataframes in the input list must have at least one common ID.")
+    }
 
-  rows_list <- lapply(resultsList, function(data) data$ID %>% unlist() %>% as.vector())
+    if (!is.numeric(statLims[1]) | !is.numeric(statLims[2])) {
+        stop("statLims should be a numeric vector of length two.")
+    }
 
-  if(!all(lengths(rows_list) == length(rows_list[[1]]))){
-    stop("All dataframes in the input list must have the same number of rows.")
-  }
+    if (statLims[1] >= statLims[2]) {
+        stop("statLims parameter must be a vector of two values with minimum as the first value and maximum as the second value. ")
+    }
 
-  initial_names <- resultsList[[1]] %>% .$ID %>% unlist() %>% as.vector() %>% sort()
+    if (is.null(names(resultsList))) {
+        names(resultsList) <- paste0("Dataset", 1:length(resultsList))
+    }
 
-  if(!all(sapply(rows_list, function(x) all.equal(sort(x), initial_names)))){
-    stop("All dataframes in the input list must have the same set of pathways.")
-  }
+    plotData <- lapply(names(resultsList), function(n) {
+        data <- resultsList[[n]]
+        rownames(data) <- data$ID
+        data[commonIds,] %>% mutate(dataset = n)
+    }) %>% do.call(what = rbind)
 
-  if(!is.numeric(statLims[1]) | !is.numeric(statLims[2])){
-    stop("statLims should be a numeric vector of length two.")
-  }
+    plotData$dataset <- factor(plotData$dataset, levels = names(resultsList))
 
-  if(statLims[1] >= statLims[2]){
-    stop("statLims parameter must be a vector of two values with minimum as the first value and maximum as the second value. ")
-  }
+    pvalues <- if (useFDR) plotData$pFDR else plotData$p.value
 
-  sorted_data <- lapply(resultsList, function (data){
-    rownames(data) <- data$ID
-    data <- data[initial_names,] %>% data.frame(stringsAsFactors = FALSE)
-  })
+    plotData$sd <- abs((plotData$normalizedScore - ifelse(plotData$normalizedScore > 0, 1, -1)) / qnorm(pvalues))
+    plotData$sd[plotData$sd > 0.5] <- 0.5
+    plotData$min <- plotData$normalizedScore - plotData$sd * 2
+    plotData$max <- plotData$normalizedScore + plotData$sd * 2
+    plotData$min[plotData$min < statLims[1]] <- statLims[1]
+    plotData$max[plotData$max > statLims[2]] <- statLims[2]
+    plotData$label <- factor(plotData[[yAxis]], levels = unique(plotData[[yAxis]]))
 
-  plotData <- lapply(sorted_data, function(data){
+    statRange <- statLims[2] - statLims[1]
+    gap <- 0.5
 
-    sd <- abs((data$normalizedScore - ifelse(data$normalizedScore > 0, 1, -1))/qnorm(data$p.value))
+    plotData$normalizedScoreShifted <- plotData$normalizedScore +
+        (as.numeric(plotData$dataset) - 1) * statRange +
+        (as.numeric(plotData$dataset)) * gap
+    plotData$minShifted <- plotData$min +
+        (as.numeric(plotData$dataset) - 1) * statRange +
+        (as.numeric(plotData$dataset)) * gap
+    plotData$maxShifted <- plotData$max +
+        (as.numeric(plotData$dataset) - 1) * statRange +
+        (as.numeric(plotData$dataset)) * gap
 
-    sd[sd > 0.5] <- 0.5
+    x2_breaks <- (seq_along(resultsList) - 1) * statRange - statRange / 2 + statLims[2]
+    x2_labels <- names(resultsList)
 
-    data$min <- data$normalizedScore - sd*2
-    data$max <- data$normalizedScore + sd*2
+    min_values <- (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap/2
+    max_values <- (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap/2
+    x1_breaks <- NULL
 
-    data$min[data$min < statLims[1]] <- statLims[1]
-    data$max[data$max > statLims[2]] <- statLims[2]
+    for(i in 1:length(min_values)){
+        x1_breaks <- c(x1_breaks, ceiling(min_values[i]):floor(max_values[i]))
+    }
 
-    if(yAxis == "ID")
-      data$yLabel <- data$ID
-    else
-      data$yLabel <- data$name
+    x1_labels <- rep(c(ceiling(min_values[1]):floor(max_values[1])), length(min_values))
 
-    data$yLabel <- data$yLabel %>% as.factor()
-
-    data %>% data.frame(stringsAsFactors = FALSE)
-  })
-
-  names(plotData) <- studyIDs
-
-  plts <- lapply(1:length(plotData), function(i){
-    pltDat <- plotData[[i]]
-    ggplot(pltDat, aes(y = pltDat$yLabel, x = pltDat$normalizedScore, xmin = pltDat$min, xmax = pltDat$max)) +
-      geom_point(color = "red") +
-      geom_rect(
-        aes(
-          xmin = -Inf,
-          xmax = Inf,
-          ymin = as.numeric(pltDat$yLabel)-0.5,
-          ymax = as.numeric(pltDat$yLabel)+0.5
-        ),
-        fill = ifelse((as.numeric(pltDat$yLabel) %% 2 == 0), "white", "#eeeeee"),
-        color = "white"
-      ) +
-      geom_vline(xintercept = c(0), colour="grey", linetype = "solid") +
-      coord_cartesian(clip = "off", xlim = c(statLims[1],statLims[2]))+
-      geom_errorbarh(height=0.2) +
-        geom_point(color = "red") +
-      theme_bw() +
-      theme(
-        axis.text.y = if (i == 1) {
-          element_text()
-        } else {
-          element_blank()
-        },
-        axis.title.y = element_blank(),
-        axis.ticks.y = if (i == 1) {
-          NULL
-        } else {
-          element_blank()
-        },
-        plot.margin = unit(c(5,5,7,5), "pt"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        legend.position = "none",
-        plot.title = element_text(hjust = 0.5),
-        axis.text = element_text(hjust = 0.5),
-        axis.text.x = element_text(vjust = -0.75)
-      ) +
-      labs(
-        x = "Normalized score"
-      ) +
-      ggtitle(names(plotData)[i])
-  })
-
-  plts
+    ggplot() +
+        geom_rect(
+            plotData,
+            mapping = aes(
+                xmin = -Inf,
+                xmax = Inf,
+                ymin = as.numeric(.data$label) - 0.5,
+                ymax = as.numeric(.data$label) + 0.5,
+                fill = as.character(as.numeric(.data$label) %% 2)
+            )
+        ) +
+        scale_fill_manual(
+            values = c("white", "#eeeeee"),
+            guide = FALSE
+        ) +
+        geom_rect(
+            mapping = aes(
+                ymin = -Inf,
+                ymax = Inf,
+                xmin = (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap/2,
+                xmax = (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap/2
+            ),
+            fill = "transparent",
+            color = "black"
+        ) +
+        new_scale_color() +
+        geom_errorbarh(data = plotData,
+                       aes(
+                           y = as.numeric(.data$label),
+                           xmin = .data$minShifted,
+                           xmax = .data$maxShifted),
+                       height = 0.2) +
+        geom_point(data = plotData,
+                   aes(
+                       x = .data$normalizedScoreShifted,
+                       y = as.numeric(.data$label)),
+                   color = "red") +
+        scale_y_discrete(limits = unique(plotData$label), name = "")+
+        scale_x_continuous(breaks = x1_breaks,
+                           labels = x1_labels,
+                           name = "Normalized Score",
+        sec.axis = sec_axis(~./1, breaks = x2_breaks, labels = x2_labels))
 }
