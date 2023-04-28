@@ -264,6 +264,7 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
     metaResult$name <- allData$name[match(metaResult$ID, allData$ID)]
     metaResult$pathwaySize <- allData$pathwaySize[match(metaResult$ID, allData$ID)]
     metaResult$pFDR <- p.adjust(metaResult$p.value, method = "fdr")
+    metaResult$normalizedScore <- metaResult$score
 
     return(metaResult)
 }
