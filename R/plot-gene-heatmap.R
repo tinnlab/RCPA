@@ -75,6 +75,8 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
         stop("No common genes found between the input genes and the genes in the DE results")
     }
 
+    commonGenes <- genes[genes %in% commonGenes]
+
     if (length(commonGenes) < length(genes)) {
         warning("Some input genes are not found in the DE results")
     }

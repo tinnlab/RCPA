@@ -125,12 +125,13 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("normalized
             p.value = pmin(-log10(.data$p.value), maxNegLog10PValue),
             pFDR = pmin(-log10(.data$pFDR), maxNegLog10PValue),
             ID = factor(.data$ID, levels = rev(pathwayOrder)),
-            dataset = factor(.data$dataset, levels = names(results))
-        ) %>%
-        select("ID", sym(label), sym(by), "isSignificant", "dataset")
+            dataset = factor(.data$dataset, levels = names(results)),
+            stat = .data[[by]],
+            label = factor(.data[[label]], levels = results[[1]][match(rev(pathwayOrder), results[[1]]$ID), label]),
+        )
 
     if (length(results) == 1) {
-        pl <- ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$isSignificant)) +
+        pl <- ggplot(plotData, aes(x = .data$ID, y = .data$stat, fill = .data$isSignificant)) +
             geom_bar(
                 stat = "identity"
             ) +
@@ -139,27 +140,45 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("normalized
                 guide = guide_legend(title = "Significant")
             )
     } else {
-        pl <- ggplot(plotData, aes(x = .data$ID, y = .data[[by]], fill = .data$dataset, pattern = .data$isSignificant)) +
+        pl <- ggplot(plotData) +
+            geom_rect(
+                aes(
+                    xmin = as.numeric( .data$ID) - 0.5,
+                    xmax = as.numeric( .data$ID) + 0.5,
+                    ymin = -Inf,
+                    ymax = Inf,
+                    fill = as.character(as.numeric( .data$ID) %% 2)
+                ),
+                color = "transparent"
+            ) +
+            scale_fill_manual(
+                values = c("0" = "#f2f2f2", "1" = "#ffffff"),
+                guide = "none"
+            ) +
+            new_scale_fill() +
             geom_bar_pattern(
+                aes(x = .data$ID, y = .data$stat, fill = .data$dataset, pattern = .data$isSignificant),
                 stat = "identity",
                 position = if (length(results) > 1) "dodge" else "fill",
                 width = ifelse(length(results) > 1, 0.9, 1),
                 pattern_size = 0,
-                pattern_alpha = 0.75,
-                pattern_fill = "black",
-                pattern_spacing = 0.01
+                pattern_alpha = 0.5,
+                pattern_fill = "white",
+                pattern_spacing = 0.02,
+                color = "#444444",
+                size = 0.25
             ) +
             scale_fill_discrete(
                 guide = guide_legend(
                     title = "Dataset",
-                    override.aes = list(pattern = "none", color = "black")
+                    override.aes = list(pattern = "none", color = "white")
                 )
             ) +
             scale_pattern_manual(
                 values = c("Yes" = "stripe", "No" = "none"),
                 guide = guide_legend(
                     title = "Significant",
-                    override.aes = list(fill = "white", color = "black")
+                    override.aes = list(fill = "gray", color = "white")
                 )
             )
     }
@@ -173,7 +192,7 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("normalized
             axis.line.x = element_line(color = "darkgray"),
             axis.line.y = element_line(color = "darkgray")
         ) +
-        scale_x_discrete(labels = plotData[[label]], expand = expansion(add = c(0.75, 0))) +
+        scale_x_discrete(labels = levels(plotData$label), expand = expansion(add = c(0.75, 0))) +
         scale_y_continuous(expand = c(0, 0)) +
         labs(x = element_blank())
 

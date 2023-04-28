@@ -38,10 +38,11 @@
 #' @importFrom dplyr %>% pull
 #' @importFrom utils head
 #' @export
-plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 10) {
+plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), yAxis = c("-log10(pFDR)", "-log10(p.value)"), pThreshold = 0.05, label = "name", IDsToLabel = NULL, topToLabel = 10, sideToLabel = c("both", "left", "right")) {
 
     xAxis <- match.arg(xAxis)
     yAxis <- match.arg(yAxis)
+    sideToLabel <- match.arg(sideToLabel)
 
     if (!label %in% colnames(PAResult)) {
         stop(paste0("The label column '", label, "' is not in the results data frame."))
@@ -65,6 +66,15 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
 
     if (is.null(IDsToLabel)) {
         IDsToLabel <- PAResult %>%
+            filter(
+                if (sideToLabel == "left") {
+                    .data[[xAxis]] < 0
+                } else if (sideToLabel == "right") {
+                    .data[[xAxis]] < 0
+                } else {
+                    .data[[xAxis]] != 0
+                }
+            ) %>%
             arrange(
                 if (yAxis == "-log10(pFDR)") {
                     .data$pFDR
@@ -87,9 +97,11 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
         label = ifelse(PAResult$ID %in% IDsToLabel, PAResult[[label]], "")
     )
 
-    ggplot(plotDat, aes(x = .data$x, y = .data$y, color = .data$x)) +
+    ggplot(plotDat, aes(x = .data$x, y = .data$y, fill = .data$x)) +
         geom_point(
-            aes(size = .data$size)
+            aes(size = .data$size),
+            shape = 21,
+            alpha = 0.6
         ) +
         geom_hline(yintercept = -log10(pThreshold), linetype = "dashed", color = "red") +
         geom_vline(xintercept = 0, linetype = "dashed") +
@@ -101,10 +113,11 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
             # nudge_x = -0.25,
             # nudge_y = 0,
             color = "black",
+            fill = "white",
             max.overlaps = Inf
 
         ) +
-        scale_color_gradient(low = "blue", high = "red") +
+        scale_fill_gradient(low = "blue", high = "red") +
         scale_size_continuous(range = c(1, 10)) +
         labs(
             x = if (xAxis == "normalizedScore") {

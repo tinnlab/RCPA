@@ -130,7 +130,7 @@
 
     if ("try-error" %in% class(expression)) {
         expression <- read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
-            rma(normalize = F) %>%
+            rma(normalize = T) %>%
             exprs() %>%
             as.data.frame()
         if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")

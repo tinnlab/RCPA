@@ -29,7 +29,6 @@
 #' @param continuousScaleFunc A function that takes a numeric value from -1 to 1 and returns a color.
 #' @param NAColor A character value of the color to use for NA values.
 #' @param borderColor A character value of the color to use for the border of the nodes.
-#' @param edgeColor A character value of the color to use for the edges.
 #' @param nodeSizeFnc A function that takes a character value of the ID of the node and returns a numeric value of the size of the node.
 #' @param borderWidthFnc A function that takes a character value of the ID of the node and returns a numeric value of the width of the border of the node.
 #' @param edgeWidthFnc A function that takes a character value of the ID of the from node and a character value of the ID of the to node and returns a numeric value of the width of the edge.
@@ -99,17 +98,16 @@ plotPathwayNetwork <- function(results, genesets,
                                labels = NULL,
                                pThreshold = 0.05,
                                useFDR = TRUE,
-                               edgeThreshold = 0.1,
+                               edgeThreshold = 0.5,
                                statLimit = 4,
                                discreteColors = NULL,
                                continuousScaleFunc = NULL,
                                NAColor = "#dddddd",
                                borderColor = "#333333",
-                               edgeColor = "#dddddd",
                                nodeSizeFnc = function(id) length(genesets[[id]])^.75,
                                borderWidthFnc = function(id) 1,
-                               edgeWidthFnc = function(from, to) length(intersect(genesets[[from]], genesets[[to]]))^.5/2,
-                               styleFile = NULL) {
+                               edgeWidthFnc = function(from, to) 1,
+                               styleFile = system.file(package = "RCPA", "extdata", "pieStyle.js")) {
 
     mode <- match.arg(mode)
 
@@ -278,14 +276,18 @@ plotPathwayNetwork <- function(results, genesets,
                       httpQueryProcessingFunction = cyjsQueryFnc,
     ) %>% .RCyjs(graph = graphObj)
 
-    RCyjs::setGraph(rCy, graph = graphObj)
-    RCyjs::setBackgroundColor(rCy, "#ffffff")
-    try({RCyjs::loadStyleFile(rCy, styleFile)})
-    RCyjs::setDefaultEdgeColor(rCy, edgeColor)
-    RCyjs::redraw(rCy)
-    Sys.sleep(2)
-    RCyjs::layout(rCy, "cose")
-
-    rCy
+    list(
+        rCy = rCy,
+        graphObj = graphObj,
+        pathwayInfo = pathwayInfo,
+        plot = function(layout = "cose") {
+            RCyjs::setGraph(rCy, graph = graphObj)
+            RCyjs::setBackgroundColor(rCy, "#ffffff")
+            try({RCyjs::loadStyleFile(rCy, styleFile)})
+            RCyjs::redraw(rCy)
+            Sys.sleep(2)
+            RCyjs::layout(rCy, layout)
+        }
+    )
 }
 

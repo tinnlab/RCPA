@@ -93,7 +93,7 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
     plotData <- lapply(names(resultsList), function(n) {
         data <- resultsList[[n]]
         rownames(data) <- data$ID
-        data[commonIds,] %>% mutate(dataset = n)
+        data[commonIds, unique(c("ID", yAxis, "normalizedScore", "p.value", "pFDR"))] %>% mutate(dataset = n)
     }) %>% do.call(what = rbind)
 
     plotData$dataset <- factor(plotData$dataset, levels = names(resultsList))

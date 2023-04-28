@@ -19,7 +19,7 @@ vizmap = [
     {
         selector: 'edge',
         css: {
-            "line-color": "data(edgeColor)",
+            "line-color": "#dddddd",
             "target-arrow-shape": "none",
             "target-arrow-color": "rgb(0, 0, 0)",
             "width": 'data(weight)',
@@ -46,8 +46,8 @@ cyDiv = document.querySelector("#cyDiv")
 
 legendDiv = document.createElement("div");
 legendDiv.style.position = "absolute";
-legendDiv.style.bottom = "0px";
-legendDiv.style.right = "0px";
+legendDiv.style.bottom = "10px";
+legendDiv.style.right = "10px";
 legendDiv.style.width = "200px";
 legendDiv.style.height = "200px";
 legendDiv.style.border = "1px solid black";
@@ -88,8 +88,8 @@ cyDiv.appendChild(legendDiv);
 legendDiv = document.createElement("div");
 
 legendDiv.style.position = "absolute";
-legendDiv.style.bottom = "0px";
-legendDiv.style.right = "200px";
+legendDiv.style.bottom = "5px";
+legendDiv.style.right = "210px";
 legendDiv.style.width = "200px";
 legendDiv.style.height = "50px";
 

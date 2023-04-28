@@ -108,7 +108,7 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
                "#b6c9fa",
                "#ee5437"),
            stroke_size = 0.5,
-           # set_name_size = 4,
+           set_name_size = 4,
            fill_alpha = 0.75
     )
 }
@@ -174,7 +174,7 @@ plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
                "#b6c9fa",
                "#ee5437"),
            stroke_size = 0.5,
-           # set_name_size = 4,
+           set_name_size = 4,
            fill_alpha = 0.75
     )
 }

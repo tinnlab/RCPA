@@ -41,13 +41,14 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
 
   plotData <- lapply(1:length(resultsList), function (i){
 
-    data <- resultsList[[i]]
+    data <- resultsList[[i]][, unique(c("ID", yAxis, "normalizedScore", "p.value", "pFDR"))]
     data$dataset <- studyIDs[i]
     data$Direction <- ifelse(data$normalizedScore <= 0, "Down", "Up")
     data$abs.normalizedScore <- data$normalizedScore %>% abs()
-    data %>% data.frame(stringsAsFactors = FALSE)
-
+    as.data.frame(data)
   }) %>% do.call(what = rbind)
+
+  plotData$dataset <- factor(plotData$dataset, levels = studyIDs)
 
   scaleMinMax <- function(x, minx, maxx) {
     x[x < minx] <- minx
