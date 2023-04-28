@@ -279,6 +279,7 @@ plotPathwayNetwork <- function(results, genesets,
     ) %>% .RCyjs(graph = graphObj)
 
     RCyjs::setGraph(rCy, graph = graphObj)
+    RCyjs::setBackgroundColor(rCy, "#ffffff")
     try({RCyjs::loadStyleFile(rCy, styleFile)})
     RCyjs::setDefaultEdgeColor(rCy, edgeColor)
     RCyjs::redraw(rCy)

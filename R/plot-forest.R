@@ -53,7 +53,6 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs geom_rect coord_cartesian geom_errorbarh ggtitle unit
 #' @importFrom gridExtra grid.arrange
 #' @importFrom dplyr %>%
-#' @importFrom ggnewscale new_scale_color
 #' @export
 plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 2.5), useFDR = TRUE) {
     yAxis <- match.arg(yAxis)
@@ -125,11 +124,11 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
     x2_breaks <- (seq_along(resultsList) - 1) * statRange - statRange / 2 + statLims[2]
     x2_labels <- names(resultsList)
 
-    min_values <- (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap/2
-    max_values <- (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap/2
+    min_values <- (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap / 2
+    max_values <- (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap / 2
     x1_breaks <- NULL
 
-    for(i in 1:length(min_values)){
+    for (i in 1:length(min_values)) {
         x1_breaks <- c(x1_breaks, ceiling(min_values[i]):floor(max_values[i]))
     }
 
@@ -154,13 +153,28 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
             mapping = aes(
                 ymin = -Inf,
                 ymax = Inf,
-                xmin = (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap/2,
-                xmax = (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap/2
+                xmin = (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap / 2,
+                xmax = (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap / 2
             ),
             fill = "transparent",
             color = "black"
         ) +
-        new_scale_color() +
+        geom_vline(
+            mapping = aes(
+                xintercept = x1_breaks
+            ),
+            color = "#cccccc",
+            size = 0.5,
+            linetype = "dashed"
+        ) +
+        geom_vline(
+            mapping = aes(
+                xintercept = x1_breaks[x1_labels == 0]
+            ),
+            color = "#D00000",
+            size = 0.5,
+            linetype = "dashed"
+        ) +
         geom_errorbarh(data = plotData,
                        aes(
                            y = as.numeric(.data$label),
@@ -172,9 +186,14 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
                        x = .data$normalizedScoreShifted,
                        y = as.numeric(.data$label)),
                    color = "red") +
-        scale_y_discrete(limits = unique(plotData$label), name = "")+
+        scale_y_discrete(limits = unique(plotData$label), name = "") +
         scale_x_continuous(breaks = x1_breaks,
                            labels = x1_labels,
                            name = "Normalized Score",
-        sec.axis = sec_axis(~./1, breaks = x2_breaks, labels = x2_labels))
+                           sec.axis = sec_axis(~. / 1, breaks = x2_breaks, labels = x2_labels)) +
+        theme_bw() +
+        theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank()
+        )
 }
