@@ -43,6 +43,8 @@ For limma, it is the average expression.
 For DESeq2, it is the log base mean.
 For edgeR, it is the log CPM.
 }
+\item{logFCSE}{standard error of the log fold change.}
+\item{sampleSize}{sample size used for DE analysis.}
 }
 The assay slot will contain the input expression/count matrix,
 and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object

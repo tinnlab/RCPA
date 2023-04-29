@@ -112,10 +112,10 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
                     logFC = scaleMinMax(.$logFC, logFCLims[1], logFCLims[2]),
                     label = factor(labels, levels = labels),
                     dataset = n
-                )
+                ) %>%
+                select("label", "logFC", "p.value", "dataset")
         }) %>%
         do.call(what = rbind) %>%
-        select("label", "logFC", "p.value", "dataset") %>%
         gather("type", "value", -"label", -"dataset") %>%
         mutate(
             label = factor(.data$label, levels = labels),

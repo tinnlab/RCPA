@@ -159,6 +159,8 @@
 #' For DESeq2, it is the log base mean.
 #' For edgeR, it is the log CPM.
 #' }
+#' \item{logFCSE}{standard error of the log fold change.}
+#' \item{sampleSize}{sample size used for DE analysis.}
 #' }
 #' The assay slot will contain the input expression/count matrix,
 #' and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object
@@ -260,6 +262,7 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
 
     # run DE analysis
     DEResult <- DEFunc(exprs, design, contrast)
+    DEResult$sampleSize <- nrow(design)
 
     # map probe IDs to gene symbols
     mappedResults <- .mapIDs(exprs, annotation, DEResult)

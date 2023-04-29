@@ -12,18 +12,16 @@ plotPathwayNetwork(
   labels = NULL,
   pThreshold = 0.05,
   useFDR = TRUE,
-  edgeThreshold = 0.1,
+  edgeThreshold = 0.5,
   statLimit = 4,
   discreteColors = NULL,
   continuousScaleFunc = NULL,
   NAColor = "#dddddd",
   borderColor = "#333333",
-  edgeColor = "#dddddd",
   nodeSizeFnc = function(id) length(genesets[[id]])^0.75,
   borderWidthFnc = function(id) 1,
-  edgeWidthFnc = function(from, to) length(intersect(genesets[[from]],
-    genesets[[to]]))^0.5/2,
-  styleFile = NULL
+  edgeWidthFnc = function(from, to) 1,
+  styleFile = system.file(package = "RCPA", "extdata", "pieStyle.js")
 )
 }
 \arguments{
@@ -63,8 +61,6 @@ The length of the vector must be the same as the number of results.}
 \item{NAColor}{A character value of the color to use for NA values.}
 
 \item{borderColor}{A character value of the color to use for the border of the nodes.}
-
-\item{edgeColor}{A character value of the color to use for the edges.}
 
 \item{nodeSizeFnc}{A function that takes a character value of the ID of the node and returns a numeric value of the size of the node.}
 

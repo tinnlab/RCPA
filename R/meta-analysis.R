@@ -6,30 +6,34 @@
 #' @return A dataframe of meta analysis results.
 #' @details This function is used internally by combinePathwayAnalysisResults.
 #' @importFrom dplyr %>%
-.combinePvalues <- function(inputData, method){
+.combinePvalues <- function(inputData, method) {
 
     combineFunc <- switch(method,
-           fisher = .runFisher,
-           stouffer = .runStouffer,
-           minP = min,
-           addCLT = .runAddCLT,
-           geoMean = .runGeoMean
-          )
+                          fisher = .runFisher,
+                          stouffer = .runStouffer,
+                          minP = min,
+                          addCLT = .runAddCLT,
+                          geoMean = .runGeoMean
+    )
 
-    metaPvalRes <- inputData %>% group_by(ID) %>% group_split() %>% lapply(function (data){
-                pValues <- data$p.value
-                meta.Pval <- combineFunc(pValues)
-                data.frame(
-                  ID = data$ID[1],
-                  p.value = meta.Pval,
-                  stringsAsFactors = FALSE
-                )
-              }) %>% do.call(what = rbind)
+    metaPvalRes <- inputData %>%
+        group_by(ID) %>%
+        group_split() %>%
+        lapply(function(data) {
+            pValues <- data$p.value
+            meta.Pval <- combineFunc(pValues)
+            data.frame(
+                ID = data$ID[1],
+                p.value = meta.Pval,
+                stringsAsFactors = FALSE
+            )
+        }) %>%
+        do.call(what = rbind)
 
     metaScoreRes <- .combineEnrichmentScores(inputData)
 
     metaRes <- metaPvalRes
-    metaRes$score  <- metaRes$count <- 0
+    metaRes$score <- metaRes$count <- 0
     metaRes$score <- metaScoreRes$score[match(metaScoreRes$ID, metaRes$ID)]
     #metaRes$score.sd <- metaScoreRes$score.sd[match(metaScoreRes$ID, metaRes$ID)]
     metaRes$count <- metaScoreRes$count[match(metaScoreRes$ID, metaRes$ID)]
@@ -46,8 +50,9 @@
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
 #' @importFrom stats qnorm pchisq
-.runFisher <- function(pvals){
-    p.value <- pchisq(-2 * sum(log(pvals)), df=2*length(pvals), lower.tail=FALSE)
+.runFisher <- function(pvals) {
+    pvals[pvals == 0] <- .Machine$double.eps
+    p.value <- pchisq(-2 * sum(log(pvals)), df = 2 * length(pvals), lower.tail = FALSE)
     return(p.value)
 }
 
@@ -58,7 +63,8 @@
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
 #' @importFrom stats pnorm qnorm
-.runStouffer <- function(pvals){
+.runStouffer <- function(pvals) {
+    pvals[pvals == 0] <- .Machine$double.eps
     p.value <- pnorm(sum(qnorm(pvals)) / sqrt(length(pvals)))
     return(p.value)
 }
@@ -70,14 +76,16 @@
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
 #' @importFrom stats pnorm
-.runAddCLT <- function(pvals){
+.runAddCLT <- function(pvals) {
+    pvals <- pvals[!is.na(pvals)]
+    pvals[pvals == 0] <- .Machine$double.eps
     n <- length(pvals)
     p.value <- 1
-    if(n <= 20){
+    if (n <= 20) {
         x <- sum(pvals)
-        p.value <- 1/factorial(n) * sum(sapply(0:floor(x), function(k) (-1)^k * choose(n,k) * (x-k)^(n)))
-    }else{
-        p.value <- pnorm(sum(pvals),n/2,sqrt(n/12),lower.tail=TRUE)
+        p.value <- 1 / factorial(n) * sum(sapply(0:floor(x), function(k) (-1)^k * choose(n, k) * (x - k)^(n)))
+    }else {
+        p.value <- pnorm(sum(pvals), n / 2, sqrt(n / 12), lower.tail = TRUE)
     }
     return(p.value)
 }
@@ -88,7 +96,8 @@
 #' @param pvals The vector of P-Values to be combined.
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
-.runGeoMean <- function(pvals){
+.runGeoMean <- function(pvals) {
+    pvals[pvals == 0] <- .Machine$double.eps
     p.value <- exp(mean(log(pvals)))
     return(p.value)
 }
@@ -101,34 +110,39 @@
 #' @details This function is used internally by combinePathwayAnalysisResults and .combinePvalues.
 #' @importFrom meta metagen
 #' @importFrom dplyr %>%
-.combineEnrichmentScores <- function(inputData){
+.combineEnrichmentScores <- function(inputData) {
 
-    metaRes <- inputData %>% group_by(ID) %>% group_split() %>% lapply(function(data){
-        data$normalizedScore.sd <- abs((data$normalizedScore - ifelse(data$normalizedScore > 0, 1, -1))/qnorm(data$p.value))
-        meta.res <- metagen(data = data,
-                            studlab = ID,
-                            TE = normalizedScore ,
-                            seTE = normalizedScore.sd,
-                            sm = "SMD",
-                            n.e = sampleSize,
-                            method.tau = "REML",
-                            hakn = TRUE)
+    metaRes <- inputData %>%
+        group_by(ID) %>%
+        group_split() %>%
+        lapply(function(data) {
+            data$normalizedScore.sd <- abs((data$normalizedScore - ifelse(data$normalizedScore > 0, 1, -1)) / qnorm(data$p.value))
+            meta.res <- metagen(data = data,
+                                studlab = ID,
+                                TE = normalizedScore,
+                                seTE = normalizedScore.sd,
+                                sm = "SMD",
+                                n.e = sampleSize,
+                                method.tau = "REML",
+                                hakn = TRUE)
 
-        normalizedScore.combined <- meta.res$TE.fixed
-        normalizedScore.combined.sd <- meta.res$seTE.fixed
+            normalizedScore.combined <- meta.res$TE.fixed
+            normalizedScore.combined.sd <- meta.res$seTE.fixed
 
-        pval <- pnorm((ifelse(normalizedScore.combined > 0, 1, -1) - normalizedScore.combined)/normalizedScore.combined.sd)
-        if (normalizedScore.combined < 0) pval <- 1 - pval
+            pval <- pnorm((ifelse(normalizedScore.combined > 0, 1, -1) - normalizedScore.combined) / normalizedScore.combined.sd)
+            if (normalizedScore.combined < 0) pval <- 1 - pval
 
-        data.frame(
-          ID = data$ID[1],
-          p.value = pval,
-          score = normalizedScore.combined,
-          #score.sd = normalizedScore.combined.sd,
-          count = nrow(data),
-          stringsAsFactors = F
-        )
-      }) %>% do.call(what = rbind) %>% as.data.frame()
+            data.frame(
+                ID = data$ID[1],
+                p.value = pval,
+                score = normalizedScore.combined,
+                #score.sd = normalizedScore.combined.sd,
+                count = nrow(data),
+                stringsAsFactors = F
+            )
+        }) %>%
+        do.call(what = rbind) %>%
+        as.data.frame()
 
     metaRes <- metaRes[, c("ID", "p.value", "score", "count")]
 
@@ -223,41 +237,41 @@
 #' @details This function performs mata analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows
 #' @export
-combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffer", "score", "geoMean", "addCLT", "minP")){
+combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffer", "score", "geoMean", "addCLT", "minP")) {
 
     method <- match.arg(method)
 
-    if(length(DFsList) == 1){
-      stop("Meta analysis is valid for two or more studies.")
+    if (length(DFsList) == 1) {
+        stop("Meta analysis is valid for two or more studies.")
     }
 
-    if(any(sapply(DFsList, is.null))) {
-      stop("There is null object in the input list.")
+    if (any(sapply(DFsList, is.null))) {
+        stop("There is null object in the input list.")
     }
 
     dim.lst <- DFsList %>% lapply(function(df) dim(df))
-    if(length(unique(dim.lst)) != 1){
-      stop("All the dataframes in the input list must have the same dimension.")
+    if (length(unique(dim.lst)) != 1) {
+        stop("All the dataframes in the input list must have the same dimension.")
     }
 
     colnames.lst <- DFsList %>% lapply(function(df) colnames(df))
-    if(length(unique(colnames.lst)) != 1){
-      stop("All the dataframes in the input list must have the same column names.")
+    if (length(unique(colnames.lst)) != 1) {
+        stop("All the dataframes in the input list must have the same column names.")
     }
 
     rownames.lst <- DFsList %>% lapply(function(df) rownames(df))
-    if(length(unique(rownames.lst)) != 1){
-      stop("All the dataframes in the input list must have the same row names.")
+    if (length(unique(rownames.lst)) != 1) {
+        stop("All the dataframes in the input list must have the same row names.")
     }
 
     allData <- bind_rows(DFsList)
 
     metaResult <- NULL
-    if(method == "score")
-      metaResult <- .combineEnrichmentScores(allData)
+    if (method == "score")
+        metaResult <- .combineEnrichmentScores(allData)
     else metaResult <- .combinePvalues(allData, method)
 
-    if(is.null(metaResult)){
+    if (is.null(metaResult)) {
         stop("There is an error in meta analysis.")
     }
 
@@ -265,6 +279,111 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
     metaResult$pathwaySize <- allData$pathwaySize[match(metaResult$ID, allData$ID)]
     metaResult$pFDR <- p.adjust(metaResult$p.value, method = "fdr")
     metaResult$normalizedScore <- metaResult$score
+
+    return(metaResult)
+}
+
+
+#' @title Combine DE analysis results
+#' @description This function performs mata analysis on multiple DE analysis results.
+#' @param DEResults A list of dataframes containing DE analysis results.
+#' Each dataframe must have ID, p.value, logFC and logFCSE columns.
+#' @param method The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP".
+#' @return A dataframe containing combined DE analysis results.
+#' The dataframe has ID, p.value, pDFR, logFC, and logFCSE columns.
+#' @importFrom dplyr %>% bind_rows group_by summarize mutate
+#' @importFrom meta metagen
+#' @importFrom stats p.adjust
+#' @importFrom tidyr drop_na
+#' @export
+combineDEAnalysisResults <- function(DEResults, method = c("fisher", "stouffer", "geoMean", "addCLT", "minP")) {
+
+    method <- match.arg(method)
+
+    if (length(DEResults) == 1) {
+        stop("Meta analysis is valid for two or more studies.")
+    }
+
+    for (DEResult in DEResults) {
+        if (is.null(DEResult)) {
+            stop("There is null object in the input list.")
+        }
+
+        if (!all(c("ID", "p.value", "logFC", "logFCSE") %in% colnames(DEResult))) {
+            stop("All the dataframes in the input list must have p.value, logFC and logFCSE columns.")
+        }
+    }
+
+    combinePFunc <- switch(method,
+                           fisher = .runFisher,
+                           stouffer = .runStouffer,
+                           minP = min,
+                           addCLT = .runAddCLT,
+                           geoMean = .runGeoMean
+    )
+
+    pvalRes <- DEResults %>%
+        lapply(function(df) {
+            df[, c("ID", "p.value", "logFC")] %>% as.data.frame()
+        }) %>%
+        bind_rows() %>%
+        mutate(
+            left.p = ifelse(.data$logFC < 0, .data$p.value, 1 - .data$p.value),
+            right.p = ifelse(.data$logFC > 0, .data$p.value, 1 - .data$p.value)
+        ) %>%
+        group_by(ID) %>%
+        summarise(
+            left.p = combinePFunc(left.p),
+            right.p = combinePFunc(right.p)
+        )
+
+    metagenRes <- DEResults %>%
+        lapply(function(df) {
+            df[, c("ID", "logFC", "logFCSE", "sampleSize")] %>% as.data.frame()
+        }) %>%
+        bind_rows() %>%
+        group_by(ID) %>%
+        group_split() %>%
+        lapply(function(dat) {
+            res <- try({
+                metagen(data = dat,
+                        studlab = ID,
+                        TE = logFC,
+                        seTE = logFCSE,
+                        sm = "SMD",
+                        method.tau = "REML",
+                        hakn = TRUE,
+                        n.e = sampleSize
+                ) }, silent = TRUE)
+            if (inherits(res, "try-error")) {
+                res <- NULL
+            }
+
+            return(res)
+        }) %>%
+        do.call(what = rbind)
+
+
+    metaResult <- metagenRes[, c("studlab", "TE.fixed", "seTE.fixed")] %>%
+        as.data.frame() %>%
+        mutate(
+            ID = .data$studlab %>% sapply(`[`, 1),
+            TE.fixed = unlist(.data$TE.fixed),
+            seTE.fixed = unlist(.data$seTE.fixed)
+        ) %>%
+        select_("ID", "TE.fixed", "seTE.fixed") %>%
+        as.data.frame() %>%
+        inner_join(pvalRes, by = c("ID" = "ID")) %>%
+        mutate(
+            p.value = ifelse(.data$TE.fixed < 0, .data$left.p, .data$right.p)
+        ) %>%
+        mutate(
+            pFDR = p.adjust(.data$p.value, method = "fdr"),
+            logFC = .data$TE.fixed,
+            logFCSE = .data$seTE.fixed
+        ) %>%
+        select("ID", "p.value", "pFDR", "logFC", "logFCSE") %>%
+        drop_na()
 
     return(metaResult)
 }

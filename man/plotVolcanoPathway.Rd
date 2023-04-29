@@ -11,7 +11,8 @@ plotVolcanoPathway(
   pThreshold = 0.05,
   label = "name",
   IDsToLabel = NULL,
-  topToLabel = 10
+  topToLabel = 10,
+  sideToLabel = c("both", "left", "right")
 )
 }
 \arguments{
