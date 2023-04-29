@@ -83,15 +83,15 @@
         eBayes()
 
     resTable <- DERes %>%
-        topTable(coef = 1, number = nrow(exprs)) %>%
+        topTable(coef = 1, number = nrow(exprs), confint=TRUE) %>%
         mutate(ID = rownames(.),
                p.value = .$P.Value,
                statistic = .$t,
-               avgExpr = .$AveExpr
+               avgExpr = .$AveExpr,
+               logFCSE = (.$CI.R - .$logFC)/qnorm(0.975)
         )
 
-    # resTable$dispersion <- (DERes$stdev.unscaled * sqrt(DERes$s2.post))[rownames(resTable), 1]
-    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr")]
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr", "logFCSE")]
 }
 
 #' @rdname runDEInternal
@@ -107,28 +107,30 @@
 
     resTable <- DERes %>%
         as.data.frame() %>%
-        mutate(ID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange, avgExpr = log2(.$baseMean + 1))
+        mutate(ID = rownames(.), statistic = .$stat, p.value = .$pvalue, logFC = .$log2FoldChange, avgExpr = log2(.$baseMean + 1), logFCSE = .$lfcSE)
 
     resTable$p.value[is.na(resTable$p.value)] <- 1
     # resTable$dispersion <- resTable$lfcSE
-    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr")]
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr", "logFCSE")]
 }
 
 #' @rdname runDEInternal
 .runEdgeR <- function(exprs, design, contrast) {
 
-    DERes <- DGEList(counts = exprs) %>%
+    dispRes <- DGEList(counts = exprs) %>%
         calcNormFactors() %>%
-        estimateDisp(design = design) %>%
+        estimateDisp(design = design)
+
+    DERes <- dispRes %>%
         glmQLFit(design = design, contrast = contrast) %>%
         glmQLFTest(contrast = contrast)
 
     resTable <- DERes$table %>%
-        mutate(ID = rownames(.), p.value = .$PValue, statistic = .$logFC, logFC = .$logFC, avgExpr = .$logCPM)
+        mutate(ID = rownames(.), p.value = .$PValue, statistic = .$logFC, logFC = .$logFC, avgExpr = .$logCPM, logFCSE = sqrt(dispRes$tagwise.dispersion))
 
     resTable$p.value[is.na(resTable$p.value)] <- 1
     # resTable$dispersion <- DERes$dispersion
-    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr")]
+    resTable[rownames(exprs), c("ID", "p.value", "statistic", "logFC", "avgExpr", "logFCSE")]
 }
 
 #' @title Differential expression analysis

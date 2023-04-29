@@ -35,7 +35,7 @@ contrast.paired.rev <- makeContrasts("groupcontrol-groupcondition", levels = des
 test_that("Limma unpaired", {
     limmaRes <- .runLimma(exprs, design, contrast)
 
-    expect_true(all(c("ID", "p.value", "statistic", "logFC", "dispersion") %in% colnames(limmaRes)))
+    expect_true(all(c("ID", "p.value", "statistic", "logFC", "logFCSE") %in% colnames(limmaRes)))
     expect_true(all(limmaRes$p.value <= 1))
     expect_true(all(limmaRes$p.value >= 0))
     expect_true(all(limmaRes$ID %in% rownames(exprs)))
@@ -79,7 +79,7 @@ test_that("Limma unpaired vs paired", {
 test_that("DESeq2 unpaired", {
     deseq2Res <- .runDESeq2(exprs, design, contrast)
 
-    expect_true(all(c("ID", "p.value", "logFC", "dispersion") %in% colnames(deseq2Res)))
+    expect_true(all(c("ID", "p.value", "logFC", "logFCSE") %in% colnames(deseq2Res)))
     expect_true(all(deseq2Res$p.value <= 1))
     expect_true(all(deseq2Res$p.value >= 0))
     expect_true(all(deseq2Res$ID %in% rownames(exprs)))
@@ -88,7 +88,7 @@ test_that("DESeq2 unpaired", {
 test_that("DESeq2 paired", {
     deseq2Res <- .runDESeq2(exprs, design.paired, contrast.paired)
 
-    expect_true(all(c("ID", "p.value", "logFC", "dispersion") %in% colnames(deseq2Res)))
+    expect_true(all(c("ID", "p.value", "logFC", "logFCSE") %in% colnames(deseq2Res)))
     expect_true(all(deseq2Res$p.value <= 1))
     expect_true(all(deseq2Res$p.value >= 0))
     expect_true(all(deseq2Res$ID %in% rownames(exprs)))
@@ -123,7 +123,7 @@ test_that("DESeq2 unpaired vs paired", {
 test_that("edgeR unpaired", {
     edgeRRes <- .runEdgeR(exprs, design, contrast)
 
-    expect_true(all(c("ID", "p.value", "logFC", "logFC", "dispersion") %in% colnames(edgeRRes)))
+    expect_true(all(c("ID", "p.value", "logFC", "logFC", "logFCSE") %in% colnames(edgeRRes)))
     expect_true(all(edgeRRes$p.value <= 1))
     expect_true(all(edgeRRes$p.value >= 0))
     expect_true(all(edgeRRes$ID %in% rownames(exprs)))
@@ -132,7 +132,7 @@ test_that("edgeR unpaired", {
 test_that("edgeR paired", {
     edgeRRes <- .runEdgeR(exprs, design.paired, contrast.paired)
 
-    expect_true(all(c("ID", "p.value", "logFC", "logFC", "dispersion") %in% colnames(edgeRRes)))
+    expect_true(all(c("ID", "p.value", "logFC", "logFC", "logFCSE") %in% colnames(edgeRRes)))
     expect_true(all(edgeRRes$p.value <= 1))
     expect_true(all(edgeRRes$p.value >= 0))
     expect_true(all(edgeRRes$ID %in% rownames(exprs)))
