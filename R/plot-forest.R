@@ -87,7 +87,7 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
     }
 
     if (is.null(names(resultsList))) {
-        names(resultsList) <- paste0("Dataset", 1:length(resultsList))
+        names(resultsList) <- paste0("Dataset ", seq_along(resultsList))
     }
 
     plotData <- lapply(names(resultsList), function(n) {
@@ -96,43 +96,47 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
         data[commonIds, unique(c("ID", yAxis, "normalizedScore", "p.value", "pFDR"))] %>% mutate(dataset = n)
     }) %>% do.call(what = rbind)
 
+    pathwayOrder <- plotData %>%
+            mutate(
+                logP = if (useFDR) -log10(.data$pFDR) else -log10(.data$p.value)
+            ) %>%
+            group_by(.data$ID) %>%
+            dplyr::summarize(
+                avgLogP = mean(.data$logP, na.rm = TRUE)
+            ) %>%
+            arrange(.data$avgLogP) %>%
+            pull(.data$ID)
+
     plotData$dataset <- factor(plotData$dataset, levels = names(resultsList))
 
     pvalues <- if (useFDR) plotData$pFDR else plotData$p.value
 
-    plotData$sd <- abs((plotData$normalizedScore - ifelse(plotData$normalizedScore > 0, 1, -1)) / qnorm(pvalues))
-    plotData$sd[plotData$sd > 0.5] <- 0.5
-    plotData$min <- plotData$normalizedScore - plotData$sd * 2
-    plotData$max <- plotData$normalizedScore + plotData$sd * 2
+    plotData$sd <- abs(plotData$normalizedScore / qnorm(pvalues))
+    plotData$sd[plotData$sd > 1.5] <- 1.5
+    plotData$min <- plotData$normalizedScore - plotData$sd * 1.96
+    plotData$max <- plotData$normalizedScore + plotData$sd * 1.96
     plotData$min[plotData$min < statLims[1]] <- statLims[1]
+    plotData$min[plotData$min > statLims[2]] <- statLims[2]
+    plotData$max[plotData$max < statLims[1]] <- statLims[1]
     plotData$max[plotData$max > statLims[2]] <- statLims[2]
-    plotData$label <- factor(plotData[[yAxis]], levels = unique(plotData[[yAxis]]))
+
+    plotData$ID <- factor(plotData$ID, levels = pathwayOrder)
+    yLabels <- plotData %>% select("ID", sym(yAxis)) %>% distinct() %>% arrange(as.numeric(.data$ID)) %>% pull(sym(yAxis))
+    # plotData$label <- factor(plotData[[yAxis]], levels = unique(plotData[[yAxis]]))
+
+    print(range(plotData$min))
+    print(range(plotData$max))
 
     statRange <- statLims[2] - statLims[1]
-    gap <- 0.5
+    gap <- 1
 
-    plotData$normalizedScoreShifted <- plotData$normalizedScore +
-        (as.numeric(plotData$dataset) - 1) * statRange +
-        (as.numeric(plotData$dataset)) * gap
-    plotData$minShifted <- plotData$min +
-        (as.numeric(plotData$dataset) - 1) * statRange +
-        (as.numeric(plotData$dataset)) * gap
-    plotData$maxShifted <- plotData$max +
-        (as.numeric(plotData$dataset) - 1) * statRange +
-        (as.numeric(plotData$dataset)) * gap
+    plotData$normalizedScoreShifted <- plotData$normalizedScore + (as.numeric(plotData$dataset) - 1) * statRange + (as.numeric(plotData$dataset) - 1) * gap
+    plotData$minShifted <- plotData$min + (as.numeric(plotData$dataset) - 1) * statRange + (as.numeric(plotData$dataset) - 1) * gap
+    plotData$maxShifted <- plotData$max + (as.numeric(plotData$dataset) - 1) * statRange + (as.numeric(plotData$dataset) - 1) * gap
 
-    x2_breaks <- (seq_along(resultsList) - 1) * statRange - statRange / 2 + statLims[2]
-    x2_labels <- names(resultsList)
-
-    min_values <- (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap / 2
-    max_values <- (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap / 2
-    x1_breaks <- NULL
-
-    for (i in 1:length(min_values)) {
-        x1_breaks <- c(x1_breaks, ceiling(min_values[i]):floor(max_values[i]))
-    }
-
-    x1_labels <- rep(c(ceiling(min_values[1]):floor(max_values[1])), length(min_values))
+    zeros <- (seq_along(resultsList) - 1) * statRange + (seq_along(resultsList) - 1) * gap
+    breaks <- lapply(seq_along(zeros), function(i) zeros[i] + ceiling(statLims[1]):floor(statLims[2])) %>% unlist()
+    labels <- rep(ceiling(statLims[1]):floor(statLims[2]), length(zeros))
 
     ggplot() +
         geom_rect(
@@ -140,9 +144,9 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
             mapping = aes(
                 xmin = -Inf,
                 xmax = Inf,
-                ymin = as.numeric(.data$label) - 0.5,
-                ymax = as.numeric(.data$label) + 0.5,
-                fill = as.character(as.numeric(.data$label) %% 2)
+                ymin = as.numeric(.data$ID) - 0.5,
+                ymax = as.numeric(.data$ID) + 0.5,
+                fill = as.character(as.numeric(.data$ID) %% 2)
             )
         ) +
         scale_fill_manual(
@@ -153,15 +157,15 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
             mapping = aes(
                 ymin = -Inf,
                 ymax = Inf,
-                xmin = (seq_along(resultsList) - 1) * statRange - statRange / 2 + gap / 2,
-                xmax = (seq_along(resultsList) - 1) * statRange + statRange / 2 - gap / 2
+                xmin = (seq_along(resultsList) - 1) * statRange - statRange / 2 + (seq_along(resultsList) - 1) * gap,
+                xmax = (seq_along(resultsList) - 1) * statRange + statRange / 2 + (seq_along(resultsList) - 1) * gap
             ),
             fill = "transparent",
             color = "black"
         ) +
         geom_vline(
             mapping = aes(
-                xintercept = x1_breaks
+                xintercept = breaks
             ),
             color = "#cccccc",
             size = 0.5,
@@ -169,7 +173,7 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
         ) +
         geom_vline(
             mapping = aes(
-                xintercept = x1_breaks[x1_labels == 0]
+                xintercept = zeros
             ),
             color = "#D00000",
             size = 0.5,
@@ -177,20 +181,24 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
         ) +
         geom_errorbarh(data = plotData,
                        aes(
-                           y = as.numeric(.data$label),
+                           y = as.numeric(.data$ID),
                            xmin = .data$minShifted,
                            xmax = .data$maxShifted),
                        height = 0.2) +
         geom_point(data = plotData,
                    aes(
                        x = .data$normalizedScoreShifted,
-                       y = as.numeric(.data$label)),
+                       y = as.numeric(.data$ID)),
                    color = "red") +
-        scale_y_discrete(limits = unique(plotData$label), name = "") +
-        scale_x_continuous(breaks = x1_breaks,
-                           labels = x1_labels,
+        scale_y_discrete(
+            limits = unique(plotData$ID),
+            name = "",
+            labels = yLabels
+        ) +
+        scale_x_continuous(breaks = breaks,
+                           labels = labels,
                            name = "Normalized Score",
-                           sec.axis = sec_axis(~. / 1, breaks = x2_breaks, labels = x2_labels)) +
+                           sec.axis = sec_axis(~. / 1, breaks = zeros, labels = names(resultsList))) +
         theme_bw() +
         theme(
             panel.grid.major = element_blank(),

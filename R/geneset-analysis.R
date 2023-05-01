@@ -30,7 +30,7 @@
     Expected <- GSOverlap * length(DE.genes) / length(background.genes)
 
     pvals <- 1 - phyper(DEOverlap - 1, length(DE.genes), NoneDEInBackground, GSOverlap)
-    ES <- DEOverlap / Expected
+    ES <- log2(DEOverlap / Expected)
 
    data.frame(
         ID = names(genesets),

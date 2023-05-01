@@ -11,77 +11,117 @@
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>%
 #' @export
-plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pValueLims = c(0, 5)){
+plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pValueLims = c(0, 5), useFDR = TRUE) {
 
-  yAxis = match.arg(yAxis)
+    yAxis <- match.arg(yAxis)
 
-  studyIDs <- names(resultsList)
+    studyIDs <- names(resultsList)
 
-  if(any(sapply(studyIDs, is.null))){
-    stop("The names of the input list should be specified.")
-  }
+    if (any(sapply(studyIDs, is.null))) {
+        stop("The names of the input list should be specified.")
+    }
 
-  cols_list <- lapply(resultsList, function(data) colnames(data))
+    cols_list <- lapply(resultsList, function(data) colnames(data))
 
-  if(!all(sapply(cols_list, function(x) c("ID", "name", "normalizedScore", "p.value") %in% x))){
-    stop("All dataframes in the input list must have 'ID', 'name', 'normalizedScore', and 'p.value' columns.")
-  }
+    if (!all(sapply(cols_list, function(x) c("ID", "name", "normalizedScore", "p.value") %in% x))) {
+        stop("All dataframes in the input list must have 'ID', 'name', 'normalizedScore', and 'p.value' columns.")
+    }
 
-  rows_list <- lapply(resultsList, function(data) data$ID %>% unlist() %>% as.vector())
+    rows_list <- lapply(resultsList, function(data) data$ID %>% unlist() %>% as.vector())
 
-  if(!all(lengths(rows_list) == length(rows_list[[1]]))){
-    stop("All dataframes in the input list must have the same number of rows.")
-  }
+    if (!all(lengths(rows_list) == length(rows_list[[1]]))) {
+        stop("All dataframes in the input list must have the same number of rows.")
+    }
 
-  initial_names <- resultsList[[1]] %>% .$ID %>% unlist() %>% as.vector() %>% sort()
+    initial_names <- resultsList[[1]] %>%
+        .$ID %>%
+        unlist() %>%
+        as.vector() %>%
+        sort()
 
-  if(!all(sapply(rows_list, function(x) all.equal(sort(x), initial_names)))){
-    stop("All dataframes in the input list must have the same set of pathways.")
-  }
+    if (!all(sapply(rows_list, function(x) all.equal(sort(x), initial_names)))) {
+        stop("All dataframes in the input list must have the same set of pathways.")
+    }
 
-  plotData <- lapply(1:length(resultsList), function (i){
+    plotData <- lapply(1:length(resultsList), function(i) {
 
-    data <- resultsList[[i]][, unique(c("ID", yAxis, "normalizedScore", "p.value", "pFDR"))]
-    data$dataset <- studyIDs[i]
-    data$Direction <- ifelse(data$normalizedScore <= 0, "Down", "Up")
-    data$abs.normalizedScore <- data$normalizedScore %>% abs()
-    as.data.frame(data)
-  }) %>% do.call(what = rbind)
+        data <- resultsList[[i]][, unique(c("ID", yAxis, "normalizedScore", "p.value", "pFDR"))]
+        data$dataset <- studyIDs[i]
+        data$Direction <- ifelse(data$normalizedScore <= 0, "Down", "Up")
+        data$abs.normalizedScore <- data$normalizedScore %>% abs()
+        as.data.frame(data)
+    }) %>% do.call(what = rbind)
 
-  plotData$dataset <- factor(plotData$dataset, levels = studyIDs)
+    pathwayOrder <- plotData %>%
+        mutate(
+            logP = if (useFDR) -log10(.data$pFDR) else -log10(.data$p.value)
+        ) %>%
+        group_by(.data$ID) %>%
+        dplyr::summarize(
+            avgLogP = mean(.data$logP, na.rm = TRUE)
+        ) %>%
+        arrange(.data$avgLogP) %>%
+        pull(.data$ID)
 
-  scaleMinMax <- function(x, minx, maxx) {
-    x[x < minx] <- minx
-    x[x > maxx] <- maxx
-    x
-  }
+    plotData$dataset <- factor(plotData$dataset, levels = studyIDs)
+    plotData$ID <- factor(plotData$ID, levels = pathwayOrder)
+    yLabels <- plotData %>% select("ID", sym(yAxis)) %>% distinct() %>% arrange(as.numeric(.data$ID)) %>% pull(sym(yAxis))
 
-  if(yAxis == "ID"){
-    plotData$yLabel <- plotData$ID
-  }else{
-    plotData$yLabel <- plotData$name
-  }
+    scaleMinMax <- function(x, minx, maxx) {
+        x[x < minx] <- minx
+        x[x > maxx] <- maxx
+        x
+    }
 
-  plotData$p.value.scaled <- plotData$p.value %>% log10() %>% abs() %>% scaleMinMax(negLog10pValueLims[1], negLog10pValueLims[2])
+    if (yAxis == "ID") {
+        plotData$yLabel <- plotData$ID
+    }else {
+        plotData$yLabel <- plotData$name
+    }
 
-  ggplot(plotData, aes(y = factor(yLabel),  x = factor(dataset))) +
-    labs(
-      size = "Normalized score",
-      fill = "-Log10 P-value",
-      x = "",
-      y = "") +
-    geom_tile(
-      aes(fill = p.value.scaled)
-    ) +
-    scale_fill_continuous(
-      low = "#F1F1F1",
-      high = "#68BC36",
-      limits = c(negLog10pValueLims[1], negLog10pValueLims[2]),
-      breaks = c(negLog10pValueLims[1], (negLog10pValueLims[1] + negLog10pValueLims[2])/2, negLog10pValueLims[2])
-    ) +
-    geom_point(aes(colour = Direction, size = abs.normalizedScore)) +
-      scale_color_manual(values = c("Up" = "#f77a65", "Down" = "#316b9d"),
-                         guide = guide_legend(override.aes = list(shape = 15, size = 8))) +
+    plotData$p.value.scaled <- (if (useFDR) plotData$pFDR else plotData$p.value) %>%
+        log10() %>%
+        abs() %>%
+        scaleMinMax(negLog10pValueLims[1], negLog10pValueLims[2])
 
-      theme_bw()
+
+    ggplot(plotData, aes(y = ID, x = factor(dataset))) +
+        geom_tile(
+            aes(fill = p.value.scaled)
+        ) +
+        scale_fill_continuous(
+            low = "white",
+            high = "#CD5C5C",
+            limits = c(negLog10pValueLims[1], negLog10pValueLims[2]),
+            breaks = c(negLog10pValueLims[1], (negLog10pValueLims[1] + negLog10pValueLims[2]) / 2, negLog10pValueLims[2]),
+            guide = guide_colorbar(
+                title = "-Log10 P-value"
+            )
+        ) +
+        new_scale_fill() +
+        geom_point(
+            aes(
+                fill = Direction,
+                size = abs.normalizedScore
+            ),
+            shape = 21,
+            color = "white",
+            stroke = 0.5
+        ) +
+        scale_y_discrete(
+            labels = yLabels
+        ) +
+        scale_size_continuous(
+            guide = guide_legend(override.aes = list(shape = 21, fill = "gray50"))
+        ) +
+        scale_fill_manual(
+            values = c("Up" = "#FFAA1D", "Down" = "#72A0C1"),
+            guide = guide_legend(override.aes = list(shape = 21, size = 8))
+        ) +
+        labs(
+            size = "Normalized score",
+            x = "",
+            y = "") +
+
+        theme_bw()
 }

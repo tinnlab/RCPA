@@ -79,34 +79,34 @@ plotBarChart <- function(results, limit = 10, label = "name", by = c("normalized
 
     commonColNames <- Reduce(intersect, lapply(results, colnames))
 
-    if (by %in% c("p.value", "pFDR")) {
-        pathwayOrder <- lapply(results, function(r) {
-            r[, c("ID", by)] %>% `colnames<-`(c("ID", "value"))
-        }) %>%
-            do.call(rbind, .) %>%
-            mutate(
-                logP = -log10(.data$value)
-            ) %>%
-            group_by(.data$ID) %>%
-            dplyr::summarize(
-                avgLogP = mean(.data$logP, na.rm = TRUE)
-            ) %>%
-            arrange(desc(.data$avgLogP)) %>%
-            head(limit) %>%
-            pull(.data$ID)
-    } else {
-        pathwayOrder <- lapply(results, function(r) {
-            r[, c("ID", by)] %>% `colnames<-`(c("ID", "value"))
-        }) %>%
-            do.call(rbind, .) %>%
-            group_by(.data$ID) %>%
-            dplyr::summarize(
-                avgValue = mean(.data$value, na.rm = TRUE)
-            ) %>%
-            arrange(desc(abs(.data$avgValue))) %>%
-            head(limit) %>%
-            pull(.data$ID)
-    }
+    # if (by %in% c("p.value", "pFDR")) {
+    pathwayOrder <- lapply(results, function(r) {
+        r[, c("ID", "p.value", "pFDR")]
+    }) %>%
+        do.call(rbind, .) %>%
+        mutate(
+            logP = if (useFDR) -log10(.data$pFDR) else -log10(.data$p.value)
+        ) %>%
+        group_by(.data$ID) %>%
+        dplyr::summarize(
+            avgLogP = mean(.data$logP, na.rm = TRUE)
+        ) %>%
+        arrange(desc(.data$avgLogP)) %>%
+        head(limit) %>%
+        pull(.data$ID)
+    # } else {
+    #     pathwayOrder <- lapply(results, function(r) {
+    #         r[, c("ID", by)] %>% `colnames<-`(c("ID", "value"))
+    #     }) %>%
+    #         do.call(rbind, .) %>%
+    #         group_by(.data$ID) %>%
+    #         dplyr::summarize(
+    #             avgValue = mean(.data$value, na.rm = TRUE)
+    #         ) %>%
+    #         arrange(desc(abs(.data$avgValue))) %>%
+    #         head(limit) %>%
+    #         pull(.data$ID)
+    # }
 
 
     plotData <- names(results) %>%

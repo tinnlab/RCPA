@@ -5,12 +5,12 @@
 \title{Perform Meta Analysis}
 \usage{
 combinePathwayAnalysisResults(
-  DFsList,
-  method = c("fisher", "stouffer", "score", "geoMean", "addCLT", "minP")
+  PAResults,
+  method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")
 )
 }
 \arguments{
-\item{DFsList}{A list of dataframes obtained from runPathwayAnalysis.}
+\item{PAResults}{A list of data frames obtained from runPathwayAnalysis.}
 
 \item{method}{A method used to combine pathway analysis results}
 }

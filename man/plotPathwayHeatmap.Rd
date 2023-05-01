@@ -7,7 +7,8 @@
 plotPathwayHeatmap(
   resultsList,
   yAxis = c("ID", "name"),
-  negLog10pValueLims = c(0, 5)
+  negLog10pValueLims = c(0, 5),
+  useFDR = TRUE
 )
 }
 \arguments{

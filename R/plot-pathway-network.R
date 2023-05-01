@@ -5,7 +5,7 @@
 
 #' @title Plot a pathway network
 #' @description This function plots a pathway network.
-#' @param results A named list of data frame of Pathway analysis results.
+#' @param PAResults A named list of data frame of Pathway analysis results.
 #' The columns of each data frame should be at least ID, name, p.value and pFDR.
 #' An optional column "color" can be used to specify the color of the nodes.
 #' If the column "color" is not specified, the color of the nodes will be determined by the mode and the statistic.
@@ -92,7 +92,7 @@
 #' @importFrom graph graphNEL addEdge `nodeDataDefaults<-` `nodeData<-`
 #' @importFrom dplyr filter mutate %>%
 #' @importFrom grDevices colorRampPalette
-plotPathwayNetwork <- function(results, genesets,
+plotPathwayNetwork <- function(PAResults, genesets,
                                statistic = "pFDR",
                                mode = c("continuous", "discrete"),
                                labels = NULL,
@@ -135,7 +135,7 @@ plotPathwayNetwork <- function(results, genesets,
         styleFile <- system.file(package = "RCPA", "extdata", "pieStyle.js")
     }
 
-    for (res in results) {
+    for (res in PAResults) {
         if (!all(c("ID", "name", "p.value", "pFDR") %in% colnames(res))) {
             stop("The columns of the data frame in the results should be at least ID, name, p.value, and pFDR")
         }
@@ -161,7 +161,7 @@ plotPathwayNetwork <- function(results, genesets,
             "#ee5437"
         )
     } else if (mode == "discrete") {
-        if (length(discreteColors) != length(results)) {
+        if (length(discreteColors) != length(PAResults)) {
             stop("The length of the discreteColors should be the same as the number of results.")
         }
     }
@@ -183,7 +183,7 @@ plotPathwayNetwork <- function(results, genesets,
         size = sapply(names(genesets), nodeSizeFnc),
         borderWidth = sapply(names(genesets), borderWidthFnc),
         borderColor = borderColor,
-        nResult = length(results),
+        nResult = length(PAResults),
         legendTitle = (
             if (statistic == "p.value") "-log10 p-value"
             else if (statistic == "pFDR") "-log10 FDR"
@@ -197,13 +197,13 @@ plotPathwayNetwork <- function(results, genesets,
         )
     )
 
-    for (i in seq_along(results)) {
+    for (i in seq_along(PAResults)) {
 
         pathwayInfo[[paste0("stat", i)]] <- NA
         pathwayInfo[[paste0("isSig", i)]] <- FALSE
         # pathwayInfo[[paste0("nDE", i)]] <- NA
 
-        statValues <- results[[i]][[statistic]]
+        statValues <- PAResults[[i]][[statistic]]
         if (statistic == "p.value" || statistic == "pFDR") {
             statValues <- -log10(statValues)
             statValues[statValues > statLimit] <- statLimit
@@ -214,15 +214,15 @@ plotPathwayNetwork <- function(results, genesets,
             statValues <- statValues / statLimit
         }
 
-        idx <- match(pathwayInfo$ID, results[[i]]$ID)
+        idx <- match(pathwayInfo$ID, PAResults[[i]]$ID)
 
         pathwayInfo[[paste0("stat", i)]] <- statValues[idx]
         # pathwayInfo[[paste0("nDE", i)]] <- results[[i]]$nDE[idx]
 
         if (useFDR) {
-            pathwayInfo[[paste0("isSig", i)]] <- results[[i]]$pFDR[idx] < pThreshold
+            pathwayInfo[[paste0("isSig", i)]] <- PAResults[[i]]$pFDR[idx] < pThreshold
         } else {
-            pathwayInfo[[paste0("isSig", i)]] <- results[[i]]$p.value[idx] < pThreshold
+            pathwayInfo[[paste0("isSig", i)]] <- PAResults[[i]]$p.value[idx] < pThreshold
         }
 
         if (mode == "discrete") {
@@ -256,12 +256,12 @@ plotPathwayNetwork <- function(results, genesets,
     graphObj <- graphNEL(pathwayInfo$ID, edgemode = "undirected")
     graphObj <- graph::addEdge(graphEdges$from, graphEdges$to, graphObj, graphEdges$weight)
 
-    if (is.null(names(results))) {
-        names(results) <- paste0("Result ", seq_along(results))
+    if (is.null(names(PAResults))) {
+        names(PAResults) <- paste0("Result ", seq_along(PAResults))
     }
 
-    for (i in seq_along(results)) {
-        pathwayInfo[[paste0("resultName", i)]] <- names(results)[i]
+    for (i in seq_along(PAResults)) {
+        pathwayInfo[[paste0("resultName", i)]] <- names(PAResults)[i]
     }
 
     for (attr in colnames(pathwayInfo)) {

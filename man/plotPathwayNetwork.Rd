@@ -5,7 +5,7 @@
 \title{Plot a pathway network}
 \usage{
 plotPathwayNetwork(
-  results,
+  PAResults,
   genesets,
   statistic = "pFDR",
   mode = c("continuous", "discrete"),
@@ -25,7 +25,7 @@ plotPathwayNetwork(
 )
 }
 \arguments{
-\item{results}{A named list of data frame of Pathway analysis results.
+\item{PAResults}{A named list of data frame of Pathway analysis results.
 The columns of each data frame should be at least ID, name, p.value and pFDR.
 An optional column "color" can be used to specify the color of the nodes.
 If the column "color" is not specified, the color of the nodes will be determined by the mode and the statistic.}

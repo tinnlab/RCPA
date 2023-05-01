@@ -151,7 +151,7 @@
 
 #' @title Perform Meta Analysis
 #' @description This function performs meta analysis on multiple pathway analysis results.
-#' @param DFsList A list of dataframes obtained from runPathwayAnalysis.
+#' @param PAResults A list of data frames obtained from runPathwayAnalysis.
 #' @param method A method used to combine pathway analysis results
 #' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
 #' @examples
@@ -237,50 +237,108 @@
 #' @details This function performs mata analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows
 #' @export
-combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffer", "score", "geoMean", "addCLT", "minP")) {
+combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
     method <- match.arg(method)
 
-    if (length(DFsList) == 1) {
+    if (length(PAResults) == 1) {
         stop("Meta analysis is valid for two or more studies.")
     }
 
-    if (any(sapply(DFsList, is.null))) {
-        stop("There is null object in the input list.")
+    for (PAResult in PAResults) {
+        if (is.null(PAResult)) {
+            stop("There is null object in the input list.")
+        }
+
+        if (!all(c("ID", "p.value", "normalizedScore", "sampleSize") %in% colnames(PAResult))) {
+            stop("All the dataframes in the input list must have ID, p.value, normalizedScore and sampleSize columns.")
+        }
     }
 
-    dim.lst <- DFsList %>% lapply(function(df) dim(df))
-    if (length(unique(dim.lst)) != 1) {
-        stop("All the dataframes in the input list must have the same dimension.")
+    if (method != "REML"){
+        combinePFunc <- switch(method,
+                           fisher = .runFisher,
+                           stouffer = .runStouffer,
+                           minP = min,
+                           addCLT = .runAddCLT,
+                           geoMean = .runGeoMean)
+
+        pvalRes <- PAResults %>%
+            lapply(function(df) {
+                df[, c("ID", "p.value", "normalizedScore")] %>% as.data.frame()
+            }) %>%
+            bind_rows() %>%
+            drop_na() %>%
+            mutate(
+                left.p = ifelse(.$normalizedScore < 0, .$p.value, 1 - .$p.value),
+                right.p = ifelse(.$normalizedScore > 0, .$p.value, 1 - .$p.value)
+            ) %>%
+            group_by(ID) %>%
+            summarise(
+                left.p = combinePFunc(.data$left.p),
+                right.p = combinePFunc(.data$right.p),
+                n = length(.data$ID)
+            ) %>%
+            filter(n == length(PAResults))
     }
 
-    colnames.lst <- DFsList %>% lapply(function(df) colnames(df))
-    if (length(unique(colnames.lst)) != 1) {
-        stop("All the dataframes in the input list must have the same column names.")
+    metagenRes <- PAResults %>%
+        lapply(function(df) {
+            df[, c("ID", "normalizedScore", "p.value", "sampleSize")] %>% as.data.frame()
+        }) %>%
+        bind_rows() %>%
+        group_by(ID) %>%
+        group_split() %>%
+        lapply(function(dat) {
+            if (nrow(dat) < length(PAResults)) {
+                return(NULL)
+            }
+
+            res <- try({
+                metagen(data = dat,
+                        studlab = ID,
+                        TE = normalizedScore,
+                        # seTE = logFCSE,
+                        pval = p.value,
+                        sm = "SMD",
+                        method.tau = "REML",
+                        hakn = TRUE,
+                        n.e = sampleSize
+                ) }, silent = TRUE)
+            if (inherits(res, "try-error")) {
+                res <- NULL
+            }
+
+            return(res)
+        }) %>%
+        do.call(what = rbind)
+
+
+    metaResult <- metagenRes[, c("studlab", "TE.fixed", "seTE.fixed", "pval.fixed")] %>%
+        as.data.frame() %>%
+        mutate(
+            ID = .data$studlab %>% sapply(`[`, 1),
+            p.value = unlist(.data$pval.fixed),
+            score = unlist(.data$TE.fixed),
+            normalizedScore = .data$score
+        ) %>%
+        mutate(
+            pFDR = p.adjust(.data$p.value, method = "fdr")
+        )
+
+    if (method != "REML"){
+        metaResult <- metaResult %>%
+            select("ID", "score", "normalizedScore") %>%
+            inner_join(pvalRes, by = "ID") %>%
+            mutate(
+                p.value = ifelse(.$normalizedScore < 0, .$left.p, .$right.p),
+                pFDR = p.adjust(.data$p.value, method = "fdr")
+            )
     }
 
-    rownames.lst <- DFsList %>% lapply(function(df) rownames(df))
-    if (length(unique(rownames.lst)) != 1) {
-        stop("All the dataframes in the input list must have the same row names.")
-    }
-
-    allData <- bind_rows(DFsList)
-
-    metaResult <- NULL
-    if (method == "score")
-        metaResult <- .combineEnrichmentScores(allData)
-    else metaResult <- .combinePvalues(allData, method)
-
-    if (is.null(metaResult)) {
-        stop("There is an error in meta analysis.")
-    }
-
-    metaResult$name <- allData$name[match(metaResult$ID, allData$ID)]
-    metaResult$pathwaySize <- allData$pathwaySize[match(metaResult$ID, allData$ID)]
-    metaResult$pFDR <- p.adjust(metaResult$p.value, method = "fdr")
-    metaResult$normalizedScore <- metaResult$score
-
-    return(metaResult)
+    metaResult$name <- PAResults[[1]][match(metaAnalysisResult$ID, PAResults[[1]]$ID), "name"]
+    metaResult$pathwaySize <- PAResults[[1]][match(metaAnalysisResult$ID, PAResults[[1]]$ID), "pathwaySize"]
+    metaResult[, c("ID", "name", "p.value", "pFDR", "score", "normalizedScore", "pathwaySize")]
 }
 
 
@@ -296,7 +354,7 @@ combinePathwayAnalysisResults <- function(DFsList, method = c("fisher", "stouffe
 #' @importFrom stats p.adjust
 #' @importFrom tidyr drop_na
 #' @export
-combineDEAnalysisResults <- function(DEResults, method = c("fisher", "stouffer", "geoMean", "addCLT", "minP")) {
+combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
     method <- match.arg(method)
 
@@ -309,12 +367,14 @@ combineDEAnalysisResults <- function(DEResults, method = c("fisher", "stouffer",
             stop("There is null object in the input list.")
         }
 
-        if (!all(c("ID", "p.value", "logFC", "logFCSE") %in% colnames(DEResult))) {
-            stop("All the dataframes in the input list must have p.value, logFC and logFCSE columns.")
+        if (!all(c("ID", "p.value", "logFC", "logFCSE", "sampleSize") %in% colnames(DEResult))) {
+            stop("All the dataframes in the input list must have p.value, logFC, logFCSE, and sampleSize columns.")
         }
     }
 
-    combinePFunc <- switch(method,
+    if (method != "REML"){
+        combinePFunc <- switch(method,
+                           meanZ = .runMeanZ,
                            fisher = .runFisher,
                            stouffer = .runStouffer,
                            minP = min,
@@ -327,29 +387,38 @@ combineDEAnalysisResults <- function(DEResults, method = c("fisher", "stouffer",
             df[, c("ID", "p.value", "logFC")] %>% as.data.frame()
         }) %>%
         bind_rows() %>%
+        drop_na() %>%
         mutate(
-            left.p = ifelse(.data$logFC < 0, .data$p.value, 1 - .data$p.value),
-            right.p = ifelse(.data$logFC > 0, .data$p.value, 1 - .data$p.value)
+            left.p = ifelse(.$logFC < 0, .$p.value, 1 - .$p.value),
+            right.p = ifelse(.$logFC > 0, .$p.value, 1 - .$p.value)
         ) %>%
         group_by(ID) %>%
         summarise(
-            left.p = combinePFunc(left.p),
-            right.p = combinePFunc(right.p)
-        )
+            left.p = combinePFunc(.data$left.p),
+            right.p = combinePFunc(.data$right.p),
+            n = length(.data$ID)
+        ) %>%
+        filter(n == length(DEResults))
+    }
 
     metagenRes <- DEResults %>%
         lapply(function(df) {
-            df[, c("ID", "logFC", "logFCSE", "sampleSize")] %>% as.data.frame()
+            df[, c("ID", "logFC", "logFCSE", "p.value", "sampleSize")] %>% as.data.frame()
         }) %>%
         bind_rows() %>%
         group_by(ID) %>%
         group_split() %>%
         lapply(function(dat) {
+            if (nrow(dat) < length(DEResults)) {
+                return(NULL)
+            }
+
             res <- try({
                 metagen(data = dat,
                         studlab = ID,
                         TE = logFC,
-                        seTE = logFCSE,
+                        # seTE = logFCSE,
+                        pval = p.value,
                         sm = "SMD",
                         method.tau = "REML",
                         hakn = TRUE,
@@ -364,26 +433,31 @@ combineDEAnalysisResults <- function(DEResults, method = c("fisher", "stouffer",
         do.call(what = rbind)
 
 
-    metaResult <- metagenRes[, c("studlab", "TE.fixed", "seTE.fixed")] %>%
+    metaResult <- metagenRes[, c("studlab", "TE.fixed", "seTE.fixed", "pval.fixed")] %>%
         as.data.frame() %>%
         mutate(
             ID = .data$studlab %>% sapply(`[`, 1),
-            TE.fixed = unlist(.data$TE.fixed),
-            seTE.fixed = unlist(.data$seTE.fixed)
-        ) %>%
-        select_("ID", "TE.fixed", "seTE.fixed") %>%
-        as.data.frame() %>%
-        inner_join(pvalRes, by = c("ID" = "ID")) %>%
-        mutate(
-            p.value = ifelse(.data$TE.fixed < 0, .data$left.p, .data$right.p)
+            p.value = unlist(.data$pval.fixed),
+            logFC = unlist(.data$TE.fixed),
+            logFCSE = unlist(.data$seTE.fixed)
         ) %>%
         mutate(
-            pFDR = p.adjust(.data$p.value, method = "fdr"),
-            logFC = .data$TE.fixed,
-            logFCSE = .data$seTE.fixed
+            pFDR = p.adjust(.data$p.value, method = "fdr")
         ) %>%
         select("ID", "p.value", "pFDR", "logFC", "logFCSE") %>%
-        drop_na()
+        drop_na() %>%
+        as.data.frame()
+
+    if (method != "REML"){
+        metaResult <- metaResult %>%
+            select("ID", "logFC", "logFCSE") %>%
+            inner_join(pvalRes, by = "ID") %>%
+            mutate(
+                p.value = ifelse(.$logFC < 0, .$left.p, .$right.p),
+                pFDR = p.adjust(.data$p.value, method = "fdr")
+            ) %>%
+            select("ID", "p.value", "pFDR", "logFC", "logFCSE")
+    }
 
     return(metaResult)
 }

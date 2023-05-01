@@ -6,7 +6,7 @@
 \usage{
 combineDEAnalysisResults(
   DEResults,
-  method = c("fisher", "stouffer", "geoMean", "addCLT", "minP")
+  method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")
 )
 }
 \arguments{
