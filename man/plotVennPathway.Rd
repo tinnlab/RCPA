@@ -20,21 +20,27 @@ Plot a venndiagram from multiple pathway analysis results.
 \dontrun{
 library(RCPA)
 
-loadData("affyDEExperiment")
-loadData("agilDEExperiment")
-loadData("RNASeqDEExperiment")
+loadData("affyFgseaResult")
+loadData("agilFgseaResult")
+loadData("RNASeqFgseaResult")
+loadData("metaPAResult")
 
-DEResults <- list(
-    "Affymetrix - GSE5281" = rowData(affyDEExperiment),
-    "Agilent - GSE61196"   = rowData(agilDEExperiment),
-    "RNASeq - GSE153873"   = rowData(RNASeqDEExperiment)
+PAResults <- list(
+    "Affymetrix - GSE5281" = affyFgseaResult,
+    "Agilent - GSE61196" = agilFgseaResult,
+    "RNASeq - GSE153873" = RNASeqFgseaResult,
+    "Meta-analysis" = metaPAResult
 )
-DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
-DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
 
-RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("Differential Expression Genes")
-RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated Genes")
-RCPA::plotVennDE(DEResultDowns) + ggplot2::ggtitle("Down-regulated Genes")
+PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
+PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
+
+RCPA::plotVennPathway(PAResults, pThreshold = 0.05) +
+    ggplot2::ggtitle("All Significant Pathways")
+RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) +
+    ggplot2::ggtitle("Significantly Up-regulated Pathways")
+RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) +
+    ggplot2::ggtitle("Significantly Down-regulated Pathways")
 
 }
 }

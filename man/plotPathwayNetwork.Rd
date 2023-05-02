@@ -90,43 +90,31 @@ The width of the edges are proportional to the number of genes in common.
 # Loading libraries
 library(RCyjs)
 library(RCPA)
-styleFile <- system.file(package="RCPA", "extdata", "pieStyle.js")
+loadData("affyFgseaResult")
+loadData("agilFgseaResult")
+loadData("RNASeqFgseaResult")
+loadData("metaPAResult")
 
-# Obtaining KEGG genesets
-gs <- getGeneSets("KEGG")
+PAResults <- list(
+    "Affymetrix - GSE5281" = affyFgseaResult,
+    "Agilent - GSE61196" = agilFgseaResult,
+    "RNASeq - GSE153873" = RNASeqFgseaResult,
+    "Meta-analysis" = metaPAResult
+)
 
-# Simulating enrichment analysis results
-results <- lapply(1:3, function(i) {
-  set.seed(i)
-  
-  data.frame(
-    ID = names(gs$genesets),
-    name = gs$names,
-    p.value = runif(length(gs$genesets))/10,
-    pFDR = runif(length(gs$genesets))/10,
-    ES = rnorm(length(gs$genesets)),
-    NES = rnorm(length(gs$genesets))
-  )
-})
-# Adding method names to the result
-names(results) <- c("ORA", "FGSEA", "GSA")
-# Assigning radome pathway names to enrichment analysis results
-IDs <- sample(names(gs$genesets), 10)
+genesetsToPlot <- metaPAResult$ID[order(metaPAResult$pFDR)][1:30]
 
-# Get genesets for each pathway
-genesets <- gs$genesets[IDs]
-# Set p-value threshold
-pThreshold <- 0.05
-# Disable use of FDR
-useFDR <- FALSE
-# Set edge threshold limit
-edgeThreshold <- 0.1
+pltObj <- RCPA::plotPathwayNetwork(
+    PAResults,
+    genesets = genesets$genesets[genesetsToPlot],
+    labels = genesets$names[genesetsToPlot],
+    edgeThreshold = 0.75,
+    mode = "continuous",
+    statistic = "normalizedScore"
+)
 
-# Plot pathway network with default params
-plotPathwayNetwork(results, genesets, pThreshold = pThreshold, useFDR = useFDR)
+pltObj$plot()
 
-# Plot pathway network without FDR
-plotPathwayNetwork(results, genesets, pThreshold = pThreshold, useFDR = FALSE)
 }
 
 }

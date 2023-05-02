@@ -29,46 +29,28 @@ Plot forest plot from pathway/geneset/meta analysis results.
 }
 \examples{
 \dontrun{
-# Loading the library
 library(RCPA)
-library(ggplot2)
-# Set seed for repro
-set.seed(123)
-# Simulate the enrichment analysis for the study 1
-result1 <- data.frame(
-  ID = paste0("geneset", 1:100),
-  name = paste0("Pathway ", 1:100),
-  description = paste0("Description ", 1:100),
-  p.value = runif(100) / 10,
-  pFDR = runif(100) / 5,
-  size = runif(100, 100, 500),
-  nDE = runif(100, 10, 100),
-  score = runif(100, -2, 2),
-  normalizedScore = runif(100)
-)
-rownames(result1) <- result1$ID
 
-# Simulate the enrichment analysis for the study 2
-result2 <- data.frame(
-  ID = paste0("geneset", 1:100),
-  name = paste0("Pathway ", 1:100),
-  description = paste0("Description ", 1:100),
-  p.value = runif(100) / 10,
-  pFDR = runif(100) / 5,
-  size = runif(100, 100, 500),
-  nDE = runif(100, 10, 100),
-  score = runif(100, -2, 2),
-  normalizedScore = runif(100)
-)
-rownames(result2) <- result2$ID
+loadData("affyFgseaResult")
+loadData("agilFgseaResult")
+loadData("RNASeqFgseaResult")
+loadData("metaPAResult")
 
-# Store results from two studies in a list
-resultsLst <- list(
-  "study1" = result1,
-  "study2" = result2
+PAResults <- list(
+    "Affymetrix - GSE5281" = affyFgseaResult,
+    "Agilent - GSE61196" = agilFgseaResult,
+    "RNASeq - GSE153873" = RNASeqFgseaResult,
+    "Meta-analysis" = metaPAResult
 )
 
-# Forest plot
-plotForest(resultsLst, yAxis = "ID")
+selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:hsa05016",
+                      "path:hsa05017", "path:hsa05020", "path:hsa05022", "path:hsa04724",
+                      "path:hsa04727", "path:hsa04725", "path:hsa04728", "path:hsa04726",
+                      "path:hsa04720", "path:hsa04730", "path:hsa04723", "path:hsa04721",
+                      "path:hsa04722")
+resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
+
+RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
+
 }
 }

@@ -4,4 +4,7 @@
 ^\.RData$
 ..Rcheck
 .data
-
+.tmp
+.idea
+README\.md
+RCPA\.Rproj

@@ -41,8 +41,10 @@ This function performs geneset analysis using either ORA, fgsea, GSA, ks, or wil
 library(RCPA)
 loadData("RNASeqDEExperiment")
 loadData("genesets")
-oraResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets, method = "ora", ORAArgs = list(pThreshold = 0.05))
-fgseaResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets, method = "fgsea", FgseaArgs = list(minSize = 10, maxSize = Inf))
+oraResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets,
+                                          method = "ora", ORAArgs = list(pThreshold = 0.05))
+fgseaResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets, method = "fgsea",
+                                            FgseaArgs = list(minSize = 10, maxSize = Inf))
 
 }
 }

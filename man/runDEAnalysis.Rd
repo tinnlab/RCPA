@@ -64,7 +64,8 @@ affyDesign <- model.matrix(~0 + condition + region + condition:region, data = co
 colnames(affyDesign) <- make.names(colnames(affyDesign))
 affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=affyDesign)
 
-affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign, contrast = affyContrast, annotation = "GPL570")
+affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign,
+                                        contrast = affyContrast, annotation = "GPL570")
 print(rowData(affyDEExperiment)) # check the DE analysis results
 
 # GSE61196
@@ -74,10 +75,12 @@ agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=
 
 # Create Probe mapping
 GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
-GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, TO = as.character(GPL4133Anno$GENE), stringsAsFactors = F)
+GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, TO = as.character(GPL4133Anno$GENE),
+                                 stringsAsFactors = F)
 GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
 
-agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign, contrast = agilContrast, annotation = GPL4133GeneMapping)
+agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
+                                        contrast = agilContrast, annotation = GPL4133GeneMapping)
 print(rowData(agilDEExperiment))
 
 # GSE153873
@@ -91,10 +94,12 @@ if (!require("org.Hs.eg.db", quietly = TRUE)) {
 }
 
 library(org.Hs.eg.db)
-ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset), columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
+ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset),
+                                        columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
 colnames(ENSEMBLMapping) <- c("FROM", "TO")
 
-RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset, method = "DESeq2", design = RNASeqDesign, contrast = RNASeqContrast, annotation = ENSEMBLMapping)
+RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset, method = "DESeq2", design = RNASeqDesign,
+                                          contrast = RNASeqContrast, annotation = ENSEMBLMapping)
 print(rowData(RNASeqDEExperiment))
 
 }

@@ -9,6 +9,7 @@
 #' @param IDsToLabel A vector of IDs to label.
 #' When NULL, the top pathways are labeled. Default is NULL.
 #' @param topToLabel The number of top pathways to label when IDsToLabels is NULL.
+#' @param sideToLabel The side of the plot to label.
 #' @examples
 #' \dontrun{
 #' library(RCPA)
@@ -134,12 +135,12 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
 
 #' @title Plot volcano plot from Pathway analysis results
 #' @description Plot volcano plot from Pathway analysis results
-#' @param results A data frame with Pathway analysis results.
+#' @param DEResult A data frame with Pathway analysis results.
 #' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param pThreshold The p-value threshold to use for the horizontal line.
 #' @param useFDR Whether to use the pFDR column instead of the p.value column.
 #' @param logFCThreshold The logFC threshold to use for the vertical line.
-#' @example
+#' @examples
 #' \dontrun{
 #'
 #' library(RCPA)
@@ -148,9 +149,12 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
 #' loadData("agilDEExperiment")
 #' loadData("RNASeqDEExperiment")
 #'
-#' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Affymetrix - GSE5281")
-#' RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Agilent - GSE61196")
-#' RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("RNASeq - GSE153873")
+#' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
+#'     ggplot2::ggtitle("Affymetrix - GSE5281")
+#' RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
+#'     ggplot2::ggtitle("Agilent - GSE61196")
+#' RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
+#'     ggplot2::ggtitle("RNASeq - GSE153873")
 #'
 #' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs

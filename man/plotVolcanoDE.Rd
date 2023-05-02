@@ -7,15 +7,33 @@
 plotVolcanoDE(DEResult, pThreshold = 0.05, useFDR = TRUE, logFCThreshold = 1)
 }
 \arguments{
+\item{DEResult}{A data frame with Pathway analysis results.
+The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.}
+
 \item{pThreshold}{The p-value threshold to use for the horizontal line.}
 
 \item{useFDR}{Whether to use the pFDR column instead of the p.value column.}
 
 \item{logFCThreshold}{The logFC threshold to use for the vertical line.}
-
-\item{results}{A data frame with Pathway analysis results.
-The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.}
 }
 \description{
 Plot volcano plot from Pathway analysis results
+}
+\examples{
+\dontrun{
+
+library(RCPA)
+
+loadData("affyDEExperiment")
+loadData("agilDEExperiment")
+loadData("RNASeqDEExperiment")
+
+RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
+    ggplot2::ggtitle("Affymetrix - GSE5281")
+RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
+    ggplot2::ggtitle("Agilent - GSE61196")
+RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
+    ggplot2::ggtitle("RNASeq - GSE153873")
+
+}
 }

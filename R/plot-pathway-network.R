@@ -1,3 +1,4 @@
+#' @importFrom methods setClass representation
 .RCyjs <- setClass("RCyjs",
                    representation = representation(graph = "graph"),
                    contains = "BrowserViz"

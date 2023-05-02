@@ -31,7 +31,9 @@ loadData("affyFgseaResult")
 loadData("agilFgseaResult")
 loadData("RNASeqFgseaResult")
 
-metaPAResult <- RCPA::combinePathwayAnalysisResults(list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult), method = "stouffer")
-
+metaPAResult <- RCPA::combinePathwayAnalysisResults(
+    list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
+    method = "stouffer"
+)
 }
 }

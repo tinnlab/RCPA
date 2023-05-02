@@ -36,53 +36,38 @@ The heatmap contains p-values and log fold changes from the DE analysis.
 }
 \examples{
 \dontrun{
-#Load necessary libraries
-library(SummarizedExperiment)
-library(limma)
 library(RCPA)
-library(ggplot2)
-# Load dataset
-data("data")
-# Get affymetrix dataset
-affyDataset <- data$affyDataset
-# Create the analysis design
-affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-# Perform DE analysis affymetrix dataset
-affyDEExperiment <- RCPA::runDEAnalysis(affyDataset,
-                                        method = "limma",
-                                        design = affyDesign,
-                                        contrast = affyContrast,
-                                        annotation = "GPL570")
 
-# Get Agilent dataset
-agilDataset <- data$agilDataset
-# Create the analysis design
-agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
-agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
-# Perform genID mapping
-GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
-GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
-                                 TO = as.character(GPL4133Anno$GENE), 
-                                 stringsAsFactors = F)
-GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
-# Perform DE analysis for agilent dataset
-agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, 
-                                        method = "limma", 
-                                        design = agilDesign, 
-                                        contrast = agilContrast, 
-                                        annotation = GPL4133GeneMapping)
+loadData("affyDEExperiment")
+loadData("agilDEExperiment")
+loadData("RNASeqDEExperiment")
+loadData("genesets")
 
+DEResults <- list(
+    "Affymetrix - GSE5281" = rowData(affyDEExperiment),
+    "Agilent - GSE61196" = rowData(agilDEExperiment),
+    "RNASeq - GSE153873" = rowData(RNASeqDEExperiment)
+)
 
-rest <- list(affyDE = rowData(affyDEExperiment), agilDE = rowData(agilDEExperiment))
+metaDEResult <- RCPA::combineDEAnalysisResults(DEResults, method = "stouffer")
+metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
 
-# Get common genes from different studies
-genes <- sample(Reduce(intersect, lapply(rest, function(res) res$ID)), 30)
-# Get gene annotation
-annotation <- getEntrezAnnotation(genes)
-# Get gene description
-labels <- annotation[genes, "Description"]
-# Plot gene heatmap
-plotDEGeneHeatmap(rest, genes, labels = labels)
+alzheimerGenes <- genesets$genesets[["path:hsa05010"]]
+genesToPlot <- head(metaDEResult[metaDEResult$ID \%in\% alzheimerGenes, ], 50)$ID
+
+genesAnnotation <- RCPA::getEntrezAnnotation(genesToPlot)
+labels <- genesAnnotation[genesToPlot, "Description"]
+
+genesOrderByFC <- order(metaDEResult[match(genesToPlot, metaDEResult$ID), "logFC"])
+resultsToPlot <- c(DEResults, list(metaDEResult))
+names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
+
+RCPA::plotDEGeneHeatmap(
+    resultsToPlot,
+    genesToPlot[genesOrderByFC],
+    labels = labels[genesOrderByFC],
+    negLog10pValueLims = c(0, 5), logFCLims = c(-1, 1)
+)
+
 }
 }

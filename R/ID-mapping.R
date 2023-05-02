@@ -1,7 +1,7 @@
 #' @title Get ID mapping annotation from GEO platform
 #' @description This function gets ID mapping annotation from GEO platform.
 #' This function is used internally by runDEAnalysis.
-#' @param GEO platform ID. E.g., GPL570
+#' @param platform GEO platform ID. E.g., GPL570
 #' @return A data frame with ID mapping annotation and two columns: FROM and TO.
 #' The first column is the probe ID and the second column is the entrez ID.
 #' @importFrom AnnotationDbi select keys
@@ -88,7 +88,7 @@
     }
 
     suppressMessages({
-        AnnotationDbi::select(annotation, keys = keys(annotation, keytype = "PROBEID"), columns = c("PROBEID", "ENTREZID"), keytype = "PROBEID")
+        AnnotationDbi::select(annotation, keys = AnnotationDbi::keys(annotation, keytype = "PROBEID"), columns = c("PROBEID", "ENTREZID"), keytype = "PROBEID")
     }) %>%
         `colnames<-`(c("FROM", "TO")) %>%
         drop_na()

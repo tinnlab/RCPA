@@ -45,29 +45,18 @@ This function plots KEGG map with DE genes.
 }
 \examples{
 \dontrun{
-#Load necessary libraries
-library(SummarizedExperiment)
-library(limma)
 library(RCPA)
-library(ggplot2)
-# Load dataset
-data("data")
-# Get affymetrix dataset
-affyDataset <- data$affyDataset
-# Create the analysis design
-affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-# Perform DE analysis affymetrix dataset
-affyDEExperiment <- RCPA::runDEAnalysis(affyDataset,
-                                        method = "limma",
-                                        design = affyDesign,
-                                        contrast = affyContrast,
-                                        annotation = "GPL570")
-# Get DE analysis result
-rest <- list(rowData(affyDEExperiment))
-# Plot KEGG pathways heatmap using log fold change statistics
-plotKEGGMap(rest, "path:hsa05200", statistic = "logFC", useFDR = TRUE, pThreshold = 0.05)
-# Plot KEGG pathways heatmap using p-value statistics
-plotKEGGMap(rest, "path:hsa05200", statistic = "p.value", useFDR = FALSE, pThreshold = 0.05)
+loadData("affyDEExperiment")
+loadData("agilDEExperiment")
+loadData("RNASeqDEExperiment")
+
+DEResults <- list(
+    "Affymetrix - GSE5281" = rowData(affyDEExperiment),
+    "Agilent - GSE61196" = rowData(agilDEExperiment),
+    "RNASeq - GSE153873" = rowData(RNASeqDEExperiment)
+)
+
+RCPA::plotKEGGMap(DEResults, "hsa05010", stat = "logFC", pThreshold = 1, statLimit = 1)
+
 }
 }

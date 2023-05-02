@@ -70,6 +70,7 @@
 #' @title Load data from GitHub
 #' @description This function loads data from GitHub.
 #' @param name The name of the data.
+#' @return Load the data with the specified name.
 #' @examples
 #' \dontrun{
 #' library(RCPA)

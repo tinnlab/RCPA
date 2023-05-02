@@ -31,32 +31,25 @@ The columns are ID, name, description, p.value, pFDR, pathwaySize, nDE, score an
 When NULL, the top pathways are labeled. Default is NULL.}
 
 \item{topToLabel}{The number of top pathways to label when IDsToLabels is NULL.}
+
+\item{sideToLabel}{The side of the plot to label.}
 }
 \description{
 Plot volcano plot from Pathway analysis results
 }
 \examples{
 \dontrun{
-library(AnnotationDbi)
-library(SummarizedExperiment)
-library(limma)
 library(RCPA)
-data("data")
-# Get affymetrix dataset
-affyDataset <- data$affyDataset
-# Create the analysis design
-affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-# Perform DE analysis affymetrix dataset
-affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
-                                        method = "limma", 
-                                        design = affyDesign, 
-                                        contrast = affyContrast, 
-                                        annotation = "GPL570")
-# Get DE data frame
-DEResult <- rowData(affyDEExperiment)
-# Plot volcano
-plotVolcanoDE(DEResult)
+loadData("affyFgseaResult")
+loadData("agilFgseaResult")
+loadData("RNASeqFgseaResult")
+loadData("metaPAResult")
+
+RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
+RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")
+RCPA::plotVolcanoPathway(RNASeqFgseaResult, sideToLabel = "left")
+RCPA::plotVolcanoPathway(metaPAResult, sideToLabel = "left")
+
 }
 
 }

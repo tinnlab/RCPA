@@ -6,7 +6,7 @@
 \usage{
 plotBarChart(
   results,
-  limit = 10,
+  limit = Inf,
   label = "name",
   by = c("normalizedScore", "score", "pFDR", "p.value"),
   maxNegLog10PValue = 5,
@@ -41,30 +41,28 @@ This function plots a bar chart of the pathway analysis results.
 }
 \examples{
 \dontrun{
-# Loading libraries
-library(ggplot2)
-library(ggpattern)
 library(RCPA)
-# Simulating DE analysis result
-results <- lapply(1:3, function(i) {
-  set.seed(i)
-  
-  data.frame(
-    ID = paste0("geneset", 1:100),
-    name = paste0("Pathway ", 1:100),
-    description = paste0("Description ", 1:100),
-    p.value = runif(100) / 10,
-    pFDR = runif(100) / 5,
-    size = runif(100, 100, 500),
-    nDE = runif(100, 10, 100),
-    score = runif(100, -2, 2),
-    normalizedScore = runif(100)
-  )
-})
-# Plot the barchart
-plotBarChart(results)
 
-# Plot barchart with p-value
-plotBarChart(results, by = "p.value")
+loadData("affyFgseaResult")
+loadData("agilFgseaResult")
+loadData("RNASeqFgseaResult")
+loadData("metaPAResult")
+
+PAResults <- list(
+    "Affymetrix - GSE5281" = affyFgseaResult,
+    "Agilent - GSE61196" = agilFgseaResult,
+    "RNASeq - GSE153873" = RNASeqFgseaResult,
+    "Meta-analysis" = metaPAResult
+)
+
+selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:hsa05016",
+                      "path:hsa05017", "path:hsa05020", "path:hsa05022", "path:hsa04724",
+                      "path:hsa04727", "path:hsa04725", "path:hsa04728", "path:hsa04726",
+                      "path:hsa04720", "path:hsa04730", "path:hsa04723", "path:hsa04721",
+                      "path:hsa04722")
+resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
+
+RCPA::plotBarChart(resultsToPlot) + ggplot2::ggtitle("FGSEA Analysis Results")
+
 }
 }

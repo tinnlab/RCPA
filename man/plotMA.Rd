@@ -34,3 +34,12 @@ A ggplot object.
 \description{
 Plot MA plot from DE analysis results
 }
+\examples{
+\dontrun{
+library(RCPA)
+
+loadData("RNASeqDEExperiment")
+RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggtitle("RNASeq - GSE153873")
+
+}
+}

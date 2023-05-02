@@ -13,6 +13,7 @@
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom stringr str_split
 getCePaPathwayCatalogue <- function(org = "hsa", updateCache = F){
+
   keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
 
   interactionList <- lapply(keggPathway, function(pathway){

@@ -22,3 +22,17 @@ The dataframe has ID, p.value, pDFR, logFC, and logFCSE columns.
 \description{
 This function performs mata analysis on multiple DE analysis results.
 }
+\examples{
+\dontrun{
+library(RCPA)
+loadData("affyDEExperiment")
+loadData("agilDEExperiment")
+loadData("RNASeqDEExperiment")
+
+metaDEResult <- RCPA::combineDEAnalysisResults(list(
+    rowData(affyDEExperiment),
+    rowData(agilDEExperiment),
+    rowData(RNASeqDEExperiment)
+), method = "stouffer")
+}
+}

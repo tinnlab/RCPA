@@ -22,9 +22,12 @@
 #' DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
 #' DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
 #'
-#' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Affymetrix - GSE5281")
-#' RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Agilent - GSE61196")
-#' RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("RNASeq - GSE153873")
+#' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
+#'     ggplot2::ggtitle("Affymetrix - GSE5281")
+#' RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
+#'     ggplot2::ggtitle("Agilent - GSE61196")
+#' RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
+#'     ggplot2::ggtitle("RNASeq - GSE153873")
 #'
 #' }
 #' @importFrom ggvenn ggvenn
@@ -114,9 +117,12 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #' PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
 #' PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
 #'
-#' RCPA::plotVennPathway(PAResults, pThreshold = 0.05) + ggplot2::ggtitle("All Significant Pathways")
-#' RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) + ggplot2::ggtitle("Significantly Up-regulated Pathways")
-#' RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) + ggplot2::ggtitle("Significantly Down-regulated Pathways")
+#' RCPA::plotVennPathway(PAResults, pThreshold = 0.05) +
+#'     ggplot2::ggtitle("All Significant Pathways")
+#' RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) +
+#'     ggplot2::ggtitle("Significantly Up-regulated Pathways")
+#' RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) +
+#'     ggplot2::ggtitle("Significantly Down-regulated Pathways")
 #'
 #' }
 #' @importFrom ggvenn ggvenn

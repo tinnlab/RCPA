@@ -162,8 +162,10 @@
 #' loadData("agilFgseaResult")
 #' loadData("RNASeqFgseaResult")
 #'
-#' metaPAResult <- RCPA::combinePathwayAnalysisResults(list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult), method = "stouffer")
-#'
+#' metaPAResult <- RCPA::combinePathwayAnalysisResults(
+#'     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
+#'     method = "stouffer"
+#' )
 #' }
 #' @details This function performs mata analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows mutate group_by summarise filter group_split select inner_join
