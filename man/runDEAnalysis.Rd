@@ -56,46 +56,46 @@ This function performs differential expression analysis using either limma, DESe
 }
 \examples{
 \dontrun{
-#Loading necessary libraries
-library(hgu133plus2.db)
-library(AnnotationDbi)
-library(SummarizedExperiment)
-library(limma)
 library(RCPA)
-# generate a random gene expression matrix
-set.seed(123)
-exprs <- round(matrix(2^abs(rnorm(1000, sd = 4)), nrow = 100, ncol = 10))
-# Assign gene names
-rownames(exprs) <- sample(keys(hgu133plus2.db, keytype = "PROBEID"), nrow(exprs), replace = FALSE)
-# Assign sample names
-colnames(exprs) <- paste0("sample", 1:10)
-# Generate control and condition samples
-controlSamples <- paste0("sample", 1:5)
-conditionSamples <- paste0("sample", 6:10)
-# Get colData
-colData <- data.frame(
-    row.names = colnames(exprs),
-    group = factor(c(rep("control", 
-    length(controlSamples)), 
-    rep("condition", 
-    length(conditionSamples)))),
-    pair = factor(c(seq_along(controlSamples), seq_along(conditionSamples)))
-)
-# Construct summarizedExperiment object
-summarizedExperiment <- SummarizedExperiment(
-    assays = list(counts = exprs),
-    colData = colData
-)
-# control vs condition
-design <- model.matrix(~0 + group, data = colData)
-contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
-# Perform DE analysis
-DERes <- runDEAnalysis(summarizedExperiment, 
-method = "DESeq2", 
-design, contrast, 
-annotation = "GPL570")
 
-# View DE analysis data frame
-rowData(DERes)
+# GSE5281
+loadData("affyDataset")
+affyDesign <- model.matrix(~0 + condition + region + condition:region, data = colData(affyDataset))
+colnames(affyDesign) <- make.names(colnames(affyDesign))
+affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=affyDesign)
+
+affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign, contrast = affyContrast, annotation = "GPL570")
+print(rowData(affyDEExperiment)) # check the DE analysis results
+
+# GSE61196
+loadData("affyDataset")
+agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
+agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
+
+# Create Probe mapping
+GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
+GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, TO = as.character(GPL4133Anno$GENE), stringsAsFactors = F)
+GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
+
+agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign, contrast = agilContrast, annotation = GPL4133GeneMapping)
+print(rowData(agilDEExperiment))
+
+# GSE153873
+loadData("RNASeqDataset")
+RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
+RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=RNASeqDesign)
+
+# Create mapping
+if (!require("org.Hs.eg.db", quietly = TRUE)) {
+    BiocManager::install("org.Hs.eg.db")
+}
+
+library(org.Hs.eg.db)
+ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset), columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
+colnames(ENSEMBLMapping) <- c("FROM", "TO")
+
+RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset, method = "DESeq2", design = RNASeqDesign, contrast = RNASeqContrast, annotation = ENSEMBLMapping)
+print(rowData(RNASeqDEExperiment))
+
 }
 }

@@ -17,5 +17,24 @@ plotVennPathway(PAResults, pThreshold = 0.05, useFDR = TRUE)
 Plot a venndiagram from multiple pathway analysis results.
 }
 \examples{
-#TODO add example
+\dontrun{
+library(RCPA)
+
+loadData("affyDEExperiment")
+loadData("agilDEExperiment")
+loadData("RNASeqDEExperiment")
+
+DEResults <- list(
+    "Affymetrix - GSE5281" = rowData(affyDEExperiment),
+    "Agilent - GSE61196"   = rowData(agilDEExperiment),
+    "RNASeq - GSE153873"   = rowData(RNASeqDEExperiment)
+)
+DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
+DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
+
+RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("Differential Expression Genes")
+RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated Genes")
+RCPA::plotVennDE(DEResultDowns) + ggplot2::ggtitle("Down-regulated Genes")
+
+}
 }

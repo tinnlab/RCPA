@@ -75,7 +75,6 @@
 #' library(RCPA)
 #' loadData("RNASeqDataset")
 #' }
-#' @importFrom utils load
 #' @export
 loadData <- function(name){
     load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))

@@ -29,46 +29,23 @@ Plot a venndiagram from multiple DE Analysis results.
 }
 \examples{
 \dontrun{
-#' #Load necessary libraries
-library(SummarizedExperiment)
-library(limma)
 library(RCPA)
-library(ggplot2)
-# Load dataset
-data("data")
-# Get affymetrix dataset
-affyDataset <- data$affyDataset
-# Create the analysis design
-affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-# Perform DE analysis affymetrix dataset
-affyDEExperiment <- RCPA::runDEAnalysis(affyDataset,
-                                        method = "limma",
-                                        design = affyDesign,
-                                        contrast = affyContrast,
-                                        annotation = "GPL570")
 
-# Get Agilent dataset
-agilDataset <- data$agilDataset
-# Create the analysis design
-agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
-agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
-# Perform genID mapping
-GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
-GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
-                                 TO = as.character(GPL4133Anno$GENE), 
-                                 stringsAsFactors = F)
-GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
-# Perform DE analysis for agilent dataset
-agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, 
-                                        method = "limma", 
-                                        design = agilDesign, 
-                                        contrast = agilContrast, 
-                                        annotation = GPL4133GeneMapping)
+loadData("affyDEExperiment")
+loadData("agilDEExperiment")
+loadData("RNASeqDEExperiment")
 
+DEResults <- list(
+    "Affymetrix - GSE5281" = rowData(affyDEExperiment),
+    "Agilent - GSE61196"   = rowData(agilDEExperiment),
+    "RNASeq - GSE153873"   = rowData(RNASeqDEExperiment)
+)
+DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
+DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
 
-rest <- list(affyDE = rowData(affyDEExperiment), agilDE = rowData(agilDEExperiment))
-# Plot venn diagram
-plotVennDE(rest)
+RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Affymetrix - GSE5281")
+RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Agilent - GSE61196")
+RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("RNASeq - GSE153873")
+
 }
 }

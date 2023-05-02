@@ -41,32 +41,12 @@ This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods
 }
 \examples{
 \dontrun{
-#Loading necessary libraries
-library(AnnotationDbi)
-library(SummarizedExperiment)
-library(limma)
 library(RCPA)
-data("data")
-# Get affymetrix dataset
-affyDataset <- data$affyDataset
-# Create the analysis design
-affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-# Perform DE analysis affymetrix dataset
-affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
-                                        method = "limma", 
-                                        design = affyDesign, 
-                                        contrast = affyContrast, 
-                                        annotation = "GPL570")
-rowData(affyDEExperiment)
-# Get spia network
-spiaNetwork <- getSPIAKEGGNetwork("hsa", FALSE)
-# Get cepa network
-cepaNetwork <- getCePaPathwayCatalogue("hsa", FALSE)
+loadData("RNASeqDEExperiment")
+loadData("spiaNetwork")
+loadData("cepaNetwork")
 
-# Enrichment analysis using spia
-result <- runPathwayAnalysis(affyDEExperiment, spiaNetwork, method = "SPIA")
-# Enrichment analysis using cepaORA
-result <- runPathwayAnalysis(affyDEExperiment, cepaNetwork, method = "cepaORA")
+spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "SPIA")
+cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
 }
 }

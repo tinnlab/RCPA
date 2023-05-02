@@ -38,16 +38,11 @@ This function retrieves gene sets for a given organism.
 }
 \examples{
 \dontrun{
-# Loading the RCPA package
-library(RCPA)
-# Obtaining genesets from KEGG databases
-gensets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
 
-# Obtaining genesets from GO databases
-gensets <- getGeneSets("GO", 
-taxid = 9606, 
-namespace = "biological_process", 
-minSize = 10, 
-maxSize = 1000)
+library(RCPA)
+
+getGeneSets("KEGG", org = "hsa", minSize = 10, maxSize = 1000)
+getGeneSets("GO", taxid = 9606, namespace = "biological_process", minSize = 10, maxSize = 1000)
+
 }
 }
