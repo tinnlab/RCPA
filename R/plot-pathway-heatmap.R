@@ -6,7 +6,26 @@
 #' @param negLog10pValueLims A vector of length 2 specifying the minimum and maximum -log10(p-value) to plot.
 #' @return A ggplot2 object for presenting the heatmap of the pathways.
 #' @examples
-#' #TODO add example
+#' \dontrun{
+#' library(RCPA)
+#' loadData("affyFgseaResult")
+#' loadData("agilFgseaResult")
+#' loadData("RNASeqFgseaResult")
+#' loadData("metaPAResult")
+#'
+#' PAResults <- list(
+#'     "Affymetrix - GSE5281" = affyFgseaResult,
+#'     "Agilent - GSE61196" = agilFgseaResult,
+#'     "RNASeq - GSE153873" = RNASeqFgseaResult,
+#'     "Meta-analysis" = metaPAResult
+#' )
+#'
+#' selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:hsa05016", "path:hsa05017", "path:hsa05020", "path:hsa05022", "path:hsa04724", "path:hsa04727", "path:hsa04725", "path:hsa04728", "path:hsa04726", "path:hsa04720", "path:hsa04730", "path:hsa04723", "path:hsa04721", "path:hsa04722")
+#' resultsToPlot <- lapply(PAResults, function(df) df[df$ID %in% selectedPathways,])
+#'
+#' RCPA::plotPathwayHeatmap(resultsToPlot, yAxis = "name")
+#'
+#' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs scale_fill_continuous scale_size geom_tile
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>%
@@ -65,7 +84,7 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
 
     plotData$dataset <- factor(plotData$dataset, levels = studyIDs)
     plotData$ID <- factor(plotData$ID, levels = pathwayOrder)
-    yLabels <- plotData %>% select("ID", sym(yAxis)) %>% distinct() %>% arrange(as.numeric(.data$ID)) %>% pull(sym(yAxis))
+    yLabels <- plotData %>% select("ID", sym(yAxis)) %>% unique() %>% arrange(as.numeric(.data$ID)) %>% pull(sym(yAxis))
 
     scaleMinMax <- function(x, minx, maxx) {
         x[x < minx] <- minx

@@ -11,26 +11,17 @@
 #' @param topToLabel The number of top pathways to label when IDsToLabels is NULL.
 #' @examples
 #' \dontrun{
-#' library(AnnotationDbi)
-#' library(SummarizedExperiment)
-#' library(limma)
 #' library(RCPA)
-#' data("data")
-#' # Get affymetrix dataset
-#' affyDataset <- data$affyDataset
-#' # Create the analysis design
-#' affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-#' affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-#' # Perform DE analysis affymetrix dataset
-#' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
-#'                                         method = "limma", 
-#'                                         design = affyDesign, 
-#'                                         contrast = affyContrast, 
-#'                                         annotation = "GPL570")
-#' # Get DE data frame
-#' DEResult <- rowData(affyDEExperiment)
-#' # Plot volcano
-#' plotVolcanoDE(DEResult)
+#' loadData("affyFgseaResult")
+#' loadData("agilFgseaResult")
+#' loadData("RNASeqFgseaResult")
+#' loadData("metaPAResult")
+#'
+#' RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
+#' RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")
+#' RCPA::plotVolcanoPathway(RNASeqFgseaResult, sideToLabel = "left")
+#' RCPA::plotVolcanoPathway(metaPAResult, sideToLabel = "left")
+#'
 #' }
 #' 
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs

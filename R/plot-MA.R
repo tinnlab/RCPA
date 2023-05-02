@@ -9,6 +9,14 @@
 #' @param fitMethod The method to use for fitting the loess line.
 #' If NULL then no line is drawn.
 #' @return A ggplot object.
+#' @examples
+#' \dontrun{
+#' library(RCPA)
+#'
+#' loadData("RNASeqDEExperiment")
+#' RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggtitle("RNASeq - GSE153873")
+#'
+#' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_x_continuous scale_color_manual labs geom_smooth
 #' @importFrom ggrepel geom_label_repel
 #' @export

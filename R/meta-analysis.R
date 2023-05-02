@@ -282,6 +282,19 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
 #' @param method The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP".
 #' @return A dataframe containing combined DE analysis results.
 #' The dataframe has ID, p.value, pDFR, logFC, and logFCSE columns.
+#' @examples
+#' \dontrun{
+#' library(RCPA)
+#' loadData("affyDEExperiment")
+#' loadData("agilDEExperiment")
+#' loadData("RNASeqDEExperiment")
+#'
+#' metaDEResult <- RCPA::combineDEAnalysisResults(list(
+#'     rowData(affyDEExperiment),
+#'     rowData(agilDEExperiment),
+#'     rowData(RNASeqDEExperiment)
+#' ), method = "stouffer")
+#' }
 #' @importFrom dplyr %>% bind_rows group_by summarize mutate
 #' @importFrom meta metagen
 #' @importFrom stats p.adjust
