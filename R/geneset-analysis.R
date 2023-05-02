@@ -235,35 +235,13 @@
 #' @return A dataframe of geneset analysis result
 #' @examples
 #' \dontrun{
-#' # Loading libraries
-#' library(SummarizedExperiment)
-#' library(limma)
+#'
 #' library(RCPA)
-#' data("data")
-#' # Get affymetrix dataset
-#' affyDataset <- data$affyDataset
-#' # Create the analysis design
-#' affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-#' affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-#' # Perform DE analysis affymetrix dataset
-#' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
-#'                                         method = "limma", 
-#'                                         design = affyDesign, 
-#'                                         contrast = affyContrast, 
-#'                                         annotation = "GPL570")
-#' 
-#' genesets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
-#' 
-#' # Perform geneset enrichment analysis using wilcox test
-#' result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "wilcox")
-#' # Perform geneset enrichment analysis using over representation analysis
-#' result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "ora")
-#' # Perform geneset enrichment analysis using fgsea
-#' result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "fgsea")
-#' # Perform geneset enrichment analysis using ks test
-#' result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "ks")
-#' # Perform geneset enrichment analysis using gsa
-#' result <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "gsa")
+#' loadData("RNASeqDEExperiment")
+#' loadData("genesets")
+#' oraResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets, method = "ora", ORAArgs = list(pThreshold = 0.05))
+#' fgseaResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets, method = "fgsea", FgseaArgs = list(minSize = 10, maxSize = Inf))
+#'
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%

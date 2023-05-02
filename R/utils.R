@@ -66,3 +66,17 @@
         })
     )
 }
+
+#' @title Load data from GitHub
+#' @description This function loads data from GitHub.
+#' @param name The name of the data.
+#' @examples
+#' \dontrun{
+#' library(RCPA)
+#' loadData("RNASeqDataset")
+#' }
+#' @importFrom utils load
+#' @export
+loadData <- function(name){
+    load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))
+}

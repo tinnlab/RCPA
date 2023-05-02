@@ -148,6 +148,20 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
 #' @param pThreshold The p-value threshold to use for the horizontal line.
 #' @param useFDR Whether to use the pFDR column instead of the p.value column.
 #' @param logFCThreshold The logFC threshold to use for the vertical line.
+#' @example
+#' \dontrun{
+#'
+#' library(RCPA)
+#'
+#' loadData("affyDEExperiment")
+#' loadData("agilDEExperiment")
+#' loadData("RNASeqDEExperiment")
+#'
+#' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Affymetrix - GSE5281")
+#' RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("Agilent - GSE61196")
+#' RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggplot2::ggtitle("RNASeq - GSE153873")
+#'
+#' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>% pull

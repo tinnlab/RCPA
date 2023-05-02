@@ -156,86 +156,19 @@
 #' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
 #' @examples
 #' \dontrun{
-#' #' # Loading libraries
-#' library(SummarizedExperiment)
-#' library(limma)
+#'
 #' library(RCPA)
-#' data("data")
-#' # Get affymetrix dataset
-#' affyDataset <- data$affyDataset
-#' # Create the analysis design
-#' affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-#' affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-#' # Perform DE analysis affymetrix dataset
-#' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
-#'                                         method = "limma", 
-#'                                         design = affyDesign, 
-#'                                         contrast = affyContrast, 
-#'                                         annotation = "GPL570")
-#' 
-#' agilDataset <- data$agilDataset
-#' # Create the analysis design
-#' agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
-#' agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
-#' # Perform genID mapping
-#' GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
-#' GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
-#'                                  TO = as.character(GPL4133Anno$GENE), 
-#'                                  stringsAsFactors = F)
-#' GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
-#' # Perform DE analysis for agilent dataset
-#' agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, 
-#'                                         method = "limma", 
-#'                                         design = agilDesign, 
-#'                                         contrast = agilContrast, 
-#'                                         annotation = GPL4133GeneMapping)
-#' # Get RNA-Seq dataset
-#' RNASeqDataset <- data$RNASeqDataset
-#' # perform geneID mapping
-#' if (!require("org.Hs.eg.db", quietly = TRUE)) {
-#'   BiocManager::install("org.Hs.eg.db")
-#' }
-#' library(org.Hs.eg.db)
-#' ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, 
-#'                                         keys = rownames(RNASeqDataset), 
-#'                                         columns = c("SYMBOL", "ENTREZID"), 
-#'                                         keytype = "SYMBOL")
-#' colnames(ENSEMBLMapping) <- c("FROM", "TO")
-#' # Create the analysis design
-#' RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
-#' RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
-#'                                        levels=RNASeqDesign)
-#' # Perform DE analysis for RNA-Seq dataset
-#' RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset, 
-#'                                           method = "DESeq2", 
-#'                                           design = RNASeqDesign, 
-#'                                           contrast = RNASeqContrast, 
-#'                                           annotation = ENSEMBLMapping)
-#' # Get genesets                                           
-#' genesets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
-#' 
-#' # Get enrichment analysis for three datasets
-#' DF1 <- runGeneSetEnrichmentAnalysis(affyDEExperiment, genesets, method = "fgsea")
-#' rownames(DF1) <- DF1$ID
-#' DF2 <- runGeneSetEnrichmentAnalysis(agilDEExperiment, genesets, method = "fgsea")
-#' rownames(DF2) <- DF2$ID
-#' DF3 <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets, method = "fgsea")
-#' rownames(DF3) <- DF3$ID
-#' # Get common pathways
-#' common_rownames <- intersect(intersect(rownames(DF1), rownames(DF2)), rownames(DF3))
-#' 
-#' DF1 <- DF1[common_rownames,]
-#' DF2 <- DF2[common_rownames,]
-#' DF3 <- DF3[common_rownames,]
-#' # Merge into a list
-#' allDFs <- list(DF1, DF2, DF3)
-#' allData <- allDFs %>% bind_rows()
-#' 
-#' # Combine result using Enrichment Score
-#' metaRes <- combinePathwayAnalysisResults(allDFs, method = "score")
+#' loadData("affyFgseaResult")
+#' loadData("agilFgseaResult")
+#' loadData("RNASeqFgseaResult")
+#'
+#' metaPAResult <- RCPA::combinePathwayAnalysisResults(list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult), method = "stouffer")
+#'
 #' }
 #' @details This function performs mata analysis on multiple pathway analysis results.
-#' @importFrom dplyr %>% bind_rows
+#' @importFrom dplyr %>% bind_rows mutate group_by summarise filter group_split select inner_join
+#' @importFrom tidyr drop_na
+#' @importFrom meta metagen
 #' @export
 combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
@@ -336,8 +269,8 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
             )
     }
 
-    metaResult$name <- PAResults[[1]][match(metaAnalysisResult$ID, PAResults[[1]]$ID), "name"]
-    metaResult$pathwaySize <- PAResults[[1]][match(metaAnalysisResult$ID, PAResults[[1]]$ID), "pathwaySize"]
+    metaResult$name <- PAResults[[1]][match(metaResult$ID, PAResults[[1]]$ID), "name"]
+    metaResult$pathwaySize <- PAResults[[1]][match(metaResult$ID, PAResults[[1]]$ID), "pathwaySize"]
     metaResult[, c("ID", "name", "p.value", "pFDR", "score", "normalizedScore", "pathwaySize")]
 }
 
