@@ -1,15 +1,14 @@
-#' @title Get ID mapping annotation from GEO platform
-#' @description This function gets ID mapping annotation from GEO platform.
-#' This function is used internally by runDEAnalysis.
-#' @param platform GEO platform ID. E.g., GPL570
-#' @return A data frame with ID mapping annotation and two columns: FROM and TO.
-#' The first column is the probe ID and the second column is the entrez ID.
-#' @importFrom AnnotationDbi keys
-#' @importFrom dplyr %>%
-#' @importFrom tidyr drop_na
-.getIDMappingAnnotation <- function(platform) {
-
-    annotations <- list(
+#' @title Get supported platforms
+#' @description Get supported platforms
+#' @return A named list of supported platforms, where the names are the platform IDs and the values are the corresponding annotation packages from Bioconductor.
+#' @examples
+#' \dontrun{
+#' library(RCPA)
+#' getSupportedPlatforms()
+#' }
+#'
+getSupportedPlatforms <- function(){
+    list(
       GPL96 = "hgu133a.db",
       GPL97 = "hgu133b.db",
       GPL570 = "hgu133plus2.db",
@@ -33,7 +32,7 @@
       GPL23126 = "clariomdhumantranscriptcluster.db",
       GPL6102 = "illuminaHumanv2.db",
       GPL6947 = "illuminaHumanv3.db",
-      GPL71 = "ag.db", 
+      GPL71 = "ag.db",
       GPL198 = "ath1121501.db",
       GPL3738 = "canine2.db",
       GPL200 = "celegans.db",
@@ -76,6 +75,20 @@
       GPL90 = "ygs98.db",
       GPL1319 = "zebrafish.db"
     )
+}
+
+#' @title Get ID mapping annotation from GEO platform
+#' @description This function gets ID mapping annotation from GEO platform.
+#' This function is used internally by runDEAnalysis.
+#' @param platform GEO platform ID. E.g., GPL570
+#' @return A data frame with ID mapping annotation and two columns: FROM and TO.
+#' The first column is the probe ID and the second column is the entrez ID.
+#' @importFrom AnnotationDbi keys
+#' @importFrom dplyr %>%
+#' @importFrom tidyr drop_na
+.getIDMappingAnnotation <- function(platform) {
+
+    annotations <- getSupportedPlatforms()
 
     if (grep("GPL", platform)) {
         if (!is.null(annotations[[platform]])) {

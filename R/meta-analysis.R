@@ -140,14 +140,14 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
 
             res <- try({
                 meta::metagen(data = dat,
-                        studlab = .data$ID,
-                        TE = .data$normalizedScore,
+                        studlab = dat$ID,
+                        TE = dat$normalizedScore,
                         # seTE = logFCSE,
-                        pval = .data$p.value,
+                        pval = dat$p.value,
                         sm = "SMD",
                         method.tau = "REML",
                         hakn = TRUE,
-                        n.e = .data$sampleSize
+                        n.e = dat$sampleSize
                 ) }, silent = TRUE)
             if (inherits(res, "try-error")) {
                 res <- NULL
@@ -272,14 +272,14 @@ combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher",
 
             res <- try({
                 meta::metagen(data = dat,
-                        studlab = .data$ID,
-                        TE = .data$logFC,
+                        studlab = dat$ID,
+                        TE = dat$logFC,
                         # seTE = logFCSE,
-                        pval = .data$p.value,
+                        pval = dat$p.value,
                         sm = "SMD",
                         method.tau = "REML",
                         hakn = TRUE,
-                        n.e = .data$sampleSize
+                        n.e = dat$sampleSize
                 ) }, silent = TRUE)
             if (inherits(res, "try-error")) {
                 res <- NULL
