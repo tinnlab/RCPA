@@ -47,6 +47,7 @@
 #' loadData("agilFgseaResult")
 #' loadData("RNASeqFgseaResult")
 #' loadData("metaPAResult")
+#' loadData("genesets")
 #'
 #' PAResults <- list(
 #'     "Affymetrix - GSE5281" = affyFgseaResult,
@@ -256,7 +257,7 @@ plotPathwayNetwork <- function(PAResults, genesets,
                       title = "Pathway network",
                       quiet = T,
                       browserFile = system.file(package = "RCyjs", "browserCode", "dist", "rcyjs.html"),
-                      httpQueryProcessingFunction = cyjsQueryFnc,
+                      httpQueryProcessingFunction = cyjsQueryFnc
     )
 
     class(rCy) <- "RCyjs"

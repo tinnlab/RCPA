@@ -10,6 +10,7 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>%
+#' @noRd
 .runSPIA <- function(summarizedExperiment, network, pThreshold, all, ...){
 
     DE_data <- rowData(summarizedExperiment)
@@ -53,6 +54,7 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select filter
+#' @noRd
 .runCePaORA <- function(summarizedExperiment, network, pThreshold, bk, ...){
 
     .requirePackage("CePa")
@@ -98,6 +100,7 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
 #' @importFrom dplyr %>% select
+#' @noRd
 .runCePaGSA <- function(summarizedExperiment, network, ...){
 
     .requirePackage("CePa")
@@ -160,7 +163,7 @@
 #' loadData("spiaNetwork")
 #' loadData("cepaNetwork")
 #'
-#' spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "SPIA")
+#' spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
 #' cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment assay

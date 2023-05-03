@@ -46,7 +46,7 @@ loadData("RNASeqDEExperiment")
 loadData("spiaNetwork")
 loadData("cepaNetwork")
 
-spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "SPIA")
+spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
 cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
 }
 }

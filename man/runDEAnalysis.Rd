@@ -69,7 +69,7 @@ affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = 
 print(rowData(affyDEExperiment)) # check the DE analysis results
 
 # GSE61196
-loadData("affyDataset")
+loadData("agilDataset")
 agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
 agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
 

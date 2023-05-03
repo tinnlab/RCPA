@@ -10,6 +10,7 @@
 #' @importFrom dplyr %>% filter
 #' @importFrom tidyr drop_na
 #' @importFrom stats phyper
+#' @noRd
 .runORA <- function(summarizedExperiment, genesets, pThreshold) {
 
     DE_data <- rowData(summarizedExperiment)
@@ -52,6 +53,7 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
 #' @importFrom tidyr drop_na
+#' @noRd
 .runFgsea <- function(summarizedExperiment, genesets,...) {
 
     DE_data <- rowData(summarizedExperiment)
@@ -93,6 +95,7 @@
 #' @details This function is used internally by runGeneSetEnrichmentAnalysis.
 #' @importFrom dplyr %>%
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
+#' @noRd
 .runGSA <- function(summarizedExperiment, genesets, ...) {
 
     .requirePackage("GSA")
@@ -180,6 +183,7 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom tidyr drop_na
 #' @importFrom stats ks.test wilcox.test
+#' @noRd
 .runKsWilcox <- function(summarizedExperiment, genesets, sTest) {
 
     DE_data <- rowData(summarizedExperiment)

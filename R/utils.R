@@ -4,6 +4,7 @@
 #' @param pkg The name of the package to be loaded.
 #' @return TRUE if the package is installed, FALSE otherwise.
 #' @importFrom BiocManager install
+#' @noRd
 .requirePackage <- function(pkg) {
     if (!(pkg %in% .packages(all.available = TRUE)))
     {
@@ -23,6 +24,7 @@
 #' group is a vector of group information.
 #' pair is a vector of pair information.
 #' @importFrom dplyr %>%
+#' @noRd
 .extractPairInfo <- function(design, contrast) {
     groupMat <- design[, names(contrast[contrast[, 1] != 0,]), drop = FALSE]
     group <- rep(NA, nrow(groupMat))

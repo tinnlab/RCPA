@@ -5,6 +5,7 @@
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
 #' @importFrom stats qnorm pchisq
+#' @noRd
 .runFisher <- function(pvals) {
     pvals[pvals == 0] <- .Machine$double.eps
     p.value <- pchisq(-2 * sum(log(pvals)), df = 2 * length(pvals), lower.tail = FALSE)
@@ -18,6 +19,7 @@
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
 #' @importFrom stats pnorm qnorm
+#' @noRd
 .runStouffer <- function(pvals) {
     pvals[pvals == 0] <- .Machine$double.eps
     p.value <- pnorm(sum(qnorm(pvals)) / sqrt(length(pvals)))
@@ -31,6 +33,7 @@
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
 #' @importFrom stats pnorm
+#' @noRd
 .runAddCLT <- function(pvals) {
     pvals <- pvals[!is.na(pvals)]
     pvals[pvals == 0] <- .Machine$double.eps
@@ -51,6 +54,7 @@
 #' @param pvals The vector of P-Values to be combined.
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
+#' @noRd
 .runGeoMean <- function(pvals) {
     pvals[pvals == 0] <- .Machine$double.eps
     p.value <- exp(mean(log(pvals)))

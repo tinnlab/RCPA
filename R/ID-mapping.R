@@ -86,6 +86,7 @@ getSupportedPlatforms <- function(){
 #' @importFrom AnnotationDbi keys
 #' @importFrom dplyr %>%
 #' @importFrom tidyr drop_na
+#' @noRd
 .getIDMappingAnnotation <- function(platform) {
 
     annotations <- getSupportedPlatforms()
@@ -122,6 +123,7 @@ getSupportedPlatforms <- function(){
 #' }
 #' @importFrom dplyr %>% arrange select group_by mutate first rename left_join summarize_all
 #' @importFrom tidyr drop_na
+#' @noRd
 .mapIDs <- function(exprs, annotation, DEResults) {
 
     if (is.null(annotation)) {

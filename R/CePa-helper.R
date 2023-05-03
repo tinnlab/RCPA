@@ -1,8 +1,8 @@
 #' @title Get KEGG pathway catalouge (network) for CePa.ORA and CePa.GSA methods
 #' @description Get KEGG pathway catalouge for CePa.ORA and CePa.GSA methods
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
-#' @param updateCache A parameter to enable/disable cache update.
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
+#' @param updateCache A parameter to enable/disable cache update.
 #' @return A named list with three elements: network, names and sizes for CePa.ORA and CePa.GSA methods.
 #' @examples
 #' getCePaPathwayCatalogue("hsa")

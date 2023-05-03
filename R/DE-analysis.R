@@ -5,77 +5,15 @@
 #' @param design A design model output by model.matrix.
 #' @param contrast A contrast matrix output by makeContrasts from limma package.
 #' @return A data frame with DE analysis results.
-#' Must contain the following columns: ID, p.value, logFC, statistic, avgExpr
-#' @examples
-#' \dontrun{
-#' #Loading necessary libraries
-#' library(AnnotationDbi)
-#' library(SummarizedExperiment)
-#' library(limma)
-#' library(RCPA)
-#' data("data")
-#' # Get affymetrix dataset
-#' affyDataset <- data$affyDataset
-#' # Create the analysis design
-#' affyDesign <- model.matrix(~0 + condition + region, data = colData(affyDataset))
-#' affyContrast <- limma::makeContrasts("conditionalzheimer-conditionnormal", levels=affyDesign)
-#' # Perform DE analysis affymetrix dataset
-#' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, 
-#'                                         method = "limma", 
-#'                                         design = affyDesign, 
-#'                                         contrast = affyContrast, 
-#'                                         annotation = "GPL570")
-#' rowData(affyDEExperiment)
-#' 
-#' # Get Agilent dataset
-#' agilDataset <- data$agilDataset
-#' # Create the analysis design
-#' agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
-#' agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
-#' # Perform genID mapping
-#' GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
-#' GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
-#'                                  TO = as.character(GPL4133Anno$GENE), 
-#'                                  stringsAsFactors = F)
-#' GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
-#' # Perform DE analysis for agilent dataset
-#' agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, 
-#'                                         method = "limma", 
-#'                                         design = agilDesign, 
-#'                                         contrast = agilContrast, 
-#'                                         annotation = GPL4133GeneMapping)
-#' rowData(agilDEExperiment)
-#' 
-#' # Get RNA-Seq dataset
-#' RNASeqDataset <- data$RNASeqDataset
-#' # Oerform geneID mapping
-#' if (!require("org.Hs.eg.db", quietly = TRUE)) {
-#'   BiocManager::install("org.Hs.eg.db")
-#' }
-#' library(org.Hs.eg.db)
-#' ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, 
-#'                                         keys = rownames(RNASeqDataset), 
-#'                                         columns = c("SYMBOL", "ENTREZID"), 
-#'                                         keytype = "SYMBOL")
-#' colnames(ENSEMBLMapping) <- c("FROM", "TO")
-#' # Create the analysis design
-#' RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
-#' RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
-#'                                        levels=RNASeqDesign)
-#' # Perform DE analysis for RNA-Seq dataset
-#' RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset, 
-#'                                           method = "DESeq2", 
-#'                                           design = RNASeqDesign, 
-#'                                           contrast = RNASeqContrast, 
-#'                                           annotation = ENSEMBLMapping)
-#' rowData(RNASeqDEExperiment)
-#' }
+#' Must contain the following columns: ID, p.value, logFC, statistic, avgExpr, and logFCSE.
 #' @importFrom limma lmFit contrasts.fit eBayes topTable makeContrasts
 #' @importFrom DESeq2 DESeqDataSetFromMatrix DESeq results
 #' @importFrom edgeR DGEList calcNormFactors estimateDisp glmQLFit glmQLFTest topTags
 #' @importFrom stats model.matrix
 #' @importFrom dplyr %>% mutate
 #' @name runDEInternal
+#' @keywords internal
+#' @noRd
 .runLimma <- function(exprs, design, contrast) {
     DERes <- exprs %>%
         lmFit(design) %>%
@@ -95,6 +33,7 @@
 }
 
 #' @rdname runDEInternal
+#' @noRd
 .runDESeq2 <- function(exprs, design, contrast) {
 
     DERes <- DESeqDataSetFromMatrix(
@@ -115,6 +54,7 @@
 }
 
 #' @rdname runDEInternal
+#' @noRd
 .runEdgeR <- function(exprs, design, contrast) {
 
     dispRes <- DGEList(counts = exprs) %>%
@@ -181,7 +121,7 @@
 #' print(rowData(affyDEExperiment)) # check the DE analysis results
 #'
 #' # GSE61196
-#' loadData("affyDataset")
+#' loadData("agilDataset")
 #' agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
 #' agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
 #'

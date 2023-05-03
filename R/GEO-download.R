@@ -8,6 +8,7 @@
 #' @details This function is used internally by downloadGEO.
 #' @importFrom Biobase annotation
 #' @importFrom GEOquery getGEO
+#' @noRd
 .downloadGEOObject <- function(GEOID, platform, destDir) {
 
     if (!dir.exists(destDir)) {
@@ -35,6 +36,7 @@
 #' @importFrom GEOquery getGEOSuppFiles
 #' @importFrom dplyr %>%
 #' @importFrom utils URLdecode
+#' @noRd
 .downloadSamples <- function(sampleIDs, protocol, destDir) {
 
     if (!dir.exists(destDir)) {
@@ -108,6 +110,7 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
 #' @importFrom Biobase exprs
+#' @noRd
 .processAffymetrix <- function(metadata, sampleIDs, destDir) {
 
     if (!dir.exists(destDir)) {
@@ -162,6 +165,7 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom limma read.maimages backgroundCorrect normalizeWithinArrays normalizeBetweenArrays
 #' @importFrom dplyr %>%
+#' @noRd
 .processAgilent <- function(metadata, sampleIDs, destDir) {
 
     if (!dir.exists(destDir)) {

@@ -11,6 +11,7 @@
 #' @importFrom dplyr %>%
 #' @importFrom stats setNames
 #' @importFrom utils read.table
+#' @noRd
 .getKEGGPathwayNames <- function(org = "hsa") {
     gsNames <- read.table(paste0("https://rest.kegg.jp/list/pathway/", org), sep = "\t", header = F, stringsAsFactors = F)
     gsNames[, 2] %>%
@@ -32,6 +33,7 @@
 #' @importFrom dplyr %>% left_join group_by group_split mutate select
 #' @importFrom tidyr drop_na
 #' @importFrom stats setNames
+#' @noRd
 .getKEGGGeneSets <- function(org = "hsa") {
     geneLink <- read.table(paste0("https://rest.kegg.jp/link/", org, "/pathway"), sep = "\t", header = F, stringsAsFactors = F) %>%
         `colnames<-`(c("geneset", "gene"))
@@ -62,6 +64,7 @@
 #' @importFrom stringr str_split_1 str_starts str_detect str_match
 #' @importFrom dplyr filter
 #' @importFrom stats setNames
+#' @noRd
 .getGOTermNames <- function(namespace = c("biological_process", "molecular_function", "cellular_component")) {
     namespace <- match.arg(namespace)
 
@@ -93,6 +96,7 @@
 #' @importFrom utils read.table
 #' @importFrom dplyr %>% filter group_by group_split rename select
 #' @importFrom stats setNames
+#' @noRd
 .getGOTerms <- function(taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component")) {
 
     namespace <- match.arg(namespace)
