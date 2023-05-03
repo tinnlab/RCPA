@@ -116,6 +116,7 @@ getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
 #' @param combine See SPIA function
 #' @return See SPIA function
 #' @importFrom stats pnorm qnorm na.omit
+#' @noRd
 combfunc <- function (p1 = NULL, p2 = NULL, combine)
 {
     tm = na.omit(c(p1, p2))

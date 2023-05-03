@@ -76,6 +76,7 @@ A RCyjs object.
 }
 \description{
 This function plots a pathway network.
+This function needs an interactive environment with browser view support to work.
 }
 \details{
 The function will plot a pathway network using the results of pathway analysis.
@@ -94,6 +95,7 @@ loadData("affyFgseaResult")
 loadData("agilFgseaResult")
 loadData("RNASeqFgseaResult")
 loadData("metaPAResult")
+loadData("genesets")
 
 PAResults <- list(
     "Affymetrix - GSE5281" = affyFgseaResult,

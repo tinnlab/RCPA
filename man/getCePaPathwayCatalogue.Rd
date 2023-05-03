@@ -7,10 +7,10 @@
 getCePaPathwayCatalogue(org = "hsa", updateCache = F)
 }
 \arguments{
-\item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.}
-
-\item{updateCache}{A parameter to enable/disable cache update.
+\item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.
 Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.}
+
+\item{updateCache}{A parameter to enable/disable cache update.}
 }
 \value{
 A named list with three elements: network, names and sizes for CePa.ORA and CePa.GSA methods.

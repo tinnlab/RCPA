@@ -10,3 +10,7 @@
 ^RCPA\.Rproj
 ^tests
 ^build
+^.tests
+^.Dockerfile
+^.dockerignore
+^.DS_Store
