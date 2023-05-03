@@ -49,7 +49,6 @@
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradient2 theme_minimal theme geom_tile coord_flip scale_x_discrete scale_y_discrete guide_legend element_blank expansion sec_axis
 #' @importFrom dplyr %>% select mutate
 #' @importFrom tidyr gather
-#' @importFrom ggthemes scale_fill_gradient_tableau scale_fill_gradient2_tableau
 #' @importFrom ggnewscale new_scale_fill
 #' @export
 plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, logFCLims = c(-5, 5), negLog10pValueLims = c(0, 5)) {

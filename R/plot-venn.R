@@ -30,7 +30,6 @@
 #'     ggplot2::ggtitle("RNASeq - GSE153873")
 #'
 #' }
-#' @importFrom ggvenn ggvenn
 #' @importFrom ggplot2 scale_fill_gradient theme
 #' @importFrom dplyr %>% filter
 #' @importFrom scales trans_new
@@ -73,7 +72,9 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
     }
 
-    ggvenn(plotDat,
+    .requirePackage("ggvenn")
+
+    ggvenn::ggvenn(plotDat,
            fill_color = c(
                "#316b9d",
                # "#fce397",
@@ -125,7 +126,6 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #'     ggplot2::ggtitle("Significantly Down-regulated Pathways")
 #'
 #' }
-#' @importFrom ggvenn ggvenn
 #' @importFrom ggplot2 scale_fill_gradient theme
 #' @importFrom dplyr %>% filter
 #' @importFrom scales trans_new
@@ -164,7 +164,9 @@ plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
     }
 
-    ggvenn(plotDat,
+    .requirePackage("ggvenn")
+
+    ggvenn::ggvenn(plotDat,
            fill_color = c(
                "#316b9d",
                # "#fce397",

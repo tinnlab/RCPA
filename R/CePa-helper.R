@@ -7,12 +7,13 @@
 #' @examples
 #' getCePaPathwayCatalogue("hsa")
 #' @export
-#' @importFrom ROntoTools keggPathwayGraphs
-#' @importFrom CePa set.pathway.catalogue
 #' @importFrom graph nodes edges
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom stringr str_split
 getCePaPathwayCatalogue <- function(org = "hsa", updateCache = F){
+
+  .requirePackage("CePa")
+  .requirePackage("ROntoTools")
 
   keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
 

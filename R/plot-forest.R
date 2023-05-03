@@ -33,7 +33,6 @@
 #'
 #' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs geom_rect coord_cartesian geom_errorbarh ggtitle unit
-#' @importFrom gridExtra grid.arrange
 #' @importFrom dplyr %>%
 #' @export
 plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 2.5), useFDR = TRUE) {

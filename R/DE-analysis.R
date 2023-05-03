@@ -216,7 +216,6 @@
 #'
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
-#' @importFrom S4Vectors SimpleList metadata
 #' @importFrom dplyr %>%
 #' @importFrom stats p.adjust
 #' @export
@@ -231,12 +230,14 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
         stop("Contrast matrix must be provided")
     }
 
+    .requirePackage("S4Vectors")
+
     # get ID mapping annotation
     if (is.null(annotation)) {
-        if (is.null(metadata(summarizedExperiment)$platform)) {
+        if (is.null(S4Vectors::metadata(summarizedExperiment)$platform)) {
             stop("Platform annotation is not found in the meta data of the SummarizedExperiment object. Please provide an annotation data frame instead.")
         }
-        annotation <- .getIDMappingAnnotation(platform = metadata(summarizedExperiment)$platform)
+        annotation <- .getIDMappingAnnotation(platform = S4Vectors::metadata(summarizedExperiment)$platform)
     }
 
     if ("character" %in% class(annotation)) {
@@ -250,6 +251,8 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
     } else {
         stop("Annotation must be a data frame or a string")
     }
+
+    .requirePackage("S4Vectors")
 
     # get expression matrix
     exprs <- assay(summarizedExperiment)
@@ -274,7 +277,7 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
 
     # create a new SummarizedExperiment object
     newSummarizedExperiment <- SummarizedExperiment(
-        assays = SimpleList(counts = mappedResults$exprs),
+        assays = S4Vectors::SimpleList(counts = mappedResults$exprs),
         rowData = data.frame(
             cbind(
                 rowData(summarizedExperiment)[mappedResults$mapping$ID,],
@@ -285,7 +288,7 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
         ),
         colData = colData(summarizedExperiment),
         metadata = c(
-            metadata(summarizedExperiment),
+            S4Vectors::metadata(summarizedExperiment),
             DEAnalysis = list(
                 method = method,
                 design = design,

@@ -4,7 +4,7 @@
 #' @param platform GEO platform ID. E.g., GPL570
 #' @return A data frame with ID mapping annotation and two columns: FROM and TO.
 #' The first column is the probe ID and the second column is the entrez ID.
-#' @importFrom AnnotationDbi select keys
+#' @importFrom AnnotationDbi keys
 #' @importFrom dplyr %>%
 #' @importFrom tidyr drop_na
 .getIDMappingAnnotation <- function(platform) {
@@ -108,7 +108,6 @@
 #'  \item DEResults: DE analysis results data frame with probe IDs mapped to gene symbols.
 #' }
 #' @importFrom dplyr %>% arrange select group_by mutate first rename left_join summarize_all
-#' @importFrom tibble rownames_to_column
 #' @importFrom tidyr drop_na
 .mapIDs <- function(exprs, annotation, DEResults) {
 

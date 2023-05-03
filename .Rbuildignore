@@ -2,9 +2,11 @@
 ^\.Rproj\.user$
 ^\.Rhistory$
 ^\.RData$
-..Rcheck
-.data
-.tmp
-.idea
-README\.md
-RCPA\.Rproj
+^\..Rcheck
+^\.data
+^\.tmp
+^\.idea
+^README\.md
+^RCPA\.Rproj
+^tests
+^build

@@ -53,8 +53,9 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select filter
-#' @importFrom CePa cepa.all p.table
 .runCePaORA <- function(summarizedExperiment, network, pThreshold, bk, ...){
+
+    .requirePackage("CePa")
 
     DE_data <- rowData(summarizedExperiment)
     dif <- DE_data[DE_data$p.value <= pThreshold,] %>% rownames(.)
@@ -97,8 +98,9 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
 #' @importFrom dplyr %>% select
-#' @importFrom CePa sampleLabel cepa.all p.table
 .runCePaGSA <- function(summarizedExperiment, network, ...){
+
+    .requirePackage("CePa")
 
     assay <- assay(summarizedExperiment)
 

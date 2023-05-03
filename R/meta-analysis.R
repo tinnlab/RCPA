@@ -1,48 +1,3 @@
-#' @title Combine PValues
-#' @description This function combines P-Values based on the selected method.
-#' This function is used internally by combinePathwayAnalysisResults.
-#' @param inputData A dataframe of pathway analysis results from multiple studies.
-#' @param method The selected method to combine PValues, including Fisher, Stouffer, addCLT, GeoMean, and minP.
-#' @return A dataframe of meta analysis results.
-#' @details This function is used internally by combinePathwayAnalysisResults.
-#' @importFrom dplyr %>%
-.combinePvalues <- function(inputData, method) {
-
-    combineFunc <- switch(method,
-                          fisher = .runFisher,
-                          stouffer = .runStouffer,
-                          minP = min,
-                          addCLT = .runAddCLT,
-                          geoMean = .runGeoMean
-    )
-
-    metaPvalRes <- inputData %>%
-        group_by(ID) %>%
-        group_split() %>%
-        lapply(function(data) {
-            pValues <- data$p.value
-            meta.Pval <- combineFunc(pValues)
-            data.frame(
-                ID = data$ID[1],
-                p.value = meta.Pval,
-                stringsAsFactors = FALSE
-            )
-        }) %>%
-        do.call(what = rbind)
-
-    metaScoreRes <- .combineEnrichmentScores(inputData)
-
-    metaRes <- metaPvalRes
-    metaRes$score <- metaRes$count <- 0
-    metaRes$score <- metaScoreRes$score[match(metaScoreRes$ID, metaRes$ID)]
-    #metaRes$score.sd <- metaScoreRes$score.sd[match(metaScoreRes$ID, metaRes$ID)]
-    metaRes$count <- metaScoreRes$count[match(metaScoreRes$ID, metaRes$ID)]
-
-    metaRes <- metaRes[, c("ID", "p.value", "score", "count")]
-
-    return(metaRes)
-}
-
 #' @title Combine P-Valuse using Fisher
 #' @description This function combines P-Values based on Fisher method.
 #' This function is used internally by .combinePvalues.
@@ -102,53 +57,6 @@
     return(p.value)
 }
 
-#' @title Combine Normalized Enrichment Scores
-#' @description This function combines normalized enrichment scores based on REML method.
-#' This function is used internally by combinePathwayAnalysisResults and .combinePvalues.
-#' @param inputData A dataframe of pathway analysis results from multiple studies.
-#' @return A dataframe of meta analysis results.
-#' @details This function is used internally by combinePathwayAnalysisResults and .combinePvalues.
-#' @importFrom meta metagen
-#' @importFrom dplyr %>%
-.combineEnrichmentScores <- function(inputData) {
-
-    metaRes <- inputData %>%
-        group_by(ID) %>%
-        group_split() %>%
-        lapply(function(data) {
-            data$normalizedScore.sd <- abs((data$normalizedScore - ifelse(data$normalizedScore > 0, 1, -1)) / qnorm(data$p.value))
-            meta.res <- metagen(data = data,
-                                studlab = ID,
-                                TE = normalizedScore,
-                                seTE = normalizedScore.sd,
-                                sm = "SMD",
-                                n.e = sampleSize,
-                                method.tau = "REML",
-                                hakn = TRUE)
-
-            normalizedScore.combined <- meta.res$TE.fixed
-            normalizedScore.combined.sd <- meta.res$seTE.fixed
-
-            pval <- pnorm((ifelse(normalizedScore.combined > 0, 1, -1) - normalizedScore.combined) / normalizedScore.combined.sd)
-            if (normalizedScore.combined < 0) pval <- 1 - pval
-
-            data.frame(
-                ID = data$ID[1],
-                p.value = pval,
-                score = normalizedScore.combined,
-                #score.sd = normalizedScore.combined.sd,
-                count = nrow(data),
-                stringsAsFactors = F
-            )
-        }) %>%
-        do.call(what = rbind) %>%
-        as.data.frame()
-
-    metaRes <- metaRes[, c("ID", "p.value", "score", "count")]
-
-    return(metaRes)
-}
-
 #' @title Perform Meta Analysis
 #' @description This function performs meta analysis on multiple pathway analysis results.
 #' @param PAResults A list of data frames obtained from runPathwayAnalysis.
@@ -170,11 +78,12 @@
 #' @details This function performs mata analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows mutate group_by summarise filter group_split select inner_join
 #' @importFrom tidyr drop_na
-#' @importFrom meta metagen
 #' @export
 combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
     method <- match.arg(method)
+
+    .requirePackage("meta")
 
     if (length(PAResults) == 1) {
         stop("Meta analysis is valid for two or more studies.")
@@ -208,13 +117,13 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
                 left.p = ifelse(.$normalizedScore < 0, .$p.value, 1 - .$p.value),
                 right.p = ifelse(.$normalizedScore > 0, .$p.value, 1 - .$p.value)
             ) %>%
-            group_by(ID) %>%
+            group_by(.data$ID) %>%
             summarise(
                 left.p = combinePFunc(.data$left.p),
                 right.p = combinePFunc(.data$right.p),
                 n = length(.data$ID)
             ) %>%
-            filter(n == length(PAResults))
+            filter(.data$n == length(PAResults))
     }
 
     metagenRes <- PAResults %>%
@@ -222,7 +131,7 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
             df[, c("ID", "normalizedScore", "p.value", "sampleSize")] %>% as.data.frame()
         }) %>%
         bind_rows() %>%
-        group_by(ID) %>%
+        group_by(.data$ID) %>%
         group_split() %>%
         lapply(function(dat) {
             if (nrow(dat) < length(PAResults)) {
@@ -230,15 +139,15 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
             }
 
             res <- try({
-                metagen(data = dat,
-                        studlab = ID,
-                        TE = normalizedScore,
+                meta::metagen(data = dat,
+                        studlab = .data$ID,
+                        TE = .data$normalizedScore,
                         # seTE = logFCSE,
-                        pval = p.value,
+                        pval = .data$p.value,
                         sm = "SMD",
                         method.tau = "REML",
                         hakn = TRUE,
-                        n.e = sampleSize
+                        n.e = .data$sampleSize
                 ) }, silent = TRUE)
             if (inherits(res, "try-error")) {
                 res <- NULL
@@ -298,13 +207,14 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
 #' ), method = "stouffer")
 #' }
 #' @importFrom dplyr %>% bind_rows group_by summarize mutate
-#' @importFrom meta metagen
 #' @importFrom stats p.adjust
 #' @importFrom tidyr drop_na
 #' @export
 combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
     method <- match.arg(method)
+
+    .requirePackage("meta")
 
     if (length(DEResults) == 1) {
         stop("Meta analysis is valid for two or more studies.")
@@ -322,7 +232,6 @@ combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher",
 
     if (method != "REML"){
         combinePFunc <- switch(method,
-                           meanZ = .runMeanZ,
                            fisher = .runFisher,
                            stouffer = .runStouffer,
                            minP = min,
@@ -340,13 +249,13 @@ combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher",
             left.p = ifelse(.$logFC < 0, .$p.value, 1 - .$p.value),
             right.p = ifelse(.$logFC > 0, .$p.value, 1 - .$p.value)
         ) %>%
-        group_by(ID) %>%
+        group_by(.data$ID) %>%
         summarise(
             left.p = combinePFunc(.data$left.p),
             right.p = combinePFunc(.data$right.p),
             n = length(.data$ID)
         ) %>%
-        filter(n == length(DEResults))
+        filter(.data$n == length(DEResults))
     }
 
     metagenRes <- DEResults %>%
@@ -354,7 +263,7 @@ combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher",
             df[, c("ID", "logFC", "logFCSE", "p.value", "sampleSize")] %>% as.data.frame()
         }) %>%
         bind_rows() %>%
-        group_by(ID) %>%
+        group_by(.data$ID) %>%
         group_split() %>%
         lapply(function(dat) {
             if (nrow(dat) < length(DEResults)) {
@@ -362,15 +271,15 @@ combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher",
             }
 
             res <- try({
-                metagen(data = dat,
-                        studlab = ID,
-                        TE = logFC,
+                meta::metagen(data = dat,
+                        studlab = .data$ID,
+                        TE = .data$logFC,
                         # seTE = logFCSE,
-                        pval = p.value,
+                        pval = .data$p.value,
                         sm = "SMD",
                         method.tau = "REML",
                         hakn = TRUE,
-                        n.e = sampleSize
+                        n.e = .data$sampleSize
                 ) }, silent = TRUE)
             if (inherits(res, "try-error")) {
                 res <- NULL

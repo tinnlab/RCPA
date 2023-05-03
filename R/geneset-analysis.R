@@ -51,7 +51,6 @@
 #' @details This function is used internally by runGeneSetEnrichmentAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
-#' @importFrom fgsea fgsea
 #' @importFrom tidyr drop_na
 .runFgsea <- function(summarizedExperiment, genesets,...) {
 
@@ -69,7 +68,9 @@
         as.vector()
     names(statistic) <- rownames(DE_data)
 
-    res <- fgsea(pathways = genesets, stats = statistic, ...)
+    .requirePackage("fgsea")
+
+    res <- fgsea::fgsea(pathways = genesets, stats = statistic, ...)
 
     res <- res %>% drop_na()
 
@@ -92,9 +93,10 @@
 #' @details This function is used internally by runGeneSetEnrichmentAnalysis.
 #' @importFrom dplyr %>%
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
-#' @importFrom GSA GSA
-#' @importFrom S4Vectors metadata
 .runGSA <- function(summarizedExperiment, genesets, ...) {
+
+    .requirePackage("GSA")
+    .requirePackage("S4Vectors")
 
     assay <- assay(summarizedExperiment)
     if (is.null(assay) |
@@ -103,7 +105,7 @@
         stop("No expression data is in input data.")
     }
 
-    group_data <- metadata(summarizedExperiment)
+    group_data <- S4Vectors::metadata(summarizedExperiment)
     if (is.null(group_data)) {
         stop("The group data in colData cannot be empty.")
     }
@@ -152,7 +154,7 @@
         resp_type <- "Multiclass"
     }
 
-    gsa_res <- GSA(x = assay, y = group, genesets = genesets, resp.type = resp_type, genenames = rownames(assay), ...)
+    gsa_res <- GSA::GSA(x = assay, y = group, genesets = genesets, resp.type = resp_type, genenames = rownames(assay), ...)
 
     pvalues <- cbind(gsa_res$pvalues.lo, gsa_res$pvalues.hi) %>% apply(1, min)
     res <- (pvalues * 2) %>% data.frame(ID = names(genesets), p.value = ., stringsAsFactors = FALSE)
@@ -247,7 +249,6 @@
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
-#' @importFrom S4Vectors metadata
 #' @export
 runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method = c("ora", "fgsea", "gsa", "ks", "wilcox"),
                                          ORAArgs = list(pThreshold = 0.05),

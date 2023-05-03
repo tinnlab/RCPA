@@ -35,13 +35,9 @@
 #'
 #' }
 #' @importFrom stringr str_starts str_remove
-#' @importFrom png readPNG
-#' @importFrom RCurl getURLContent
-#' @importFrom XML xmlParse xpathSApply
 #' @importFrom dplyr %>% mutate inner_join
 #' @importFrom ggplot2 ggplot annotation_custom theme_void scale_x_continuous annotation_raster geom_rect scale_fill_gradient guide_colorbar annotate element_text margin
 #' @importFrom utils globalVariables
-#' @importFrom ggthemes tableau_gradient_pal
 #' @export
 plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = TRUE, pThreshold = 0.05, statLimit = 3) {
 
@@ -51,6 +47,10 @@ plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = 
         }
     }
 
+    .requirePackage("png")
+    .requirePackage("RCurl")
+    .requirePackage("XML")
+
     if (str_starts(KEGGPathwayID, "path:")) {
         KEGGPathwayID <- str_remove(KEGGPathwayID, "path:")
     }
@@ -58,17 +58,17 @@ plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = 
     organismCode <- str_remove(KEGGPathwayID, "[0-9]+")
 
     scale <- 2
-    pngContent <- try({ getURLContent(paste0("https://www.kegg.jp/kegg/pathway/", organismCode, "/", KEGGPathwayID, "@2x.png")) })
+    pngContent <- try({ RCurl::getURLContent(paste0("https://www.kegg.jp/kegg/pathway/", organismCode, "/", KEGGPathwayID, "@2x.png")) })
     if (inherits(pngContent, "try-error")) {
         scale <- 1
-        pngContent <- getURLContent(paste0("https://www.kegg.jp/kegg/pathway/", organismCode, "/", KEGGPathwayID, ".png"))
+        pngContent <- RCurl::getURLContent(paste0("https://www.kegg.jp/kegg/pathway/", organismCode, "/", KEGGPathwayID, ".png"))
     }
 
-    img <- readPNG(pngContent)
-    xml <- getURLContent(paste0("https://rest.kegg.jp/get/", KEGGPathwayID, "/kgml")) %>%
-        xmlParse()
+    img <- png::readPNG(pngContent)
+    xml <- RCurl::getURLContent(paste0("https://rest.kegg.jp/get/", KEGGPathwayID, "/kgml")) %>%
+        XML::xmlParse()
 
-    entries <- XML::xpathApply(xml, '//entry', xmlToList) %>%
+    entries <- XML::xpathApply(xml, '//entry', XML::xmlToList) %>%
         lapply(function(x) {
             type <- try({ x$.attrs['type'] })
             if (inherits(type, "try-error")) {
@@ -134,7 +134,7 @@ plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = 
     plotDat <- lapply(seq_len(length(DEResS)), function(i) {
         DEResS[[i]] %>% mutate(
             xmin = .data$x - .data$width / 2 - 1 + .data$width * (i - 1) / length(DEResS),
-            xmax = .data$x - .data$width / 2 + 1 + width * i / length(DEResS),
+            xmax = .data$x - .data$width / 2 + 1 + .data$width * i / length(DEResS),
             ymin = .data$y - .data$height / 2 - 1,
             ymax = .data$y - .data$height / 2 - 1 + 5 * scale
         )

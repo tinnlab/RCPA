@@ -9,13 +9,13 @@
 #' getSPIAKEGGNetwork("hsa")
 #' }
 #' @export
-#' @importFrom ROntoTools keggPathwayGraphs keggPathwayNames
 #' @importFrom graph nodes edges
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom tidyr spread
 #' @importFrom stringr str_split str_length
 getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
 
+    .requirePackage("ROntoTools")
     keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
 
     relationships <- c("activation", "compound", "binding/association",

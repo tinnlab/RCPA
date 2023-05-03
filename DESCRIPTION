@@ -24,48 +24,44 @@ biocViews:
     BrowserViz,
     oligo,
     SummarizedExperiment,
-    ROntoTools,
     AnnotationDbi,
+    ROntoTools
 Imports:
-    ROntoTools,
     AnnotationDbi,
     SummarizedExperiment,
     BiocManager,
     Biobase,
     DESeq2,
     GEOquery,
-    S4Vectors,
     affy,
     affyPLM,
     edgeR,
     limma,
     oligo,
     stringr,
-    tibble,
-    BrowserViz,
-    GSA,
-    RCurl,
-    RCyjs,
-    XML,
-    fgsea,
     ggnewscale,
     ggrepel,
-    ggthemes,
     graph,
     httr,
-    meta,
-    png,
-    CePa,
-    gridExtra,
     rlang,
     ggpattern,
-    ggvenn,
     scales
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
-    testthat (>= 3.0.0)
-VignetteBuilder: knitr
+    testthat (>= 3.0.0),
+    ROntoTools,
+    RCyjs,
+    fgsea,
+    BrowserViz,
+    GSA,
+    CePa,
+    meta,
+    png,
+    ggvenn,
+    RCurl,
+    XML,
+    S4Vectors
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false
 Config/testthat/parallel: true

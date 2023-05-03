@@ -8,10 +8,12 @@
 #' getEntrezAnnotation(c("77267466", "77267467"))
 #' }
 #' @importFrom httr POST content
-#' @importFrom XML xmlParse xpathApply xmlToList
 #' @importFrom dplyr %>%
 #' @export
 getEntrezAnnotation <- function(entrezIds) {
+
+    .requirePackage("XML")
+
     url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
     query <- list(
         db = "gene",
@@ -20,7 +22,7 @@ getEntrezAnnotation <- function(entrezIds) {
             paste0(collapse = ",")
     )
     res <- POST(url, query = query) %>% content(as = "text")
-    xml <- xmlParse(res)
+    xml <- XML::xmlParse(res)
 
     xpath <- "//DocumentSummary"
     XML::xpathApply(xml, xpath, function(xmlDoc) {

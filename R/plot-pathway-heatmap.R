@@ -109,9 +109,9 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
         scaleMinMax(negLog10pValueLims[1], negLog10pValueLims[2])
 
 
-    ggplot(plotData, aes(y = ID, x = factor(dataset))) +
+    ggplot(plotData, aes(y = .data$ID, x = factor(.data$dataset))) +
         geom_tile(
-            aes(fill = p.value.scaled)
+            aes(fill = .data$p.value.scaled)
         ) +
         scale_fill_continuous(
             low = "white",
@@ -125,8 +125,8 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
         new_scale_fill() +
         geom_point(
             aes(
-                fill = Direction,
-                size = abs.normalizedScore
+                fill = .data$Direction,
+                size = .data$abs.normalizedScore
             ),
             shape = 21,
             color = "white",

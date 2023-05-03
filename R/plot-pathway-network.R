@@ -1,9 +1,3 @@
-#' @importFrom methods setClass representation
-.RCyjs <- setClass("RCyjs",
-                   representation = representation(graph = "graph"),
-                   contains = "BrowserViz"
-)
-
 #' @title Plot a pathway network
 #' @description This function plots a pathway network.
 #' @param PAResults A named list of data frame of Pathway analysis results.
@@ -75,11 +69,8 @@
 #' pltObj$plot()
 #'
 #' }
-#' 
-#' @importFrom RCyjs setGraph redraw layout loadStyleFile setDefaultEdgeColor
-#' @importFrom BrowserViz BrowserViz
+#'
 #' @importFrom graph graphNEL addEdge `nodeDataDefaults<-` `nodeData<-`
-#' @importFrom dplyr filter mutate %>%
 #' @importFrom grDevices colorRampPalette
 plotPathwayNetwork <- function(PAResults, genesets,
                                statistic = "pFDR",
@@ -99,6 +90,9 @@ plotPathwayNetwork <- function(PAResults, genesets,
                                styleFile = system.file(package = "RCPA", "extdata", "pieStyle.js")) {
 
     mode <- match.arg(mode)
+
+    .requirePackage("BrowserViz")
+    .requirePackage("RCyjs")
 
     cyjsQueryFnc <- function(queryString)
     {
@@ -258,12 +252,14 @@ plotPathwayNetwork <- function(PAResults, genesets,
         nodeData(graphObj, pathwayInfo$ID, attr) <- pathwayInfo[[attr]]
     }
 
-    rCy <- BrowserViz(portRange = 10000:20000,
+    rCy <- BrowserViz::BrowserViz(portRange = 10000:20000,
                       title = "Pathway network",
                       quiet = T,
                       browserFile = system.file(package = "RCyjs", "browserCode", "dist", "rcyjs.html"),
                       httpQueryProcessingFunction = cyjsQueryFnc,
-    ) %>% .RCyjs(graph = graphObj)
+    )
+
+    class(rCy) <- "RCyjs"
 
     list(
         rCy = rCy,
