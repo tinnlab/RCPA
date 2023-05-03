@@ -1,5 +1,6 @@
 #' @title Plot a pathway network
 #' @description This function plots a pathway network.
+#' This function needs an interactive environment with browser view support to work.
 #' @param PAResults A named list of data frame of Pathway analysis results.
 #' The columns of each data frame should be at least ID, name, p.value and pFDR.
 #' An optional column "color" can be used to specify the color of the nodes.
