@@ -3,16 +3,19 @@ library(testthat)
 devtools::load_all()
 
 test_that("Get KEGG names for hsa", {
+    skip_if_offline()
     keggNames <- .getKEGGPathwayNames("hsa")
     expect_true(length(keggNames) > 300)
     expect_true("path:hsa00010" %in% names(keggNames))
 })
 
 test_that("Get KEGG names for random org", {
+    skip_if_offline()
     expect_error(.getKEGGPathwayNames("abcd"))
 })
 
 test_that("Get KEGG gene sets for hsa", {
+    skip_if_offline()
     keggGeneSets <- .getKEGGGeneSets("hsa")
 
     expect_true(all(names(keggGeneSets) %in% c("database", "genesets", "names")))
@@ -24,32 +27,38 @@ test_that("Get KEGG gene sets for hsa", {
 })
 
 test_that("Get KEGG gene sets for random org", {
+    skip_if_offline()
     expect_warning(expect_error(.getKEGGGeneSets("abcd")))
 })
 
 test_that("Get GO names for namespace biological_process", {
+    skip_if_offline()
     goNames <- .getGOTermNames("biological_process")
     expect_true(length(goNames) > 1000)
     expect_true("GO:0000003" %in% names(goNames))
 })
 
 test_that("Get GO names for namespace molecular_function", {
+    skip_if_offline()
     goNames <- .getGOTermNames("molecular_function")
     expect_true(length(goNames) > 1000)
     expect_true("GO:0000016" %in% names(goNames))
 })
 
 test_that("Get GO names for namespace cellular_component", {
+    skip_if_offline()
     goNames <- .getGOTermNames("cellular_component")
     expect_true(length(goNames) > 1000)
     expect_true("GO:0000015" %in% names(goNames))
 })
 
 test_that("Get GO names for random namespace", {
+    skip_if_offline()
     expect_error(.getGOTermNames("abcd"))
 })
 
 test_that("Get GO terms for human, namespace biological_process", {
+    skip_if_offline()
     goTerms <- .getGOTerms(9606, "biological_process")
 
     expect_true(all(names(goTerms) %in% c("database", "genesets", "names")))
@@ -61,6 +70,7 @@ test_that("Get GO terms for human, namespace biological_process", {
 })
 
 test_that("Get GO terms for human, namespace molecular_function", {
+    skip_if_offline()
     goTerms <- .getGOTerms(9606, "molecular_function")
 
     expect_true(all(names(goTerms) %in% c("database", "genesets", "names")))
@@ -72,6 +82,7 @@ test_that("Get GO terms for human, namespace molecular_function", {
 })
 
 test_that("Get GO terms for human, namespace cellular_component", {
+    skip_if_offline()
     goTerms <- .getGOTerms(9606, "cellular_component")
 
     expect_true(all(names(goTerms) %in% c("database", "genesets", "names")))
@@ -83,14 +94,17 @@ test_that("Get GO terms for human, namespace cellular_component", {
 })
 
 test_that("Get GO terms for random species, namespace biological_process", {
+    skip_if_offline()
     expect_error(.getGOTerms(1234567, "biological_process"))
 })
 
 test_that("Get GO terms for human, random namespace", {
+    skip_if_offline()
     expect_error(.getGOTerms(9606, "abcd"))
 })
 
 test_that("Exported function: KEGG and hsa", {
+    skip_if_offline()
     gensets <- getGeneSets("KEGG", "hsa", minSize = 10, maxSize = 1000)
     expect_true(all(names(gensets) %in% c("database", "genesets", "names")))
     expect_true(gensets$database == "KEGG")
@@ -103,10 +117,12 @@ test_that("Exported function: KEGG and NULL org", {
 })
 
 test_that("Exported function: KEGG and random org", {
+    skip_if_offline()
     expect_warning(expect_error(getGeneSets("KEGG", "abcd")))
 })
 
 test_that("Exported function: GO and human, namespace biological_process", {
+    skip_if_offline()
     gensets <- getGeneSets("GO", taxid = 9606, namespace = "biological_process", minSize = 10, maxSize = 1000)
     expect_true(all(names(gensets) %in% c("database", "genesets", "names")))
     expect_true(gensets$database == "GO")

@@ -47,8 +47,7 @@ Imports:
     httr,
     rlang,
     ggpattern,
-    scales,
-    hgu133plus2.db
+    scales
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
@@ -65,7 +64,8 @@ Suggests:
     RCurl,
     XML,
     S4Vectors,
-    devtools
+    devtools,
+    hgu133plus2.db
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false

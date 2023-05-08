@@ -1,6 +1,8 @@
 library(testthat)
 library(dplyr)
 
+devtools::load_all()
+
 #generate three simulated dataframes of pathway analysis results
 genes <- paste0("gene", seq(1:500))
 genesets <- lapply(1:10, function(x) {

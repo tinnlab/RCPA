@@ -2,6 +2,8 @@ library(testthat)
 library(hgu133plus2.db)
 library(AnnotationDbi)
 
+devtools::load_all()
+
 # generate a random gene expression matrix
 set.seed(123)
 exprs <- round(matrix(2^abs(rnorm(1000, sd = 4)), nrow = 100, ncol = 10))
@@ -21,6 +23,7 @@ platform <- "GPL570"
 annotationDB <- hgu133plus2.db
 
 test_that("Get annotation from GPL570", {
+    skip_if_offline()
     mapping <- .getIDMappingAnnotation("GPL570")
 
     expect_true(all(colnames(mapping) == c("FROM", "TO")))
@@ -29,14 +32,17 @@ test_that("Get annotation from GPL570", {
 })
 
 test_that("Get annotation from NULL", {
+    skip_if_offline()
     expect_error(.getIDMappingAnnotation(NULL))
 })
 
 test_that("Get annotation from non-existing platform", {
+    skip_if_offline()
     expect_error(.getIDMappingAnnotation("GPL123"))
 })
 
 test_that("Map expresison from GPL570 to ENTREZ", {
+    skip_if_offline()
     annotation <- .getIDMappingAnnotation("GPL570")
     mappedExprs <- .mapIDs(exprs, annotation, DEResults)
 
@@ -66,6 +72,7 @@ test_that("Map expresison from GPL570 to ENTREZ with NULL annotation and NULL DE
 })
 
 test_that("Map expresison from GPL570 to ENTREZ with NULL DE results", {
+    skip_if_offline()
     annotation <- .getIDMappingAnnotation("GPL570")
     expect_error(.mapIDs(exprs, annotation, NULL))
 })

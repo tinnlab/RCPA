@@ -1,6 +1,8 @@
 library(testthat)
 library(ggplot2)
 
+devtools::load_all()
+
 set.seed(123)
 
 result1 <- data.frame(

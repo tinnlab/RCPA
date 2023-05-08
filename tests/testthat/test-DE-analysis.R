@@ -30,9 +30,14 @@ summarizedExperiment <- SummarizedExperiment(
 design <- model.matrix(~0 + group, data = colData)
 contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
-annotation <- .getIDMappingAnnotation("GPL570")
+getTestAnnotation <- function(){
+    annotation <- .getIDMappingAnnotation("GPL570")
+    annotation
+}
 
 test_that("DE analysis with ID mapping", {
+    skip_if_offline()
+    annotation <- getTestAnnotation()
     DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
 
     expect_true(all(c("PROBEID", "ID", "p.value", "pFDR", "statistic", "logFC", "logFCSE", "sampleSize") %in% colnames(rowData(DERes))))
