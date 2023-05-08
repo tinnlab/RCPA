@@ -1,8 +1,6 @@
 library(testthat)
 library(ggplot2)
 
-devtools::load_all()
-
 set.seed(123)
 
 result1 <- data.frame(
@@ -11,7 +9,7 @@ result1 <- data.frame(
   description = paste0("Description ", 1:100),
   p.value = runif(100) / 10,
   pFDR = runif(100) / 5,
-  size = runif(100, 100, 500),
+  pathwaySize = runif(100, 100, 500),
   nDE = runif(100, 10, 100),
   score = runif(100, -2, 2),
   normalizedScore = runif(100)
@@ -24,7 +22,7 @@ result2 <- data.frame(
   description = paste0("Description ", 1:100),
   p.value = runif(100) / 10,
   pFDR = runif(100) / 5,
-  size = runif(100, 100, 500),
+  pathwaySize = runif(100, 100, 500),
   nDE = runif(100, 10, 100),
   score = runif(100, -2, 2),
   normalizedScore = runif(100)
@@ -38,11 +36,13 @@ resultsLst <- list(
 
 test_that("Plot forest plot default", {
   pl <- plotForest(resultsLst, yAxis = "ID")
-  expect_equal(length(pl$grobs), 2)
+  expect_true(is.ggplot(pl))
+  expect_equal(length(pl$labels), 8)
 })
 
 test_that("Plot forest plot name as yAxis", {
   pl <- plotForest(resultsLst, yAxis = "name")
-  expect_equal(length(pl$grobs), 2)
+  expect_true(is.ggplot(pl))
+  expect_equal(length(pl$labels), 8)
 })
 

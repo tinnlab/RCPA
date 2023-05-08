@@ -74,11 +74,12 @@
 #' @param name The name of the data.
 #' @return Load the data with the specified name.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
-#' loadData("RNASeqDataset")
+#' RNASeqDataset <- loadData("RNASeqDataset")
 #' }
 #' @export
 loadData <- function(name){
-    load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))), envir = .GlobalEnv)
+     data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))
+     get(data)
 }

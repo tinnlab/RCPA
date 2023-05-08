@@ -16,7 +16,7 @@ A data frame with Entrez annotation. The columns are ID, Symbol, Description, Ot
 This function gets Entrez annotation.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 getEntrezAnnotation(c("77267466", "77267467"))
 }

@@ -37,7 +37,7 @@ A named list with three elements: database, genesets and names.
 This function retrieves gene sets for a given organism.
 }
 \examples{
-\dontrun{
+\donttest{
 
 library(RCPA)
 

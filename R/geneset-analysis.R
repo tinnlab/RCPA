@@ -1,11 +1,11 @@
 #' @title Geneset Enrichment Analysis using ORA
 #' @description This function performs geneset analysis based on ORA (Over Representation Analysis).
-#' This function is used internally by runGeneSetEnrichmentAnalysis.
+#' This function is used internally by runGeneSetAnalysis.
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
 #' @param genesets The genesets definition, ex. KEGG genesets from getGeneSets function.
 #' @param pThreshold The p.value cutoff threashold.
 #' @return A dataframe of geneset analysis results
-#' @details This function is used internally by runGeneSetEnrichmentAnalysis.
+#' @details This function is used internally by runGeneSetAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>% filter
 #' @importFrom tidyr drop_na
@@ -44,12 +44,12 @@
 
 #' @title Geneset Enrichment Analysis using fgsea
 #' @description This function performs geneset analysis using fgsea (fast geneset enrichment analysis).
-#' This function is used internally by runGeneSetEnrichmentAnalysis.
+#' This function is used internally by runGeneSetAnalysis.
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
 #' @param genesets The genesets definition, ex. KEGG genesets from getGeneSets function.
 #' @param ... A list of other passed arguments to fgsea. See fgsea function.
 #' @return A dataframe of geneset analysis results
-#' @details This function is used internally by runGeneSetEnrichmentAnalysis.
+#' @details This function is used internally by runGeneSetAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
 #' @importFrom tidyr drop_na
@@ -87,12 +87,12 @@
 
 #' @title Geneset Enrichment Analysis using GSA
 #' @description This function performs geneset analysis using GSA method (GeneSet Analysis).
-#' This function is used internally by runGeneSetEnrichmentAnalysis.
+#' This function is used internally by runGeneSetAnalysis.
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
 #' @param genesets The genesets definition, ex. KEGG genesets from getGeneSets function.
 #' @param ... A list of other passed arguments to GSA. See GSA function.
 #' @return A dataframe of geneset analysis results
-#' @details This function is used internally by runGeneSetEnrichmentAnalysis.
+#' @details This function is used internally by runGeneSetAnalysis.
 #' @importFrom dplyr %>%
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @noRd
@@ -173,12 +173,12 @@
 
 #' @title Geneset Enrichment Analysis using KS or Wilcox
 #' @description This function performs geneset analysis using KS or Wilcox test.
-#' This function is used internally by runGeneSetEnrichmentAnalysis.
+#' This function is used internally by runGeneSetAnalysis.
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
 #' @param genesets The genesets definition, ex. KEGG genesets from getGeneSets function.
 #' @param sTest The selected test to perform geneset analysis, either 'ks' or 'wilcox'.
 #' @return A dataframe of geneset analysis results
-#' @details This function is used internally by runGeneSetEnrichmentAnalysis.
+#' @details This function is used internally by runGeneSetAnalysis.
 #' @importFrom dplyr %>%
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom tidyr drop_na
@@ -240,21 +240,21 @@
 #' @param GSAArgs A list of other passed arguments to GSA. See GSA function.
 #' @return A dataframe of geneset analysis result
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
 #' library(RCPA)
-#' loadData("RNASeqDEExperiment")
-#' loadData("genesets")
-#' oraResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets,
+#' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
+#' genesets <- loadData("genesets")
+#' oraResult <- runGeneSetAnalysis(RNASeqDEExperiment, genesets,
 #'                                           method = "ora", ORAArgs = list(pThreshold = 0.05))
-#' fgseaResult <- runGeneSetEnrichmentAnalysis(RNASeqDEExperiment, genesets, method = "fgsea",
+#' fgseaResult <- runGeneSetAnalysis(RNASeqDEExperiment, genesets, method = "fgsea",
 #'                                             FgseaArgs = list(minSize = 10, maxSize = Inf))
 #'
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay
 #' @importFrom dplyr %>%
 #' @export
-runGeneSetEnrichmentAnalysis <- function(summarizedExperiment, genesets, method = c("ora", "fgsea", "gsa", "ks", "wilcox"),
+runGeneSetAnalysis <- function(summarizedExperiment, genesets, method = c("ora", "fgsea", "gsa", "ks", "wilcox"),
                                          ORAArgs = list(pThreshold = 0.05),
                                          FgseaArgs = list(sampleSize = 101, minSize = 1, maxSize = Inf, eps = 1e-50, scoreType = "std",
                                                            nproc = 0, gseaParam = 1, BPPARAM = NULL, nPermSimple = 1000, absEps = NULL),

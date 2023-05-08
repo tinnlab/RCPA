@@ -2,11 +2,11 @@
 #' @description Get supported platforms
 #' @return A named list of supported platforms, where the names are the platform IDs and the values are the corresponding annotation packages from Bioconductor.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
 #' getSupportedPlatforms()
 #' }
-#'
+#' @export
 getSupportedPlatforms <- function(){
     list(
       GPL96 = "hgu133a.db",

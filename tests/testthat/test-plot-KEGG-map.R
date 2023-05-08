@@ -5,9 +5,6 @@ library(SummarizedExperiment)
 library(limma)
 library(ggplot2)
 
-devtools::document()
-devtools::load_all()
-
 DEResults <- lapply(1:3, function(seed) {
     set.seed(seed)
     exprs <- round(matrix(abs(rnorm(20000 * 10, sd = 4)), nrow = 20000, ncol = 10))

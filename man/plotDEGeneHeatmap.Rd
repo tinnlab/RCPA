@@ -35,13 +35,13 @@ Plot gene heatmap from a SummarizedExperiment object with DE analysis results.
 The heatmap contains p-values and log fold changes from the DE analysis.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 
-loadData("affyDEExperiment")
-loadData("agilDEExperiment")
-loadData("RNASeqDEExperiment")
-loadData("genesets")
+affyDEExperiment <- loadData("affyDEExperiment")
+agilDEExperiment <- loadData("agilDEExperiment")
+RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
+genesets <- loadData("genesets")
 
 DEResults <- list(
     "Affymetrix - GSE5281" = rowData(affyDEExperiment),

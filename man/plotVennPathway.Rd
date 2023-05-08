@@ -13,17 +13,20 @@ plotVennPathway(PAResults, pThreshold = 0.05, useFDR = TRUE)
 
 \item{useFDR}{Use the FDR adjusted p-value instead of the raw p-value.}
 }
+\value{
+A ggplot2 object.
+}
 \description{
 Plot a venndiagram from multiple pathway analysis results.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 
-loadData("affyFgseaResult")
-loadData("agilFgseaResult")
-loadData("RNASeqFgseaResult")
-loadData("metaPAResult")
+affyFgseaResult <- loadData("affyFgseaResult")
+agilFgseaResult <- loadData("agilFgseaResult")
+RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+metaPAResult <- loadData("metaPAResult")
 
 PAResults <- list(
     "Affymetrix - GSE5281" = affyFgseaResult,

@@ -4,7 +4,6 @@ library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
 
-devtools::load_all()
 # generate a random gene expression matrix
 set.seed(123)
 exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
@@ -36,43 +35,43 @@ spiaNetwork <- getSPIAKEGGNetwork("hsa", FALSE)
 cepaNetwork <- getCePaPathwayCatalogue("hsa", FALSE)
 
 test_that('SPIA ', {
-    spiaRes <- .runSPIA(summarizedExperiment = DERes, network = spiaNetwork, pThreshold = 0.05, all = NULL)
+    spiaRes <- .runSPIA(summarizedExperiment = DERes, network = spiaNetwork[["network"]], pThreshold = 0.05, all = NULL)
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(spiaRes)))
     expect_true(all(spiaRes$p.value <= 1))
     expect_true(all(spiaRes$p.value >= 0))
 })
 
 test_that('CePaORA ', {
-    cepaOraRes <- .runCePaORA(DERes, cepaNetwork, bk = NULL, iter = 1000, pThreshold = 0.05)
+    cepaOraRes <- .runCePaORA(DERes, cepaNetwork[["network"]], bk = NULL, iter = 1000, pThreshold = 0.05)
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(cepaOraRes)))
     expect_true(all(cepaOraRes$p.value <= 1))
     expect_true(all(cepaOraRes$p.value >= 0))
 })
 
 test_that('CePaGSA ', {
-    cepaGsaRes <- .runCePaGSA(DERes, cepaNetwork, nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+    cepaGsaRes <- .runCePaGSA(DERes, cepaNetwork[["network"]], nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(cepaGsaRes)))
     expect_true(all(cepaGsaRes$p.value <= 1))
     expect_true(all(cepaGsaRes$p.value >= 0))
 })
 
 test_that('Pathway Enrichment Analysis using SPIA', {
-    result <- runPathwayAnalysis(DERes, spiaNetwork, method = "SPIA")
-    expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
+    result <- RCPA::runPathwayAnalysis(DERes, spiaNetwork, method = "spia")
+    expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(result)))
     expect_true(all(result$p.value <= 1))
     expect_true(all(result$p.value >= 0))
 })
 
 test_that('Pathway Enrichment Analysis using CePaORA ', {
-    result <- runPathwayAnalysis(DERes, cepaNetwork, method = "cepaORA")
-    expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
+    result <- RCPA::runPathwayAnalysis(DERes, cepaNetwork, method = "cepaORA")
+    expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(result)))
     expect_true(all(result$p.value <= 1))
     expect_true(all(result$p.value >= 0))
 })
 
 test_that('Pathway Enrichment Analysis using CePaGSA ', {
-    result <- runPathwayAnalysis(DERes, cepaNetwork, method = "cepaGSA")
-    expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
+    result <- RCPA::runPathwayAnalysis(DERes, cepaNetwork, method = "cepaGSA")
+    expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(result)))
     expect_true(all(result$p.value <= 1))
     expect_true(all(result$p.value >= 0))
 })

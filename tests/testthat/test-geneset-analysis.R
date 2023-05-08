@@ -4,7 +4,6 @@ library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
 
-devtools::load_all()
 # generate a random gene expression matrix
 set.seed(123)
 exprs <- round(matrix(2^abs(rnorm(100000, sd = 4)), nrow = 10000, ncol = 10))
@@ -86,22 +85,22 @@ test_that('Wilcox ', {
 })
 
 test_that('GeneSet Enrichment Analysis with wilcox ', {
-    result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "wilcox")
+    result <- runGeneSetAnalysis(DERes, genesets, method = "wilcox")
     wilcoxRes <- .runKsWilcox(DERes, genesets[["genesets"]], sTest = "wilcox")
-    expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
+    expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sampleSize") %in% colnames(result)))
     expect_true(all(result$p.value == wilcoxRes$p.value))
     expect_true(all(result$p.value <= 1))
     expect_true(all(result$p.value >= 0))
 })
 
 test_that('GeneSet Enrichment Analysis with fgsea ', {
-    result <- runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea", FgseaArgs = list(eps = 1e-50, scoreType = "std", nPermSimple = 1000))
-    expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sample.size") %in% colnames(result)))
+    result <- runGeneSetAnalysis(DERes, genesets, method = "fgsea", FgseaArgs = list(eps = 1e-50, scoreType = "std", nPermSimple = 1000))
+    expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sampleSize") %in% colnames(result)))
     expect_true(all(result$p.value <= 1))
     expect_true(all(result$p.value >= 0))
 })
 
 test_that('GeneSet Enrichment Analysis with fgsea with wrong arguments ', {
-    expect_error(runGeneSetEnrichmentAnalysis(DERes, genesets, method = "fgsea", FgseaArgs = list(scoretype = "std", nPermSimple = 1000)))
-    expect_error(runGeneSetEnrichmentAnalysis(DERes, genesets = NULL, method = "fgsea", FgseaArgs = list(scoreType = "std", nPermSimple = 1000)))
+    expect_error(runGeneSetAnalysis(DERes, genesets, method = "fgsea", FgseaArgs = list(scoretype = "std", nPermSimple = 1000)))
+    expect_error(runGeneSetAnalysis(DERes, genesets = NULL, method = "fgsea", FgseaArgs = list(scoreType = "std", nPermSimple = 1000)))
 })

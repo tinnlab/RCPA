@@ -5,7 +5,7 @@
 #' @param updateCache A parameter to disable/enable cache update.
 #' @return A named list with three elements: network, names and sizes.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' getSPIAKEGGNetwork("hsa")
 #' }
 #' @export
@@ -13,7 +13,7 @@
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom tidyr spread
 #' @importFrom stringr str_split str_length
-getSPIAKEGGNetwork <- function(org = "hsa", updateCache = F) {
+getSPIAKEGGNetwork <- function(org = "hsa", updateCache = FALSE) {
 
     .requirePackage("ROntoTools")
     keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
@@ -222,7 +222,6 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
         stop("de must be a vector of log2 fold changes. The names of de should be included in the refference array!")
     }
     ph <- pb <- pcomb <- nGP <- pSize <- smPFS <- tA <- tAraw <- KEGGLINK <- NULL
-    set.seed(1)
 
     for (i in 1:length(names(datp))) {
         path <- names(datp)[i]

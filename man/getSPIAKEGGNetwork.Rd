@@ -4,7 +4,7 @@
 \alias{getSPIAKEGGNetwork}
 \title{Get KEGG pathway network for SPIA method}
 \usage{
-getSPIAKEGGNetwork(org = "hsa", updateCache = F)
+getSPIAKEGGNetwork(org = "hsa", updateCache = FALSE)
 }
 \arguments{
 \item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.
@@ -19,7 +19,7 @@ A named list with three elements: network, names and sizes.
 Get KEGG pathway network for SPIA method
 }
 \examples{
-\dontrun{
+\donttest{
 getSPIAKEGGNetwork("hsa")
 }
 }

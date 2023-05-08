@@ -15,7 +15,7 @@
         stop("The destination directory does not exist.")
     }
 
-    gsets <- getGEO(GEOID, GSEMatrix = T, getGPL = T, destdir = destDir)
+    gsets <- getGEO(GEOID, GSEMatrix = TRUE, getGPL = TRUE, destdir = destDir)
     platforms <- sapply(gsets, annotation)
 
     if (!platform %in% platforms) {
@@ -53,7 +53,7 @@
 
             if (file.exists(file.path(destDir, paste0(id, ".CEL.gz")))) next()
 
-            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = F) %>% rownames()
+            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
 
             if(is.null(downloadedFiles)){
                 stop("Check the specified samples IDs to be valid. No file is found.")
@@ -67,13 +67,13 @@
                 }
             }) %>% as.vector()
 
-            downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
+            downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = TRUE)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
 
         }else{
 
             if (file.exists(file.path(destDir, paste0(id, ".TXT.gz")))) next()
 
-            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = F) %>% rownames()
+            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
 
             if(is.null(downloadedFiles)){
                 stop("Check the specified samples IDs to be valid. No file is found.")
@@ -87,7 +87,7 @@
                 }
             }) %>% as.vector()
 
-            downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = T)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
+            downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = TRUE)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
         }
     }
 
@@ -125,7 +125,7 @@
 
     #Normalize expression data based on RMA method
     expression <- try({
-        ReadAffy(verbose = T, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
+        ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
             threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
             exprs() %>%
             as.data.frame()
@@ -133,7 +133,7 @@
 
     if ("try-error" %in% class(expression)) {
         expression <- read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
-            rma(normalize = T) %>%
+            rma(normalize = TRUE) %>%
             exprs() %>%
             as.data.frame()
         if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
@@ -180,7 +180,7 @@
 
     raw.data <- read.maimages(file.path(destDir, paste0(sampleIDs, ".TXT.gz")),
                               source = "agilent",
-                              #green.only = TRUE,
+                              green.only = TRUE,
                               names = sampleIDs
     )
 
@@ -241,16 +241,16 @@
 #' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
 #' @return A SummarizedExperiment object including the processed data.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
 #' # Affymetrix
-#' downloadPath <- file.path(getwd(), "GSE5281")
+#' downloadPath <- file.path(tempdir(), "GSE5281")
 #' if(!dir.exists(downloadPath)) dir.create(downloadPath)
 #' affyDataset <- RCPA::downloadGEO(GEOID = "GSE5281", platform ="GPL570",
 #'                                  protocol ="affymetrix", destDir = downloadPath)
 #'
 #' # Agilent
-#' downloadPath <- file.path(getwd(), "GSE61196")
+#' downloadPath <- file.path(tempdir(), "GSE61196")
 #' if(!dir.exists(downloadPath)) dir.create(downloadPath)
 #' agilDataset <- RCPA::downloadGEO(GEOID = "GSE61196", platform ="GPL4133",
 #'                                  protocol ="agilent", destDir = downloadPath)

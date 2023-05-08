@@ -16,17 +16,20 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 
 \item{logFCThreshold}{The logFC threshold to use for the vertical line.}
 }
+\value{
+A ggplot2 object.
+}
 \description{
 Plot volcano plot from Pathway analysis results
 }
 \examples{
-\dontrun{
+\donttest{
 
 library(RCPA)
 
-loadData("affyDEExperiment")
-loadData("agilDEExperiment")
-loadData("RNASeqDEExperiment")
+affyDEExperiment <- loadData("affyDEExperiment")
+agilDEExperiment <- loadData("agilDEExperiment")
+RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 
 RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
     ggplot2::ggtitle("Affymetrix - GSE5281")

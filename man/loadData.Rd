@@ -16,8 +16,8 @@ Load the data with the specified name.
 This function loads data from GitHub.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
-loadData("RNASeqDataset")
+RNASeqDataset <- loadData("RNASeqDataset")
 }
 }

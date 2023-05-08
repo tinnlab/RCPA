@@ -1,15 +1,13 @@
 library(testthat)
 library(ggplot2)
 
-devtools::load_all()
-
 results <- data.frame(
     ID = paste0("geneset", 1:100),
     name = paste0("Pathway ", 1:100),
     description = paste0("Description ", 1:100),
     p.value = runif(100) / 10,
     pFDR = runif(100) / 5,
-    size = runif(100, 100, 500),
+    pathwaySize = runif(100, 100, 500),
     nDE = runif(100, 10, 100),
     score = runif(100, -2, 2),
     normalizedScore = runif(100)

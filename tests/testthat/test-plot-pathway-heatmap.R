@@ -1,8 +1,6 @@
 library(testthat)
 library(ggplot2)
 
-devtools::load_all()
-
 set.seed(123)
 
 result1 <- data.frame(
@@ -11,8 +9,7 @@ result1 <- data.frame(
   description = paste0("Description ", 1:10),
   p.value = runif(10) / 10,
   pFDR = runif(10) / 5,
-  size = runif(10, 100, 500),
-  nDE = runif(10, 10, 100),
+  pathwaySize = runif(10, 100, 500),
   score = runif(10, -2, 2),
   normalizedScore = runif(10)
 )
@@ -24,8 +21,7 @@ result2 <- data.frame(
   description = paste0("Description ", 1:10),
   p.value = runif(10) / 10,
   pFDR = runif(10) / 5,
-  size = runif(10, 100, 500),
-  nDE = runif(10, 10, 100),
+  pathwaySize = runif(10, 100, 500),
   score = runif(10, -2, 2),
   normalizedScore = runif(10)
 )
@@ -40,16 +36,16 @@ test_that("Plot pathway heatmap plot default", {
   pl <- plotPathwayHeatmap(resultsLst, yAxis = "ID")
   expect_true(is.ggplot(pl))
   expect_equal(pl$labels$size, "Normalized score")
-  expect_equal(pl$labels$fill, "-Log10 P-value")
-  expect_equal(pl$labels$colour, "Direction")
+  expect_equal(pl$labels$fill, "Direction")
+  expect_equal(pl$labels$fill_new, "p.value.scaled")
 })
 
 test_that("Plot pathway heatmap plot with 'name' as yAxis", {
   pl <- plotPathwayHeatmap(resultsLst, yAxis = "name")
   expect_true(is.ggplot(pl))
   expect_equal(pl$labels$size, "Normalized score")
-  expect_equal(pl$labels$fill, "-Log10 P-value")
-  expect_equal(pl$labels$colour, "Direction")
+  expect_equal(pl$labels$fill, "Direction")
+  expect_equal(pl$labels$fill_new, "p.value.scaled")
 })
 
 

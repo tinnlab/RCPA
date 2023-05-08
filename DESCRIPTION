@@ -1,12 +1,15 @@
 Package: RCPA
 Type: Package
-Title: R Package for Consensus Pathway Analysis
+Title: Consensus Pathway Analysis
 Version: 0.1.0
 Authors@R: c(
     person(given = "Zeynab", family = "Maghsoudi", email = "zmaghsoudi@nevada.unr.edu", role = c("aut", "cre")),
     person(given = "Phi Hung", family = "Bya", role = c("aut")),
     person(given = "Tin", family = "Nguyen", role = c("fnd")))
-Description: Consensus Pathway Analysis provides a set of functions to perform pathway analysis and meta analysis from multiple gene expression datasets, as well as visualization of the results.
+Description: Consensus Pathway Analysis provides a set of functions to perform pathway analysis and meta analysis from multiple gene expression datasets, as well as visualization of the results. \n The package is wrapper of packages listed below.\n
+    Ritchie, M.E., Phipson, B., Wu, D., Hu, Y., Law, C.W., Shi, W., and Smyth, G.K. (2015) <doi:10.1093/nar/gkv007>.\n Love, M.I., Huber, W., Anders, S. (2014) <doi:10.1186/s13059-014-0550-8>.\n
+    Robinson, M. D., McCarthy, D. J., & Smyth, G. K. (2010). <doi:10.1093/bioinformatics/btp616>.\n Korotkevich, G., Sukhov, V., Budin, N., Shpak, B., Artyomov, M. N., & Sergushichev, A. (2016). <arxiv:10.1101/060012>.\n
+    Efron, B., Tibshirani, R., & Tibshirani, M. R. (2015). <https://CRAN.R-project.org/package=GSA>.\n Tarca, A. L., Kathri, P., & Draghici, S. (2013) <https://bioconductor.org/packages/SPIA/>.\n Gu, Z. (2012) <https://CRAN.R-project.org/package=CePa>.
 License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.0), methods, tidyr, dplyr, ggplot2, utils, stats
@@ -44,7 +47,8 @@ Imports:
     httr,
     rlang,
     ggpattern,
-    scales
+    scales,
+    hgu133plus2.db
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,

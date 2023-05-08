@@ -5,8 +5,6 @@ library(SummarizedExperiment)
 library(limma)
 library(ggplot2)
 
-devtools::load_all()
-
 # generate a random gene expression matrix
 DEResults <- lapply(1:3, function(seed) {
     set.seed(seed)

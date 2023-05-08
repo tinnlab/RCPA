@@ -10,7 +10,7 @@
 #' @importFrom graph nodes edges
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom stringr str_split
-getCePaPathwayCatalogue <- function(org = "hsa", updateCache = F){
+getCePaPathwayCatalogue <- function(org = "hsa", updateCache = FALSE){
 
   .requirePackage("CePa")
   .requirePackage("ROntoTools")

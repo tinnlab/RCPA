@@ -24,16 +24,19 @@ plotVennDE(
 \item{statThreshold}{The absolute value of the statistic threshold to use for filtering differentially expressed genes.
 Default is 0, which means no filtering.}
 }
+\value{
+A ggplot2 object.
+}
 \description{
 Plot a venndiagram from multiple DE Analysis results.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 
-loadData("affyDEExperiment")
-loadData("agilDEExperiment")
-loadData("RNASeqDEExperiment")
+affyDEExperiment <- loadData("affyDEExperiment")
+agilDEExperiment <- loadData("agilDEExperiment")
+RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 
 DEResults <- list(
     "Affymetrix - GSE5281" = rowData(affyDEExperiment),

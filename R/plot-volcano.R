@@ -10,13 +10,14 @@
 #' When NULL, the top pathways are labeled. Default is NULL.
 #' @param topToLabel The number of top pathways to label when IDsToLabels is NULL.
 #' @param sideToLabel The side of the plot to label.
+#' @return A ggplot2 object.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
-#' loadData("affyFgseaResult")
-#' loadData("agilFgseaResult")
-#' loadData("RNASeqFgseaResult")
-#' loadData("metaPAResult")
+#' affyFgseaResult <- loadData("affyFgseaResult")
+#' agilFgseaResult <- loadData("agilFgseaResult")
+#' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+#' metaPAResult <- loadData("metaPAResult")
 #'
 #' RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
 #' RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")
@@ -140,14 +141,15 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
 #' @param pThreshold The p-value threshold to use for the horizontal line.
 #' @param useFDR Whether to use the pFDR column instead of the p.value column.
 #' @param logFCThreshold The logFC threshold to use for the vertical line.
+#' @return A ggplot2 object.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
 #' library(RCPA)
 #'
-#' loadData("affyDEExperiment")
-#' loadData("agilDEExperiment")
-#' loadData("RNASeqDEExperiment")
+#' affyDEExperiment <- loadData("affyDEExperiment")
+#' agilDEExperiment <- loadData("agilDEExperiment")
+#' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
 #' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
 #'     ggplot2::ggtitle("Affymetrix - GSE5281")

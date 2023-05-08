@@ -3,7 +3,7 @@
 #' @param entrezIds A vector of Entrez IDs.
 #' @return A data frame with Entrez annotation. The columns are ID, Symbol, Description, OtherDesignations, OtherAliases and Chromosome.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
 #' getEntrezAnnotation(c("77267466", "77267467"))
 #' }

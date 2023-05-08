@@ -40,15 +40,15 @@
 #' The width of the edges are proportional to the number of genes in common.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Loading libraries
 #' library(RCyjs)
 #' library(RCPA)
-#' loadData("affyFgseaResult")
-#' loadData("agilFgseaResult")
-#' loadData("RNASeqFgseaResult")
-#' loadData("metaPAResult")
-#' loadData("genesets")
+#' affyFgseaResult <- loadData("affyFgseaResult")
+#' agilFgseaResult <- loadData("agilFgseaResult")
+#' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+#' metaPAResult <- loadData("metaPAResult")
+#' genesets <- loadData("genesets")
 #'
 #' PAResults <- list(
 #'     "Affymetrix - GSE5281" = affyFgseaResult,
@@ -256,7 +256,7 @@ plotPathwayNetwork <- function(PAResults, genesets,
 
     rCy <- BrowserViz::BrowserViz(portRange = 10000:20000,
                       title = "Pathway network",
-                      quiet = T,
+                      quiet = TRUE,
                       browserFile = system.file(package = "RCyjs", "browserCode", "dist", "rcyjs.html"),
                       httpQueryProcessingFunction = cyjsQueryFnc
     )

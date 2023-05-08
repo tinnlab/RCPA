@@ -40,13 +40,13 @@ A ggplot2 object.
 This function plots a bar chart of the pathway analysis results.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 
-loadData("affyFgseaResult")
-loadData("agilFgseaResult")
-loadData("RNASeqFgseaResult")
-loadData("metaPAResult")
+affyFgseaResult <- loadData("affyFgseaResult")
+agilFgseaResult <- loadData("agilFgseaResult")
+RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+metaPAResult <- loadData("metaPAResult")
 
 PAResults <- list(
     "Affymetrix - GSE5281" = affyFgseaResult,

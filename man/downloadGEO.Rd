@@ -22,16 +22,16 @@ A SummarizedExperiment object including the processed data.
 This function download and process data from GEO for microarray and RNASeq data.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 # Affymetrix
-downloadPath <- file.path(getwd(), "GSE5281")
+downloadPath <- file.path(tempdir(), "GSE5281")
 if(!dir.exists(downloadPath)) dir.create(downloadPath)
 affyDataset <- RCPA::downloadGEO(GEOID = "GSE5281", platform ="GPL570",
                                  protocol ="affymetrix", destDir = downloadPath)
 
 # Agilent
-downloadPath <- file.path(getwd(), "GSE61196")
+downloadPath <- file.path(tempdir(), "GSE61196")
 if(!dir.exists(downloadPath)) dir.create(downloadPath)
 agilDataset <- RCPA::downloadGEO(GEOID = "GSE61196", platform ="GPL4133",
                                  protocol ="agilent", destDir = downloadPath)

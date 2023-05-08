@@ -14,10 +14,10 @@ runPathwayAnalysis(
     "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree",
     "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold =
     0.05),
-  CePaGSAArgs = list(mat = NULL, label = NULL, cen = list("equal.weight", "in.degree",
-    "out.degree", "betweenness", "in.reach", "out.reach"), cen.name =
-    list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach",
-    "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+  CePaGSAArgs = list(cen = list("equal.weight", "in.degree", "out.degree", "betweenness",
+    "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree",
+    "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter
+    = 1000)
 )
 }
 \arguments{
@@ -40,13 +40,14 @@ A dataframe of pathway analysis result
 This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
-loadData("RNASeqDEExperiment")
-loadData("spiaNetwork")
-loadData("cepaNetwork")
+RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
+spiaNetwork <- loadData("spiaNetwork")
+cepaNetwork <- loadData("cepaNetwork")
 
 spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
 cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
+cepaGSAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaGSA")
 }
 }

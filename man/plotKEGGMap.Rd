@@ -44,11 +44,11 @@ A list with the following elements:
 This function plots KEGG map with DE genes.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
-loadData("affyDEExperiment")
-loadData("agilDEExperiment")
-loadData("RNASeqDEExperiment")
+affyDEExperiment <- loadData("affyDEExperiment")
+agilDEExperiment <- loadData("agilDEExperiment")
+RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 
 DEResults <- list(
     "Affymetrix - GSE5281" = rowData(affyDEExperiment),

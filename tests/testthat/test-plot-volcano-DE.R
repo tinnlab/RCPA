@@ -3,7 +3,6 @@ library(testthat)
 library(hgu133plus2.db)
 library(AnnotationDbi)
 
-devtools::load_all()
 
 set.seed(1)
 exprs <- round(matrix(abs(rnorm(20000 * 10, sd = 4)), nrow = 20000, ncol = 10))

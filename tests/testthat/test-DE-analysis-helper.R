@@ -44,7 +44,7 @@ test_that("Limma unpaired", {
 test_that("Limma paired", {
     limmaRes <- .runLimma(exprs, design.paired, contrast.paired)
 
-    expect_true(all(c("ID", "p.value", "statistic", "logFC", "dispersion") %in% colnames(limmaRes)))
+    expect_true(all(c("ID", "p.value", "statistic", "logFC", "avgExpr", "logFCSE") %in% colnames(limmaRes)))
     expect_true(all(limmaRes$p.value <= 1))
     expect_true(all(limmaRes$p.value >= 0))
     expect_true(all(limmaRes$ID %in% rownames(exprs)))

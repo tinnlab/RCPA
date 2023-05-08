@@ -2,9 +2,8 @@ library(testthat)
 library(SummarizedExperiment)
 library(GEOquery)
 
-devtools::load_all()
-
-destDir <- file.path(getwd(), ".tmp")
+destDir <- file.path(tempdir(), "GSE20153")
+if(!dir.exists(destDir)) dir.create(destDir)
 
 test_that('Download GEO GSE20153  GPL570', {
     geoDat <- .downloadGEOObject("GSE20153", "GPL570", destDir)
@@ -26,7 +25,7 @@ test_that('Download GEO with random GEO', {
 })
 
 test_that('Download GEO GSE20153 with non existed destination', {
-    destDir <- file.path(getwd(), ".tmp", "non_existed")
+    destDir <- file.path(tempdir(), "GSE20153", "non_existed")
     expect_error(.downloadGEOObject("GSE20153", "GPL570", destDir), "The destination directory does not exist.")
 })
 

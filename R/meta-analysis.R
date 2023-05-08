@@ -67,14 +67,14 @@
 #' @param method A method used to combine pathway analysis results
 #' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
 #' library(RCPA)
-#' loadData("affyFgseaResult")
-#' loadData("agilFgseaResult")
-#' loadData("RNASeqFgseaResult")
+#' affyFgseaResult <- loadData("affyFgseaResult")
+#' agilFgseaResult <- loadData("agilFgseaResult")
+#' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
 #'
-#' metaPAResult <- RCPA::combinePathwayAnalysisResults(
+#' metaPAResult <- RCPA::combineEnrichmentAnalysisResults(
 #'     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
 #'     method = "stouffer"
 #' )
@@ -83,7 +83,7 @@
 #' @importFrom dplyr %>% bind_rows mutate group_by summarise filter group_split select inner_join
 #' @importFrom tidyr drop_na
 #' @export
-combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
+combineEnrichmentAnalysisResults <- function(PAResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
     method <- match.arg(method)
 
@@ -198,11 +198,11 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
 #' @return A dataframe containing combined DE analysis results.
 #' The dataframe has ID, p.value, pDFR, logFC, and logFCSE columns.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
-#' loadData("affyDEExperiment")
-#' loadData("agilDEExperiment")
-#' loadData("RNASeqDEExperiment")
+#' affyDEExperiment <- loadData("affyDEExperiment")
+#' agilDEExperiment <- loadData("agilDEExperiment")
+#' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
 #' metaDEResult <- RCPA::combineDEAnalysisResults(list(
 #'     rowData(affyDEExperiment),
@@ -213,6 +213,7 @@ combinePathwayAnalysisResults <- function(PAResults, method = c("stouffer", "fis
 #' @importFrom dplyr %>% bind_rows group_by summarize mutate
 #' @importFrom stats p.adjust
 #' @importFrom tidyr drop_na
+#' @importFrom SummarizedExperiment rowData
 #' @export
 combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 

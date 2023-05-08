@@ -35,10 +35,10 @@ A ggplot object.
 Plot MA plot from DE analysis results
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 
-loadData("RNASeqDEExperiment")
+RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggtitle("RNASeq - GSE153873")
 
 }

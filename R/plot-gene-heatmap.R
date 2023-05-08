@@ -10,13 +10,13 @@
 #' @param negLog10pValueLims A vector of length 2 specifying the minimum and maximum -log10(p-value) to plot.
 #' @return A heatmap of the genes from ggplot2.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
 #'
-#' loadData("affyDEExperiment")
-#' loadData("agilDEExperiment")
-#' loadData("RNASeqDEExperiment")
-#' loadData("genesets")
+#' affyDEExperiment <- loadData("affyDEExperiment")
+#' agilDEExperiment <- loadData("agilDEExperiment")
+#' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
+#' genesets <- loadData("genesets")
 #'
 #' DEResults <- list(
 #'     "Affymetrix - GSE5281" = rowData(affyDEExperiment),

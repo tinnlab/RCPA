@@ -7,13 +7,13 @@
 #' @param useFDR A boolean parameter to specify if adjusted p-value should be considered.
 #' @return A list of ggplot objects.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
 #'
-#' loadData("affyFgseaResult")
-#' loadData("agilFgseaResult")
-#' loadData("RNASeqFgseaResult")
-#' loadData("metaPAResult")
+#' affyFgseaResult <- loadData("affyFgseaResult")
+#' agilFgseaResult <- loadData("agilFgseaResult")
+#' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+#' metaPAResult <- loadData("metaPAResult")
 #'
 #' PAResults <- list(
 #'     "Affymetrix - GSE5281" = affyFgseaResult,

@@ -28,13 +28,13 @@ A list of ggplot objects.
 Plot forest plot from pathway/geneset/meta analysis results.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 
-loadData("affyFgseaResult")
-loadData("agilFgseaResult")
-loadData("RNASeqFgseaResult")
-loadData("metaPAResult")
+affyFgseaResult <- loadData("affyFgseaResult")
+agilFgseaResult <- loadData("agilFgseaResult")
+RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+metaPAResult <- loadData("metaPAResult")
 
 PAResults <- list(
     "Affymetrix - GSE5281" = affyFgseaResult,

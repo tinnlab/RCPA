@@ -157,14 +157,15 @@
 #' @param CePaGSAArgs A list of other passed arguments to CePaGSA. See CePa function.
 #' @return A dataframe of pathway analysis result
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
-#' loadData("RNASeqDEExperiment")
-#' loadData("spiaNetwork")
-#' loadData("cepaNetwork")
+#' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
+#' spiaNetwork <- loadData("spiaNetwork")
+#' cepaNetwork <- loadData("cepaNetwork")
 #'
 #' spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
 #' cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
+#' cepaGSAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaGSA")
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment assay
 #' @importFrom dplyr %>%
@@ -172,7 +173,7 @@
 runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia", "cepaORA", "cepaGSA"),
                                SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreshold = 0.05),
                               CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold = 0.05),
-                              CePaGSAArgs = list(mat = NULL, label = NULL, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+                              CePaGSAArgs = list(cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 ){
     method <- match.arg(method)
 
@@ -251,7 +252,7 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
         }
 
         default.centralities <- list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach")
-        CePaGSAArgs.default = list(mat = NULL, label = NULL, cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+        CePaGSAArgs.default <- list(cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 
         if (any(!names(CePaGSAArgs) %in% names(CePaGSAArgs.default))) {
             stop("The names of arguments should be matched with CePaGSA definition.")

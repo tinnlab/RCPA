@@ -6,13 +6,14 @@
 #' @param stat The additional statistis column to use for filtering differentially expressed genes.
 #' @param statThreshold The absolute value of the statistic threshold to use for filtering differentially expressed genes.
 #' Default is 0, which means no filtering.
+#' @return A ggplot2 object.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
 #'
-#' loadData("affyDEExperiment")
-#' loadData("agilDEExperiment")
-#' loadData("RNASeqDEExperiment")
+#' affyDEExperiment <- loadData("affyDEExperiment")
+#' agilDEExperiment <- loadData("agilDEExperiment")
+#' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
 #' DEResults <- list(
 #'     "Affymetrix - GSE5281" = rowData(affyDEExperiment),
@@ -99,14 +100,15 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #' @param PAResults A list of data frames with the results of pathway analysis.
 #' @param pThreshold The p-value threshold to determine if a pathway is enriched.
 #' @param useFDR Use the FDR adjusted p-value instead of the raw p-value.
+#' @return A ggplot2 object.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
 #'
-#' loadData("affyFgseaResult")
-#' loadData("agilFgseaResult")
-#' loadData("RNASeqFgseaResult")
-#' loadData("metaPAResult")
+#' affyFgseaResult <- loadData("affyFgseaResult")
+#' agilFgseaResult <- loadData("agilFgseaResult")
+#' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+#' metaPAResult <- loadData("metaPAResult")
 #'
 #' PAResults <- list(
 #'     "Affymetrix - GSE5281" = affyFgseaResult,

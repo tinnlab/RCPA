@@ -4,7 +4,7 @@
 \alias{getCePaPathwayCatalogue}
 \title{Get KEGG pathway catalouge (network) for CePa.ORA and CePa.GSA methods}
 \usage{
-getCePaPathwayCatalogue(org = "hsa", updateCache = F)
+getCePaPathwayCatalogue(org = "hsa", updateCache = FALSE)
 }
 \arguments{
 \item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.

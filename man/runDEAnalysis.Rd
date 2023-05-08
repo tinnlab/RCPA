@@ -55,11 +55,11 @@ Other slots will be the same as in the input SummarizedExperiment object.
 This function performs differential expression analysis using either limma, DESeq2 or edgeR.
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
 
 # GSE5281
-loadData("affyDataset")
+affyDataset <- loadData("affyDataset")
 affyDesign <- model.matrix(~0 + condition + region + condition:region, data = colData(affyDataset))
 colnames(affyDesign) <- make.names(colnames(affyDesign))
 affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=affyDesign)
@@ -69,14 +69,14 @@ affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = 
 print(rowData(affyDEExperiment)) # check the DE analysis results
 
 # GSE61196
-loadData("agilDataset")
+agilDataset <- loadData("agilDataset")
 agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
 agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
 
 # Create Probe mapping
 GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
 GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, TO = as.character(GPL4133Anno$GENE),
-                                 stringsAsFactors = F)
+                                 stringsAsFactors = FALSE)
 GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
 
 agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
@@ -84,7 +84,7 @@ agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = 
 print(rowData(agilDEExperiment))
 
 # GSE153873
-loadData("RNASeqDataset")
+RNASeqDataset <- loadData("RNASeqDataset")
 RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
 RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=RNASeqDesign)
 

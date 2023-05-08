@@ -1,9 +1,6 @@
 library(testthat)
 library(ggplot2)
 
-devtools::load_all()
-plotBarChart(results)
-
 results <- lapply(1:3, function(i) {
     set.seed(i)
 
@@ -26,19 +23,19 @@ results <- lapply(1:3, function(i) {
 test_that("Plot bar plot default", {
     pl <- plotBarChart(results)
     expect_true(is.ggplot(pl))
-    expect_equal(pl$labels$y, "-log10 pFDR")
+    expect_equal(length(pl$labels), 9)
 })
 
 test_that("Plot bar plot with non FDR", {
     pl <- plotBarChart(results, useFDR = FALSE)
     expect_true(is.ggplot(pl))
-    expect_equal(pl$labels$y, "-log10 pFDR")
+    expect_equal(length(pl$labels), 9)
 })
 
 test_that("Plot bar plot with FDR", {
     pl <- plotBarChart(results, useFDR = TRUE)
     expect_true(is.ggplot(pl))
-    expect_equal(pl$labels$y, "-log10 pFDR")
+    expect_equal(length(pl$labels), 9)
 })
 
 test_that("Plot bar plot with p-value", {

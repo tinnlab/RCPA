@@ -4,7 +4,7 @@
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
 #' @return A named vector with KEGG gene sets names.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' .getKEGGPathwayNames("hsa")
 #' }
 #' @importFrom stringr str_split
@@ -13,7 +13,7 @@
 #' @importFrom utils read.table
 #' @noRd
 .getKEGGPathwayNames <- function(org = "hsa") {
-    gsNames <- read.table(paste0("https://rest.kegg.jp/list/pathway/", org), sep = "\t", header = F, stringsAsFactors = F)
+    gsNames <- read.table(paste0("https://rest.kegg.jp/list/pathway/", org), sep = "\t", header = FALSE, stringsAsFactors = FALSE)
     gsNames[, 2] %>%
         str_split(" - ") %>%
         sapply(function(x) paste0(x[1:(length(x) - 1)], collapse = " - ")) %>%
@@ -26,7 +26,7 @@
 #' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' .getKEGGGeneSets("hsa")
 #' }
 #' @importFrom stringr str_split
@@ -35,7 +35,7 @@
 #' @importFrom stats setNames
 #' @noRd
 .getKEGGGeneSets <- function(org = "hsa") {
-    geneLink <- read.table(paste0("https://rest.kegg.jp/link/", org, "/pathway"), sep = "\t", header = F, stringsAsFactors = F) %>%
+    geneLink <- read.table(paste0("https://rest.kegg.jp/link/", org, "/pathway"), sep = "\t", header = FALSE, stringsAsFactors = FALSE) %>%
         `colnames<-`(c("geneset", "gene"))
 
     gensets <- geneLink %>%
@@ -79,7 +79,7 @@
                 id = str_match(x, "\nid: (.*)")[, 2],
                 name = str_match(x, "\nname: (.*)")[, 2],
                 ns = str_match(x, "\nnamespace: (.*)")[, 2],
-                stringsAsFactors = F
+                stringsAsFactors = FALSE
             )
         }) %>%
         do.call(what = rbind) %>%
@@ -110,7 +110,7 @@
                   molecular_function = "Function",
                   cellular_component = "Component")
 
-    genesets <- read.table(textConnection(txt), sep = "\t", header = T, stringsAsFactors = F, fill = TRUE, comment.char = "!") %>%
+    genesets <- read.table(textConnection(txt), sep = "\t", header = TRUE, stringsAsFactors = FALSE, fill = TRUE, comment.char = "!") %>%
         rename(tax_id = "X.tax_id") %>%
         filter(.$tax_id == taxid & .$Category == cat) %>%
         group_by(.$GO_ID) %>%
@@ -151,7 +151,7 @@
 #' This parameter is only used when database is GO.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
 #' library(RCPA)
 #'

@@ -37,7 +37,7 @@ test_that("DE analysis with ID mapping", {
     expect_true(all(
         c("DEAnalysis.method", "DEAnalysis.design", "DEAnalysis.contrast", "DEAnalysis.mapping") %in% names(metadata(DERes))
     ))
-    expect_true(all(metadata(DERes)$DEAnalysis.method == "limma"))
+    expect_true(all(metadata(DERes)$DEAnalysis.method == "DESeq2"))
     expect_true(all(metadata(DERes)$DEAnalysis.design == design))
     expect_true(all(metadata(DERes)$DEAnalysis.contrast == contrast))
 })

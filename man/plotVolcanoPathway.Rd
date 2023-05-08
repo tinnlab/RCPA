@@ -34,16 +34,19 @@ When NULL, the top pathways are labeled. Default is NULL.}
 
 \item{sideToLabel}{The side of the plot to label.}
 }
+\value{
+A ggplot2 object.
+}
 \description{
 Plot volcano plot from Pathway analysis results
 }
 \examples{
-\dontrun{
+\donttest{
 library(RCPA)
-loadData("affyFgseaResult")
-loadData("agilFgseaResult")
-loadData("RNASeqFgseaResult")
-loadData("metaPAResult")
+affyFgseaResult <- loadData("affyFgseaResult")
+agilFgseaResult <- loadData("agilFgseaResult")
+RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+metaPAResult <- loadData("metaPAResult")
 
 RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
 RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")

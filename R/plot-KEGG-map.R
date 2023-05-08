@@ -19,11 +19,11 @@
 #' \item height: The height of the KEGG map.
 #' }
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(RCPA)
-#' loadData("affyDEExperiment")
-#' loadData("agilDEExperiment")
-#' loadData("RNASeqDEExperiment")
+#' affyDEExperiment <- loadData("affyDEExperiment")
+#' agilDEExperiment <- loadData("agilDEExperiment")
+#' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
 #' DEResults <- list(
 #'     "Affymetrix - GSE5281" = rowData(affyDEExperiment),

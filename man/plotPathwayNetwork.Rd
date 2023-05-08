@@ -87,15 +87,15 @@ If the mode is "discrete", the color of the nodes are determined by whether the 
 The width of the edges are proportional to the number of genes in common.
 }
 \examples{
-\dontrun{
+\donttest{
 # Loading libraries
 library(RCyjs)
 library(RCPA)
-loadData("affyFgseaResult")
-loadData("agilFgseaResult")
-loadData("RNASeqFgseaResult")
-loadData("metaPAResult")
-loadData("genesets")
+affyFgseaResult <- loadData("affyFgseaResult")
+agilFgseaResult <- loadData("agilFgseaResult")
+RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+metaPAResult <- loadData("metaPAResult")
+genesets <- loadData("genesets")
 
 PAResults <- list(
     "Affymetrix - GSE5281" = affyFgseaResult,
