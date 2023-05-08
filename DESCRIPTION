@@ -64,4 +64,8 @@ Suggests:
     ggvenn,
     RCurl,
     XML,
-    S4Vectors
+    S4Vectors,
+    devtools
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/testthat/stop-on-test-error: false

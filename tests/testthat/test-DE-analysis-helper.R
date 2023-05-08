@@ -1,5 +1,6 @@
 library(testthat)
 library(limma)
+devtools::load_all()
 
 # generate a random gene expression matrix
 set.seed(123)

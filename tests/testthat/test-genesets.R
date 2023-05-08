@@ -1,5 +1,7 @@
 library(testthat)
 
+devtools::load_all()
+
 test_that("Get KEGG names for hsa", {
     keggNames <- .getKEGGPathwayNames("hsa")
     expect_true(length(keggNames) > 300)

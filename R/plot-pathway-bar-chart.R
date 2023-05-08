@@ -164,7 +164,7 @@ plotBarChart <- function(results, limit = Inf, label = "name", by = c("normalize
                 pattern_fill = "white",
                 pattern_spacing = 0.02,
                 color = "#444444",
-                size = 0.25
+                linewidth = 0.25
             ) +
             scale_fill_discrete(
                 guide = guide_legend(

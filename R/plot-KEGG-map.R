@@ -149,10 +149,10 @@ plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = 
         scale_x_continuous(expand = c(0, 0), limits = c(0, ncol(img))) +
         scale_y_continuous(expand = c(0, 0), limits = c(0, nrow(img))) +
         annotation_raster(img, 0, ncol(img), 0, nrow(img)) +
-        geom_rect(data = entries, aes(xmin = .data$x - .data$width / 2 - 1, xmax = .data$x + .data$width / 2 + 1, ymin = .data$y - .data$height / 2 - 1, ymax = .data$y + .data$height / 2 + 1), fill = "#bfffbf", color = "black", size = 0.075 * scale) +
+        geom_rect(data = entries, aes(xmin = .data$x - .data$width / 2 - 1, xmax = .data$x + .data$width / 2 + 1, ymin = .data$y - .data$height / 2 - 1, ymax = .data$y + .data$height / 2 + 1), fill = "#bfffbf", color = "black", linewidth = 0.075 * scale) +
         geom_rect(data = entries, aes(xmin = .data$x - .data$width / 2 - 1, xmax = .data$x + .data$width / 2 + 1, ymin = .data$y - .data$height / 2 - 1, ymax = .data$y - .data$height / 2 - 1 + 5 * scale), fill = "gray") +
         geom_text(data = entries, aes(x = .data$x, y = .data$y + 2 * scale, label = .data$name), size = scale) +
-        geom_rect(data = plotDat, aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin, ymax = .data$ymax, fill = .data$statValues), color = "black", size = 0.05 * scale)
+        geom_rect(data = plotDat, aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin, ymax = .data$ymax, fill = .data$statValues), color = "black", linewidth = 0.05 * scale)
 
     if (statistic == "p.value" | statistic == "pFDR") {
         p <- p +

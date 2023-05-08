@@ -4,6 +4,8 @@ library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
 
+devtools::load_all()
+
 # generate a random gene expression matrix
 set.seed(123)
 exprs <- round(matrix(2^abs(rnorm(1000, sd = 4)), nrow = 100, ncol = 10))
