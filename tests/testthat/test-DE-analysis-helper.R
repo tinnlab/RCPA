@@ -1,6 +1,6 @@
 library(testthat)
 library(limma)
-devtools::load_all()
+library(RCPA)
 
 # generate a random gene expression matrix
 set.seed(123)
@@ -34,7 +34,7 @@ contrast.paired.rev <- makeContrasts("groupcontrol-groupcondition", levels = des
 # Limma
 
 test_that("Limma unpaired", {
-    limmaRes <- .runLimma(exprs, design, contrast)
+    limmaRes <- RCPA:::.runLimma(exprs, design, contrast)
 
     expect_true(all(c("ID", "p.value", "statistic", "logFC", "logFCSE") %in% colnames(limmaRes)))
     expect_true(all(limmaRes$p.value <= 1))
@@ -43,7 +43,7 @@ test_that("Limma unpaired", {
 })
 
 test_that("Limma paired", {
-    limmaRes <- .runLimma(exprs, design.paired, contrast.paired)
+    limmaRes <- RCPA:::.runLimma(exprs, design.paired, contrast.paired)
 
     expect_true(all(c("ID", "p.value", "statistic", "logFC", "avgExpr", "logFCSE") %in% colnames(limmaRes)))
     expect_true(all(limmaRes$p.value <= 1))
@@ -52,24 +52,24 @@ test_that("Limma paired", {
 })
 
 test_that("Limma unpaired reverse", {
-    limmaRes <- .runLimma(exprs, design, contrast)
-    limmaRes.rev <- .runLimma(exprs, design.rev, contrast.rev)
+    limmaRes <- RCPA:::.runLimma(exprs, design, contrast)
+    limmaRes.rev <- RCPA:::.runLimma(exprs, design.rev, contrast.rev)
 
     expect_true(all(limmaRes$p.value == limmaRes.rev$p.value))
     expect_true(all(limmaRes$statistic == -limmaRes.rev$statistic))
 })
 
 test_that("Limma paired reverse", {
-    limmaRes <- .runLimma(exprs, design.paired, contrast.paired)
-    limmaRes.rev <- .runLimma(exprs, design.paired.rev, contrast.paired.rev)
+    limmaRes <- RCPA:::.runLimma(exprs, design.paired, contrast.paired)
+    limmaRes.rev <- RCPA:::.runLimma(exprs, design.paired.rev, contrast.paired.rev)
 
     expect_true(all(limmaRes$p.value == limmaRes.rev$p.value))
     expect_true(all(limmaRes$statistic == -limmaRes.rev$statistic))
 })
 
 test_that("Limma unpaired vs paired", {
-    limmaRes <- .runLimma(exprs, design, contrast)
-    limmaRes.paired <- .runLimma(exprs, design.paired, contrast.paired)
+    limmaRes <- RCPA:::.runLimma(exprs, design, contrast)
+    limmaRes.paired <- RCPA:::.runLimma(exprs, design.paired, contrast.paired)
 
     expect_true(!all(limmaRes$p.value == limmaRes.paired$p.value))
     expect_true(!all(limmaRes$statistic == limmaRes.paired$statistic))
@@ -78,7 +78,7 @@ test_that("Limma unpaired vs paired", {
 # DESeq2
 
 test_that("DESeq2 unpaired", {
-    deseq2Res <- .runDESeq2(exprs, design, contrast)
+    deseq2Res <- RCPA:::.runDESeq2(exprs, design, contrast)
 
     expect_true(all(c("ID", "p.value", "logFC", "logFCSE") %in% colnames(deseq2Res)))
     expect_true(all(deseq2Res$p.value <= 1))
@@ -87,7 +87,7 @@ test_that("DESeq2 unpaired", {
 })
 
 test_that("DESeq2 paired", {
-    deseq2Res <- .runDESeq2(exprs, design.paired, contrast.paired)
+    deseq2Res <- RCPA:::.runDESeq2(exprs, design.paired, contrast.paired)
 
     expect_true(all(c("ID", "p.value", "logFC", "logFCSE") %in% colnames(deseq2Res)))
     expect_true(all(deseq2Res$p.value <= 1))
@@ -96,24 +96,24 @@ test_that("DESeq2 paired", {
 })
 
 test_that("DESeq2 unpaired reverse", {
-    deseq2Res <- .runDESeq2(exprs, design, contrast)
-    deseq2Res.rev <- .runDESeq2(exprs, design.rev, contrast.rev)
+    deseq2Res <- RCPA:::.runDESeq2(exprs, design, contrast)
+    deseq2Res.rev <- RCPA:::.runDESeq2(exprs, design.rev, contrast.rev)
 
     expect_true(all(deseq2Res$p.value == deseq2Res.rev$p.value))
     expect_true(all(deseq2Res$statistic == -deseq2Res.rev$statistic))
 })
 
 test_that("DESeq2 paired reverse", {
-    deseq2Res <- .runDESeq2(exprs, design.paired, contrast.paired)
-    deseq2Res.rev <- .runDESeq2(exprs, design.paired.rev, contrast.paired.rev)
+    deseq2Res <- RCPA:::.runDESeq2(exprs, design.paired, contrast.paired)
+    deseq2Res.rev <- RCPA:::.runDESeq2(exprs, design.paired.rev, contrast.paired.rev)
 
     expect_true(all(deseq2Res$p.value == deseq2Res.rev$p.value))
     expect_true(all(deseq2Res$statistic == -deseq2Res.rev$statistic))
 })
 
 test_that("DESeq2 unpaired vs paired", {
-    deseq2Res <- .runDESeq2(exprs, design, contrast)
-    deseq2Res.paired <- .runDESeq2(exprs, design.paired, contrast.paired)
+    deseq2Res <- RCPA:::.runDESeq2(exprs, design, contrast)
+    deseq2Res.paired <- RCPA:::.runDESeq2(exprs, design.paired, contrast.paired)
 
     expect_true(!all(deseq2Res$p.value == deseq2Res.paired$p.value))
     expect_true(!all(deseq2Res$statistic == deseq2Res.paired$statistic))
@@ -122,7 +122,7 @@ test_that("DESeq2 unpaired vs paired", {
 # edgeR
 
 test_that("edgeR unpaired", {
-    edgeRRes <- .runEdgeR(exprs, design, contrast)
+    edgeRRes <- RCPA:::.runEdgeR(exprs, design, contrast)
 
     expect_true(all(c("ID", "p.value", "logFC", "logFC", "logFCSE") %in% colnames(edgeRRes)))
     expect_true(all(edgeRRes$p.value <= 1))
@@ -131,7 +131,7 @@ test_that("edgeR unpaired", {
 })
 
 test_that("edgeR paired", {
-    edgeRRes <- .runEdgeR(exprs, design.paired, contrast.paired)
+    edgeRRes <- RCPA:::.runEdgeR(exprs, design.paired, contrast.paired)
 
     expect_true(all(c("ID", "p.value", "logFC", "logFC", "logFCSE") %in% colnames(edgeRRes)))
     expect_true(all(edgeRRes$p.value <= 1))
@@ -140,24 +140,24 @@ test_that("edgeR paired", {
 })
 
 test_that("edgeR unpaired reverse", {
-    edgeRRes <- .runEdgeR(exprs, design, contrast)
-    edgeRRes.rev <- .runEdgeR(exprs, design.rev, contrast.rev)
+    edgeRRes <- RCPA:::.runEdgeR(exprs, design, contrast)
+    edgeRRes.rev <- RCPA:::.runEdgeR(exprs, design.rev, contrast.rev)
 
     expect_true(all(edgeRRes$p.value == edgeRRes.rev$p.value))
     expect_true(all(edgeRRes$statistic == -edgeRRes.rev$statistic))
 })
 
 test_that("edgeR paired reverse", {
-    edgeRRes <- .runEdgeR(exprs, design.paired, contrast.paired)
-    edgeRRes.rev <- .runEdgeR(exprs, design.paired.rev, contrast.paired.rev)
+    edgeRRes <- RCPA:::.runEdgeR(exprs, design.paired, contrast.paired)
+    edgeRRes.rev <- RCPA:::.runEdgeR(exprs, design.paired.rev, contrast.paired.rev)
 
     expect_true(all(edgeRRes$p.value == edgeRRes.rev$p.value))
     expect_true(all(edgeRRes$statistic == -edgeRRes.rev$statistic))
 })
 
 test_that("edgeR unpaired vs paired", {
-    edgeRRes <- .runEdgeR(exprs, design, contrast)
-    edgeRRes.paired <- .runEdgeR(exprs, design.paired, contrast.paired)
+    edgeRRes <- RCPA:::.runEdgeR(exprs, design, contrast)
+    edgeRRes.paired <- RCPA:::.runEdgeR(exprs, design.paired, contrast.paired)
 
     expect_true(!all(edgeRRes$p.value == edgeRRes.paired$p.value))
     expect_true(!all(edgeRRes$statistic == edgeRRes.paired$statistic))

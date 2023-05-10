@@ -37,6 +37,7 @@ The heatmap contains p-values and log fold changes from the DE analysis.
 \examples{
 \donttest{
 library(RCPA)
+library(SummarizedExperiment)
 
 affyDEExperiment <- loadData("affyDEExperiment")
 agilDEExperiment <- loadData("agilDEExperiment")

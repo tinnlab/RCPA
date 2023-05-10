@@ -3,8 +3,7 @@ library(hgu133plus2.db)
 library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
-
-devtools::load_all()
+library(RCPA)
 
 # generate a random gene expression matrix
 set.seed(123)
@@ -31,7 +30,7 @@ design <- model.matrix(~0 + group, data = colData)
 contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
 getTestAnnotation <- function(){
-    annotation <- .getIDMappingAnnotation("GPL570")
+    annotation <- RCPA:::.getIDMappingAnnotation("GPL570")
     annotation
 }
 

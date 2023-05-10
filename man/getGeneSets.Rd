@@ -17,7 +17,7 @@ getGeneSets(
 \item{database}{The database of the gene sets. E.g, KEGG, GO.}
 
 \item{org}{The organism abbreviation. E.g, hsa, mmu, dme, etc.
-Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
+To see the full list of supported organisms, visit https://www.genome.jp/kegg/catalog/org_list.html.
 This parameter is only used when database is KEGG.}
 
 \item{taxid}{The NCBI taxonomy ID of the organism.

@@ -1,8 +1,7 @@
 library(testthat)
 library(hgu133plus2.db)
 library(AnnotationDbi)
-
-devtools::load_all()
+library(RCPA)
 
 # generate a random gene expression matrix
 set.seed(123)
@@ -24,7 +23,7 @@ annotationDB <- hgu133plus2.db
 
 test_that("Get annotation from GPL570", {
     skip_if_offline()
-    mapping <- .getIDMappingAnnotation("GPL570")
+    mapping <- RCPA:::.getIDMappingAnnotation("GPL570")
 
     expect_true(all(colnames(mapping) == c("FROM", "TO")))
     expect_true(all(mapping$FROM %in% keys(hgu133plus2.db, keytype = "PROBEID")))
@@ -33,17 +32,17 @@ test_that("Get annotation from GPL570", {
 
 test_that("Get annotation from NULL", {
     skip_if_offline()
-    expect_error(.getIDMappingAnnotation(NULL))
+    expect_error(RCPA:::.getIDMappingAnnotation(NULL))
 })
 
 test_that("Get annotation from non-existing platform", {
     skip_if_offline()
-    expect_error(.getIDMappingAnnotation("GPL123"))
+    expect_error(RCPA:::.getIDMappingAnnotation("GPL123"))
 })
 
 test_that("Map expresison from GPL570 to ENTREZ", {
     skip_if_offline()
-    annotation <- .getIDMappingAnnotation("GPL570")
+    annotation <- RCPA:::.getIDMappingAnnotation("GPL570")
     mappedExprs <- .mapIDs(exprs, annotation, DEResults)
 
     expect_true(all(colnames(mappedExprs$exprs) == colnames(exprs)))
@@ -55,7 +54,7 @@ test_that("Map expresison from GPL570 to ENTREZ", {
 })
 
 test_that("Map expresison from GPL570 to ENTREZ with NULL annotation", {
-    mappedExprs <- .mapIDs(exprs, NULL, DEResults)
+    mappedExprs <- RCPA:::.mapIDs(exprs, NULL, DEResults)
 
     expect_true(all(colnames(mappedExprs$exprs) == colnames(exprs)))
     expect_true(all(rownames(mappedExprs$exprs) %in% keys(hgu133plus2.db, keytype = "PROBEID")))
@@ -64,7 +63,7 @@ test_that("Map expresison from GPL570 to ENTREZ with NULL annotation", {
 })
 
 test_that("Map expresison from GPL570 to ENTREZ with NULL annotation and NULL DE results", {
-    mappedExprs <- .mapIDs(exprs, NULL, NULL)
+    mappedExprs <- RCPA:::.mapIDs(exprs, NULL, NULL)
 
     expect_true(all(colnames(mappedExprs$exprs) == colnames(exprs)))
     expect_true(all(rownames(mappedExprs$exprs) %in% keys(hgu133plus2.db, keytype = "PROBEID")))
@@ -73,12 +72,12 @@ test_that("Map expresison from GPL570 to ENTREZ with NULL annotation and NULL DE
 
 test_that("Map expresison from GPL570 to ENTREZ with NULL DE results", {
     skip_if_offline()
-    annotation <- .getIDMappingAnnotation("GPL570")
-    expect_error(.mapIDs(exprs, annotation, NULL))
+    annotation <- RCPA:::.getIDMappingAnnotation("GPL570")
+    expect_error(RCPA:::.mapIDs(exprs, annotation, NULL))
 })
 
 test_that("Map expresison from GPL570 to ENTREZ with NULL expression", {
-    annotation <- .getIDMappingAnnotation("GPL570")
-    expect_error(.mapIDs(NULL, annotation, DEResults))
+    annotation <- RCPA:::.getIDMappingAnnotation("GPL570")
+    expect_error(RCPA:::.mapIDs(NULL, annotation, DEResults))
 })
 

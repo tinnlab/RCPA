@@ -1,7 +1,7 @@
 #' @title Get KEGG pathway network for SPIA method
 #' @description Get KEGG pathway network for SPIA method
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
-#' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
+#' To see the full list of supported organisms, visit https://www.genome.jp/kegg/catalog/org_list.html.
 #' @param updateCache A parameter to disable/enable cache update.
 #' @return A named list with three elements: network, names and sizes.
 #' @examples

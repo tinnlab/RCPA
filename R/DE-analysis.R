@@ -109,6 +109,7 @@
 #' @examples
 #' \donttest{
 #' library(RCPA)
+#' library(SummarizedExperiment)
 #'
 #' # GSE5281
 #' affyDataset <- loadData("affyDataset")

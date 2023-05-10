@@ -1,7 +1,7 @@
 #' @title Get KEGG gene sets names
 #' @description This function retrieves KEGG gene sets names for a given organism.
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
-#' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
+#' To see the full list of supported organisms, visit https://www.genome.jp/kegg/catalog/org_list.html.
 #' @return A named vector with KEGG gene sets names.
 #' @examples
 #' \donttest{
@@ -23,7 +23,7 @@
 #' @title Get KEGG gene sets
 #' @description This function retrieves KEGG gene sets for a given organism.
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
-#' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
+#' To see the full list of supported organisms, visit https://www.genome.jp/kegg/catalog/org_list.html.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
 #' \donttest{
@@ -141,7 +141,7 @@
 #' @description This function retrieves gene sets for a given organism.
 #' @param database The database of the gene sets. E.g, KEGG, GO.
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
-#' Visit https://www.genome.jp/kegg/catalog/org_list.html to see the full list of supported organisms.
+#' To see the full list of supported organisms, visit https://www.genome.jp/kegg/catalog/org_list.html.
 #' This parameter is only used when database is KEGG.
 #' @param taxid The NCBI taxonomy ID of the organism.
 #' This parameter is only used when database is GO.

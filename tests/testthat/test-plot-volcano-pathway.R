@@ -1,7 +1,6 @@
 library(testthat)
 library(ggplot2)
-
-devtools::load_all()
+library(RCPA)
 
 results <- data.frame(
     ID = paste0("geneset", 1:100),

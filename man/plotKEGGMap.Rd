@@ -46,6 +46,7 @@ This function plots KEGG map with DE genes.
 \examples{
 \donttest{
 library(RCPA)
+library(SummarizedExperiment)
 affyDEExperiment <- loadData("affyDEExperiment")
 agilDEExperiment <- loadData("agilDEExperiment")
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")

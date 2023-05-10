@@ -1,6 +1,5 @@
 library(testthat)
-
-devtools::load_all()
+library(RCPA)
 
 test_that("Get Entrez Annotation for a single ID", {
     entrezIds <- "127"

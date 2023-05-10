@@ -10,6 +10,7 @@
 #' @examples
 #' \donttest{
 #' library(RCPA)
+#' library(SummarizedExperiment)
 #'
 #' affyDEExperiment <- loadData("affyDEExperiment")
 #' agilDEExperiment <- loadData("agilDEExperiment")

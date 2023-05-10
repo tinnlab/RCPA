@@ -2,8 +2,7 @@ library(testthat)
 library(ggplot2)
 library(hgu133plus2.db)
 library(AnnotationDbi)
-
-devtools::load_all()
+library(RCPA)
 
 getTestMAData <- function(){
     set.seed(1)
@@ -29,7 +28,7 @@ getTestMAData <- function(){
     design <- model.matrix(~0 + group, data = colData)
     contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
-    annotation <- .getIDMappingAnnotation("GPL570")
+    annotation <- RCPA:::.getIDMappingAnnotation("GPL570")
 
     DEResult <- runDEAnalysis(summarizedExperiment, method = "limma", design, contrast, annotation = annotation) %>% rowData()
 

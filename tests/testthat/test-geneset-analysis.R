@@ -3,8 +3,7 @@ library(hgu133plus2.db)
 library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
-
-devtools::load_all()
+library(RCPA)
 
 getTestGSData <- function(){
     # generate a random gene expression matrix
@@ -34,7 +33,7 @@ getTestGSData <- function(){
     # two class paired
     # design <- model.matrix(~0 + group + pair, data = colData)
     # contrast <- makeContrasts("groupcondition-groupcontrol", levels = design.paired)
-    annotation <- .getIDMappingAnnotation("GPL570")
+    annotation <- RCPA:::.getIDMappingAnnotation("GPL570")
     DERes <- runDEAnalysis(summarizedExperiment, method = "DESeq2", design, contrast, annotation = annotation)
     DERes
 }
@@ -60,7 +59,7 @@ test_that('ORA', {
     skip_if_offline()
     DERes <- getTestGSData()
     genesets <- getTestGenesetsGA(DERes)
-    oraRes <- .runORA(summarizedExperiment = DERes, genesets = genesets[["genesets"]], pThreshold = 0.05)
+    oraRes <- RCPA:::.runORA(summarizedExperiment = DERes, genesets = genesets[["genesets"]], pThreshold = 0.05)
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(oraRes)))
     expect_true(all(oraRes$p.value <= 1))
     expect_true(all(oraRes$p.value >= 0))
@@ -70,7 +69,7 @@ test_that('fgsea', {
     skip_if_offline()
     DERes <- getTestGSData()
     genesets <- getTestGenesetsGA(DERes)
-    fgseaRes <- .runFgsea(summarizedExperiment = DERes, genesets = genesets[["genesets"]], eps = 1e-50, scoreType = "std")
+    fgseaRes <- RCPA:::.runFgsea(summarizedExperiment = DERes, genesets = genesets[["genesets"]], eps = 1e-50, scoreType = "std")
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(fgseaRes)))
     expect_true(all(fgseaRes$p.value <= 1))
     expect_true(all(fgseaRes$p.value >= 0))
@@ -80,7 +79,7 @@ test_that('GSA', {
     skip_if_offline()
     DERes <- getTestGSData()
     genesets <- getTestGenesetsGA(DERes)
-    gsaRes <- .runGSA(DERes, genesets[["genesets"]], method = "maxmean")
+    gsaRes <- RCPA:::.runGSA(DERes, genesets[["genesets"]], method = "maxmean")
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(gsaRes)))
     expect_true(all(gsaRes$p.value <= 1))
     expect_true(all(gsaRes$p.value >= 0))
@@ -90,7 +89,7 @@ test_that('KS ', {
     skip_if_offline()
     DERes <- getTestGSData()
     genesets <- getTestGenesetsGA(DERes)
-    ksRes <- .runKsWilcox(DERes, genesets[["genesets"]], sTest = "ks")
+    ksRes <- RCPA:::.runKsWilcox(DERes, genesets[["genesets"]], sTest = "ks")
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(ksRes)))
     expect_true(all(ksRes$p.value <= 1))
     expect_true(all(ksRes$p.value >= 0))
@@ -100,7 +99,7 @@ test_that('Wilcox ', {
     skip_if_offline()
     DERes <- getTestGSData()
     genesets <- getTestGenesetsGA(DERes)
-    wilcoxRes <- .runKsWilcox(DERes, genesets[["genesets"]], sTest = "wilcox")
+    wilcoxRes <- RCPA:::.runKsWilcox(DERes, genesets[["genesets"]], sTest = "wilcox")
     expect_true(all(c("ID", "p.value", "score", "normalizedScore") %in% colnames(wilcoxRes)))
     expect_true(all(wilcoxRes$p.value <= 1))
     expect_true(all(wilcoxRes$p.value >= 0))
@@ -111,7 +110,7 @@ test_that('GeneSet Enrichment Analysis with wilcox ', {
     DERes <- getTestGSData()
     genesets <- getTestGenesetsGA(DERes)
     result <- runGeneSetAnalysis(DERes, genesets, method = "wilcox")
-    wilcoxRes <- .runKsWilcox(DERes, genesets[["genesets"]], sTest = "wilcox")
+    wilcoxRes <- RCPA:::.runKsWilcox(DERes, genesets[["genesets"]], sTest = "wilcox")
     expect_true(all(c("ID", "p.value", "score", "normalizedScore", "sampleSize") %in% colnames(result)))
     expect_true(all(result$p.value == wilcoxRes$p.value))
     expect_true(all(result$p.value <= 1))

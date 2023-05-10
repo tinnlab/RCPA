@@ -4,8 +4,7 @@ library(AnnotationDbi)
 library(SummarizedExperiment)
 library(limma)
 library(ggplot2)
-
-devtools::load_all()
+library(RCPA)
 
 getTestGeneHeatData <- function(){
     # generate a random gene expression matrix
@@ -35,7 +34,7 @@ getTestGeneHeatData <- function(){
         design <- model.matrix(~0 + group, data = colData)
         contrast <- makeContrasts("groupcondition-groupcontrol", levels = design)
 
-        annotation <- .getIDMappingAnnotation("GPL570")
+        annotation <- RCPA:::.getIDMappingAnnotation("GPL570")
 
         runDEAnalysis(summarizedExperiment, method = "limma", design, contrast, annotation = annotation) %>% rowData()
     })

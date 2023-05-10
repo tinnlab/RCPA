@@ -1,7 +1,6 @@
 library(testthat)
 library(dplyr)
-
-devtools::load_all()
+library(RCPA)
 
 #generate three simulated dataframes of pathway analysis results
 genes <- paste0("gene", seq(1:500))
@@ -57,25 +56,25 @@ allDFs <- list(DF1, DF2, DF3)
 allData <- allDFs %>% bind_rows()
 
 test_that('Combine Pvalues with Fisher ', {
-  metaRes <- .runFisher(allData$p.value)
+  metaRes <- RCPA:::.runFisher(allData$p.value)
   expect_true(metaRes <= 1)
   expect_true(metaRes >= 0)
 })
 
 test_that('Combine Pvalues with Stouffer ', {
-  metaRes <- .runStouffer(allData$p.value)
+  metaRes <- RCPA:::.runStouffer(allData$p.value)
   expect_true(metaRes <= 1)
   expect_true(metaRes >= 0)
 })
 
 test_that('Combine Pvalues with addCLT ', {
-  metaRes <- .runAddCLT(allData$p.value)
+  metaRes <- RCPA:::.runAddCLT(allData$p.value)
   expect_true(metaRes <= 1)
   expect_true(metaRes >= 0)
 })
 
 test_that('Combine Pvalues with geoMean ', {
-  metaRes <- .runGeoMean(allData$p.value)
+  metaRes <- RCPA:::.runGeoMean(allData$p.value)
   expect_true(metaRes <= 1)
   expect_true(metaRes >= 0)
 })

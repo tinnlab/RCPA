@@ -33,6 +33,7 @@ Plot a venndiagram from multiple DE Analysis results.
 \examples{
 \donttest{
 library(RCPA)
+library(SummarizedExperiment)
 
 affyDEExperiment <- loadData("affyDEExperiment")
 agilDEExperiment <- loadData("agilDEExperiment")

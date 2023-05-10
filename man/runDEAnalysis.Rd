@@ -57,6 +57,7 @@ This function performs differential expression analysis using either limma, DESe
 \examples{
 \donttest{
 library(RCPA)
+library(SummarizedExperiment)
 
 # GSE5281
 affyDataset <- loadData("affyDataset")

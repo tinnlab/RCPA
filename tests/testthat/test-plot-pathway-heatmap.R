@@ -1,7 +1,6 @@
 library(testthat)
 library(ggplot2)
-
-devtools::load_all()
+library(RCPA)
 
 set.seed(123)
 
