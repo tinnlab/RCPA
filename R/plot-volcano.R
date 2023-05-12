@@ -146,6 +146,7 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
 #' \donttest{
 #'
 #' library(RCPA)
+#' library(SummarizedExperiment)
 #'
 #' affyDEExperiment <- loadData("affyDEExperiment")
 #' agilDEExperiment <- loadData("agilDEExperiment")

@@ -37,6 +37,7 @@ Plot MA plot from DE analysis results
 \examples{
 \donttest{
 library(RCPA)
+library(SummarizedExperiment)
 
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggtitle("RNASeq - GSE153873")

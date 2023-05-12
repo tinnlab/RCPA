@@ -47,12 +47,9 @@ DEResults <- list(
 DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
 DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
 
-RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
-    ggplot2::ggtitle("Affymetrix - GSE5281")
-RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
-    ggplot2::ggtitle("Agilent - GSE61196")
-RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
-    ggplot2::ggtitle("RNASeq - GSE153873")
+RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("All DE Genes")
+RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated DE Genes")
+RCPA::plotVennDE(DEResultDowns) + ggplot2::ggtitle("Down-regulated DE Genes")
 
 }
 }

@@ -1,6 +1,4 @@
 library(testthat)
-library(RCyjs)
-library(RCPA)
 library(RCPA)
 
 styleFile <- system.file(package="RCPA", "extdata", "pieStyle.js")

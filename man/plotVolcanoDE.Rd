@@ -26,6 +26,7 @@ Plot volcano plot from Pathway analysis results
 \donttest{
 
 library(RCPA)
+library(SummarizedExperiment)
 
 affyDEExperiment <- loadData("affyDEExperiment")
 agilDEExperiment <- loadData("agilDEExperiment")

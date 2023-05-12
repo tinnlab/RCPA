@@ -19,5 +19,7 @@ A named list with three elements: network, names and sizes for CePa.ORA and CePa
 Get KEGG pathway catalouge for CePa.ORA and CePa.GSA methods
 }
 \examples{
+\donttest{
 getCePaPathwayCatalogue("hsa")
+}
 }
