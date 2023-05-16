@@ -25,7 +25,7 @@
 #'     "RNASeq - GSE153873" = rowData(RNASeqDEExperiment)
 #' )
 #'
-#' metaDEResult <- RCPA::combineDEAnalysisResults(DEResults, method = "stouffer")
+#' metaDEResult <- RCPA::runDEMetaAnalysis(DEResults, method = "stouffer")
 #' metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
 #'
 #' alzheimerGenes <- genesets$genesets[["path:hsa05010"]]

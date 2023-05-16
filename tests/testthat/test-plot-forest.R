@@ -11,7 +11,7 @@ result1 <- data.frame(
   p.value = runif(100) / 10,
   pFDR = runif(100) / 5,
   pathwaySize = runif(100, 100, 500),
-  nDE = runif(100, 10, 100),
+  #nDE = runif(100, 10, 100),
   score = runif(100, -2, 2),
   normalizedScore = runif(100)
 )
@@ -24,7 +24,7 @@ result2 <- data.frame(
   p.value = runif(100) / 10,
   pFDR = runif(100) / 5,
   pathwaySize = runif(100, 100, 500),
-  nDE = runif(100, 10, 100),
+  #nDE = runif(100, 10, 100),
   score = runif(100, -2, 2),
   normalizedScore = runif(100)
 )

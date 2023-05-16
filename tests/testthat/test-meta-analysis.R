@@ -80,7 +80,7 @@ test_that('Combine Pvalues with geoMean ', {
 })
 
 test_that('Combine Pathway Analysis Results using REML ', {
-  metaRes <- combineEnrichmentAnalysisResults(allDFs, method = "REML")
+  metaRes <- runPathwayMetaAnalysis(allDFs, method = "REML")
   selected_pval <- metaRes$p.value[metaRes$ID == "geneset1"]
   DFs_pvals <- c(DF1$p.value[DF1$ID == "geneset1"], DF2$p.value[DF2$ID == "geneset1"], DF3$p.value[DF3$ID == "geneset1"])
   expect_true(all(c("ID", "p.value", "score", "pFDR", "normalizedScore") %in% colnames(metaRes)))
@@ -92,7 +92,7 @@ test_that('Combine Pathway Analysis Results using REML ', {
 })
 
 test_that('Combine Pathway Analysis Results using Stouffer ', {
-  metaRes <- combineEnrichmentAnalysisResults(allDFs, method = "stouffer")
+  metaRes <- runPathwayMetaAnalysis(allDFs, method = "stouffer")
   selected_pval <- metaRes$p.value[metaRes$ID == "geneset1"]
   DFs_pvals <- c(DF1$p.value[DF1$ID == "geneset1"], DF2$p.value[DF2$ID == "geneset1"], DF3$p.value[DF3$ID == "geneset1"])
   expect_true(all(c("ID", "p.value", "score", "pFDR", "normalizedScore") %in% colnames(metaRes)))
@@ -108,9 +108,9 @@ test_that('Combine Pathway Analysis Results check errors ', {
   notCompatibleCols <- list(DF1, DF2[,1:3])
   DF4 <- NULL
   nullList <- list(DF1, DF2, DF4, DF3)
-  expect_error(combineEnrichmentAnalysisResults(singleList, method = "REML"), "Meta analysis is valid for two or more studies.")
-  expect_error(combineEnrichmentAnalysisResults(notCompatibleCols, method = "REML"), "All the dataframes in the input list must have ID, p.value, normalizedScore and sampleSize columns.")
-  expect_error(combineEnrichmentAnalysisResults(nullList, method = "REML"), "There is null object in the input list.")
+  expect_error(runPathwayMetaAnalysis(singleList, method = "REML"), "Meta analysis is valid for two or more studies.")
+  expect_error(runPathwayMetaAnalysis(notCompatibleCols, method = "REML"), "All the dataframes in the input list must have ID, p.value, normalizedScore and sampleSize columns.")
+  expect_error(runPathwayMetaAnalysis(nullList, method = "REML"), "There is null object in the input list.")
 })
 
 
