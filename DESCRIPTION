@@ -70,6 +70,7 @@ Suggests:
     S4Vectors,
     devtools,
     hgu133plus2.db,
-    org.Hs.eg.db
+    org.Hs.eg.db,
+    RobustRankAggreg
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false
