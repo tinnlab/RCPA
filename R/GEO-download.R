@@ -160,13 +160,14 @@
 #' @param metadata The metadat of downloaded GEO object.
 #' @param sampleIDs A vector of downloaded samples IDs from the queried GEO object.
 #' @param destDir The user path to save the downloaded files.
+#' @param greenOnly Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.
 #' @return A SummarizedExperiment object with appended expression values as assay and metadata as colData.
 #' @details This function is used internally by downloadGEO.
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom limma read.maimages backgroundCorrect normalizeWithinArrays normalizeBetweenArrays
 #' @importFrom dplyr %>%
 #' @noRd
-.processAgilent <- function(metadata, sampleIDs, destDir) {
+.processAgilent <- function(metadata, sampleIDs, destDir, greenOnly) {
 
     if (!dir.exists(destDir)) {
         stop("The destination directory does not exist.")
@@ -180,7 +181,7 @@
 
     raw.data <- read.maimages(file.path(destDir, paste0(sampleIDs, ".TXT.gz")),
                               source = "agilent",
-                              green.only = TRUE,
+                              green.only = greenOnly,
                               names = sampleIDs
     )
 
@@ -239,6 +240,7 @@
 #' @param platform The platform of selected GEO dataset.
 #' @param destDir A path to save downloaded data.
 #' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
+#' @param greenOnly Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.
 #' @return A SummarizedExperiment object including the processed data.
 #' @examples
 #' \donttest{
@@ -259,7 +261,7 @@
 #' @importFrom dplyr %>%
 #' @importFrom Biobase pData
 #' @export
-downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir) {
+downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir, greenOnly = TRUE) {
     protocol <- match.arg(protocol)
     protocol <- protocol %>% tolower()
 
@@ -280,12 +282,16 @@ downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), 
         stop("There is an error in downloading samples.")
     }
 
+    if(!is.logical(greenOnly)){
+        stop("The greenOnly parameter can only be TRUE or FALSE! Please refer to document.")
+    }
+
     if (protocol == "affymetrix"){
         #Normalize expression data for affymetrix using RMA method
         summarizedExperimentObject <- .processAffymetrix(GEOObject.metadata, sampleIDs, destDir)
     }else{
         #Normalize expression data for affymetrix using limma normexp, loess, and quantile methods
-        summarizedExperimentObject <- .processAgilent(GEOObject.metadata, sampleIDs, destDir)
+        summarizedExperimentObject <- .processAgilent(GEOObject.metadata, sampleIDs, destDir, greenOnly)
     }
 
     if(is.null(summarizedExperimentObject)){

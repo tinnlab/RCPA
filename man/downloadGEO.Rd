@@ -4,7 +4,13 @@
 \alias{downloadGEO}
 \title{Download GEO data}
 \usage{
-downloadGEO(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir)
+downloadGEO(
+  GEOID,
+  platform,
+  protocol = c("affymetrix", "agilent"),
+  destDir,
+  greenOnly = TRUE
+)
 }
 \arguments{
 \item{GEOID}{The ID of the GEO dataset.}
@@ -14,6 +20,8 @@ downloadGEO(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir)
 \item{protocol}{The protocol of the selected GEO dataset, including affymetrix and agilent.}
 
 \item{destDir}{A path to save downloaded data.}
+
+\item{greenOnly}{Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.}
 }
 \value{
 A SummarizedExperiment object including the processed data.
