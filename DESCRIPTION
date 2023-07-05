@@ -26,7 +26,6 @@ biocViews:
     RCyjs,
     fgsea,
     BrowserViz,
-    oligo,
     SummarizedExperiment,
     AnnotationDbi,
     ROntoTools
@@ -39,7 +38,6 @@ Imports:
     GEOquery,
     edgeR,
     limma,
-    oligo,
     stringr,
     ggnewscale,
     ggrepel,
@@ -67,6 +65,7 @@ Suggests:
     S4Vectors,
     devtools,
     hgu133plus2.db,
-    org.Hs.eg.db
+    org.Hs.eg.db,
+    oligo
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false

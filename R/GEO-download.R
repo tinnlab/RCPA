@@ -104,7 +104,6 @@
 #' @param destDir The user path to save the downloaded files.
 #' @return A SummarizedExperiment object with appended expression values as assay and metadata as colData.
 #' @details This function is used internally by downloadGEO.
-#' @importFrom oligo read.celfiles rma
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
 #' @importFrom Biobase exprs
@@ -121,6 +120,8 @@
         stop("The input metadata and sampleIDs do not match. Make sure the sample IDs match with geo_accession IDs from dataset.")
     }
 
+    .requirePackage("oligo")
+
     #Normalize expression data based on RMA method
     # expression <- try({
     #     ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
@@ -130,9 +131,9 @@
     # })
 
     # if ("try-error" %in% class(expression)) {
-    expression <- read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
-        rma(normalize = TRUE) %>%
-        exprs() %>%
+    expression <- oligo::read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
+        oligo::rma(normalize = TRUE) %>%
+        oligo::exprs() %>%
         as.data.frame()
     if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
     colnames(expression) <- sampleIDs
