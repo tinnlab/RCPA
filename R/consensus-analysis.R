@@ -5,7 +5,10 @@
 #' @param weightsLst A vector of integer values.
 #' Each element shows the corresponding input result weight.
 #' When selected method is weightedAvg this parameter needs to be specified.
-#' If it is null all the weights are considered as equal.
+#' If it is null all the weights are considered
+#'
+#'
+#' as equal.
 #' @param useFDR A logical parameter, indicating if adjusted p-values should be used.
 #' @return A dataframe of consensus analysis results
 #' @details This function is used internally by runConsensusAnalysis.
@@ -78,7 +81,7 @@
     rankedList
 }
 
-#' @title Consensus Analysis
+#' @title Perform Consensus Analysis
 #' @description This function performs consensus analysis using two methods.
 #' These methods are weighted.mean and RRA.
 #' @param PAResults A list of at least length two from enrichment analysis results.
@@ -101,8 +104,16 @@
 #'
 #' library(RCPA)
 #'
+#' affyFgseaResult <- loadData("affyFgseaResult")
+#' agilFgseaResult <- loadData("agilFgseaResult")
+#' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+#'
+#' consensusPAResult <- RCPA::runConsensusAnalysis(
+#'     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
+#'     method = "weightedZMean"
+#' )
+#'
 #' }
-#' @importFrom purrr reduce
 #' @importFrom dplyr %>%
 #' @importFrom RobustRankAggreg rankMatrix aggregateRanks
 #' @export

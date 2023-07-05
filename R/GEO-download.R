@@ -104,9 +104,6 @@
 #' @param destDir The user path to save the downloaded files.
 #' @return A SummarizedExperiment object with appended expression values as assay and metadata as colData.
 #' @details This function is used internally by downloadGEO.
-#' @importFrom affy ReadAffy
-#' @importFrom affyPLM threestep
-#' @importFrom oligo read.celfiles rma
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
 #' @importFrom Biobase exprs
@@ -123,22 +120,24 @@
         stop("The input metadata and sampleIDs do not match. Make sure the sample IDs match with geo_accession IDs from dataset.")
     }
 
-    #Normalize expression data based on RMA method
-    expression <- try({
-        ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
-            threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
-            exprs() %>%
-            as.data.frame()
-    })
+    .requirePackage("oligo")
 
-    if ("try-error" %in% class(expression)) {
-        expression <- read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
-            rma(normalize = TRUE) %>%
-            exprs() %>%
-            as.data.frame()
-        if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
-        colnames(expression) <- sampleIDs
-    }
+    #Normalize expression data based on RMA method
+    # expression <- try({
+    #     ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
+    #         threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
+    #         exprs() %>%
+    #         as.data.frame()
+    # })
+
+    # if ("try-error" %in% class(expression)) {
+    expression <- oligo::read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
+        oligo::rma(normalize = TRUE) %>%
+        oligo::exprs() %>%
+        as.data.frame()
+    if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
+    colnames(expression) <- sampleIDs
+    # }
 
     if(dim(expression)[1] == 0 | dim(expression)[2] == 0){
         stop("The expression matrix is empty.")

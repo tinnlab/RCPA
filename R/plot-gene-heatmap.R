@@ -130,7 +130,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
             high = "#B80F0A",
             na.value = "white",
             limits = negLog10pValueLims,
-            guide = guide_colorbar(title = "-log10 p-value")
+            guide = guide_colorbar(title = paste0("-log10", ifelse(useFDR, " pFDR", " p-value")))
         ) +
         theme_minimal() +
         coord_flip() +

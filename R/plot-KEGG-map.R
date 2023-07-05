@@ -41,7 +41,6 @@
 #' @importFrom stringr str_starts str_remove
 #' @importFrom dplyr %>% mutate inner_join
 #' @importFrom ggplot2 ggplot annotation_custom theme_void scale_x_continuous annotation_raster geom_rect scale_fill_gradient guide_colorbar annotate element_text margin
-#' @importFrom utils globalVariables
 #' @export
 plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = TRUE, pThreshold = 0.05, statLimit = 3) {
 

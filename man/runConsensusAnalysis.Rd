@@ -2,7 +2,7 @@
 % Please edit documentation in R/consensus-analysis.R
 \name{runConsensusAnalysis}
 \alias{runConsensusAnalysis}
-\title{Consensus Analysis}
+\title{Perform Consensus Analysis}
 \usage{
 runConsensusAnalysis(
   PAResults,
@@ -42,5 +42,13 @@ These methods are: weightedAvg, RRA, min, geom.mean, mean, median, and stuart.
 
 library(RCPA)
 
+affyFgseaResult <- loadData("affyFgseaResult")
+agilFgseaResult <- loadData("agilFgseaResult")
+RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+
+consensusPAResult <- RCPA::runConsensusAnalysis(
+    list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
+    method = "geom.mean"
+)
 }
 }
