@@ -1,7 +1,7 @@
 Package: RCPA
 Type: Package
 Title: Consensus Pathway Analysis
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person(given = "Zeynab", family = "Maghsoudi", email = "zmaghsoudi@nevada.unr.edu", role = c("aut", "cre")),
     person(given = "Phi Hung", family = "Bya", role = c("aut")),
@@ -16,13 +16,11 @@ Description: Consensus Pathway Analysis provides a set of functions to perform p
     Gu, Z. (2012) <https://CRAN.R-project.org/package=CePa>.
 License: GPL-3
 Encoding: UTF-8
-Depends: R (>= 4.0), methods, tidyr, dplyr, ggplot2, utils, stats
+Depends: R (>= 4.0), tidyr, dplyr, ggplot2, utils, stats
 biocViews:
     Biobase,
     DESeq2,
     GEOquery,
-    affy,
-    affyPLM,
     edgeR,
     limma,
     RCyjs,
@@ -51,7 +49,8 @@ Imports:
     httr,
     rlang,
     ggpattern,
-    scales
+    scales,
+    RobustRankAggreg
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
@@ -70,7 +69,6 @@ Suggests:
     S4Vectors,
     devtools,
     hgu133plus2.db,
-    org.Hs.eg.db,
-    RobustRankAggreg
+    org.Hs.eg.db
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false

@@ -72,7 +72,7 @@
     rankedList
 }
 
-#' @title Consensus Analysis
+#' @title Perform Consensus Analysis
 #' @description This function performs consensus analysis using several methods.
 #' These methods are: weightedAvg, RRA, min, geom.mean, mean, median, and stuart.
 #' @param PAResults A list of at least length two from enrichment analysis results.
@@ -93,8 +93,15 @@
 #'
 #' library(RCPA)
 #'
+#' affyFgseaResult <- loadData("affyFgseaResult")
+#' agilFgseaResult <- loadData("agilFgseaResult")
+#' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
+#'
+#' consensusPAResult <- RCPA::runConsensusAnalysis(
+#'     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
+#'     method = "geom.mean"
+#' )
 #' }
-#' @importFrom purrr reduce
 #' @importFrom dplyr %>%
 #' @importFrom RobustRankAggreg rankMatrix aggregateRanks
 #' @export

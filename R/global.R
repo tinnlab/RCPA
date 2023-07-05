@@ -1,3 +1,3 @@
 #' @importFrom rlang .data
-#' @importFrom methods setGeneric
+#' @importFrom utils globalVariables
 utils::globalVariables(".") # This is needed to avoid R CMD check NOTEs
