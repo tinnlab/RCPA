@@ -186,7 +186,8 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 
     metaResult$name <- PAResults[[1]][match(metaResult$ID, PAResults[[1]]$ID), "name"]
     metaResult$pathwaySize <- PAResults[[1]][match(metaResult$ID, PAResults[[1]]$ID), "pathwaySize"]
-    metaResult[, c("ID", "name", "p.value", "pFDR", "score", "normalizedScore", "pathwaySize")]
+    #metaResult[, c("ID", "name", "p.value", "pFDR", "score", "normalizedScore", "pathwaySize")]
+    metaResult[, c("ID", "name", "p.value", "pFDR", "score", "pathwaySize")]
 }
 
 

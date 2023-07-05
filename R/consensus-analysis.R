@@ -5,14 +5,18 @@
 #' @param weightsLst A vector of integer values.
 #' Each element shows the corresponding input result weight.
 #' When selected method is weightedAvg this parameter needs to be specified.
-#' If it is null all the weights are considered as equal.
+#' If it is null all the weights are considered
+#'
+#'
+#' as equal.
+#' @param useFDR A logical parameter, indicating if adjusted p-values should be used.
 #' @return A dataframe of consensus analysis results
 #' @details This function is used internally by runConsensusAnalysis.
 #' @importFrom dplyr %>%
 #' @importFrom tidyr drop_na
 #' @importFrom stats qnorm pnorm weighted.mean
 #' @noRd
-.runWeightedMean <- function(resultsDFs, weightsLst){
+.runWeightedMean <- function(resultsDFs, weightsLst, useFDR){
     if(length(resultsDFs) != length(weightsLst)){
         stop("The length of input list of results must be equal to the length of weights vector!")
     }
@@ -26,12 +30,17 @@
 
     allResults <- resultsDFs %>% do.call(what = rbind)
 
-    consensusResults <- allResults %>% group_by(ID) %>% group_split() %>% lapply(function (data){
-        data$zscore <- data$p.value %>% qnorm()
+    consensusResults <- allResults %>% group_by(.data$ID) %>% group_split() %>% lapply(function (data){
+        if(useFDR == TRUE){
+            data$zscore <- data$pFDR %>% qnorm()
+        }else{
+            data$zscore <- data$p.value %>% qnorm()
+        }
+
         consensusPval <- weighted.mean(data$zscore, data$weight) %>% pnorm()
         data.frame(
             ID = data$ID[1],
-            score = consensusPval,
+            p.value = consensusPval,
             name = data$name[1],
             pathwaySize = data$pathwaySize[1],
             stringsAsFactors = FALSE
@@ -73,15 +82,17 @@
 }
 
 #' @title Perform Consensus Analysis
-#' @description This function performs consensus analysis using several methods.
-#' These methods are: weightedAvg, RRA, min, geom.mean, mean, median, and stuart.
+#' @description This function performs consensus analysis using two methods.
+#' These methods are weighted.mean and RRA.
 #' @param PAResults A list of at least length two from enrichment analysis results.
-#' @param method The consensus analsyis method.
+#' @param method The consensus analsyis method. This can be either weighted.mean or RRA.
 #' @param weightsList A vector of integer values.
 #' Each element shows the corresponding input result weight.
-#' When selected method is weightedAvg this parameter needs to be specified.
+#' When selected method is weighted.mean this parameter needs to be specified.
 #' If it is null all the weights are considered as equal.
+#' @param useFDR A logical parameter, indicating if adjusted p-values should be used.
 #' @param rank.by An string parameter which specifies how the input results should be ranked.
+#' This parameter is used when the selected method is RRA.
 #' @param backgroundSpace A list of lists with the same length as PAResults.
 #' Each list contains underlying space (set of pathways) for each input dataframe in PAResults.
 #' This parameter is optional.
@@ -99,15 +110,17 @@
 #'
 #' consensusPAResult <- RCPA::runConsensusAnalysis(
 #'     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
-#'     method = "geom.mean"
+#'     method = "weightedZMean"
 #' )
+#'
 #' }
 #' @importFrom dplyr %>%
 #' @importFrom RobustRankAggreg rankMatrix aggregateRanks
 #' @export
 runConsensusAnalysis <- function(PAResults,
-                               method = c("weighted.mean", "RRA", "min", "geom.mean", "mean", "median", "stuart"),
+                               method = c("weightedZMean", "RRA"),
                                weightsList = NULL,
+                               useFDR = TRUE,
                                rank.by = c("normalizedScore", "pFDR", "both"),
                                backgroundSpace = NULL
 ) {
@@ -138,16 +151,24 @@ runConsensusAnalysis <- function(PAResults,
 
     result <- NULL
 
-    if(method == "weighted.mean"){
+    if(method == "weightedZMean"){
         if(is.null(weightsList)){
             weightsList <- rep(1, length(commonResults))
         }
 
-        result <- .runWeightedMean(commonResults, weightsList)
+        result <- .runWeightedMean(commonResults, weightsList, useFDR)
+
+        #result$pFDR <- ifelse(useFDR == TRUE, result$p.value, p.adjust(result$p.value, method = "fdr"))
+
+        if(useFDR == TRUE){
+            result$pFDR <- result$p.value
+        }else{
+            result$pFDR <- p.adjust(result$p.value, method = "fdr")
+        }
 
     }else{
         if(is.null(rank.by)){
-            stop("For ranked based methods, please specify the type of ranking.")
+            stop("For RRA method, please specify the type of ranking.")
         }
 
         rank.by <- match.arg(rank.by)
@@ -169,11 +190,12 @@ runConsensusAnalysis <- function(PAResults,
 
         r = RobustRankAggreg::rankMatrix(rankedPathwaysList, N = length(spaceSet))
 
-        result = RobustRankAggreg::aggregateRanks(rmat = r, full = TRUE, method = method)
-        colnames(result) <- c("ID", "score")
+        result = RobustRankAggreg::aggregateRanks(rmat = r, full = TRUE, method = "RRA")
+        colnames(result) <- c("ID", "p.value")
 
         allData <- PAResults %>% do.call(what = rbind)
 
+        result$pFDR <- p.adjust(result$p.value, method = "fdr")
         result$name <- allData[match(result$ID, allData$ID), c("name")]
         result$pathwaySize <- allData[match(result$ID, allData$ID), c("pathwaySize")]
     }

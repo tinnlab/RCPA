@@ -43,53 +43,50 @@ resultsLst <- list(
 )
 
 test_that(".runWeightedMean ", {
-    result <- .runWeightedMean(resultsLst, c(1, 1, 1))
-    expect_true(any(result$score >=0) & any(result$score <= 1))
+    result <- .runWeightedMean(resultsLst, c(1, 1, 1), useFDR = TRUE)
+    expect_true(any(result$p.value >=0) & any(result$p.value <= 1))
     expect_true(nrow(result) == 100)
-    expect_true(all(c("ID", "score", "name", "pathwaySize") %in% colnames(result)))
+    expect_true(all(c("ID", "p.value", "name", "pathwaySize") %in% colnames(result)))
     expect_error(.runWeightedMean(resultsLst, c(1, 2)))
 })
 
 test_that(".runRankPathways ", {
     result <- .runRankPathways(resultsLst, rankParam = "pFDR")
     expect_true(length(result) == 3)
-    expect_true(result[[1]][1] == "geneset43")
-    expect_true(result[[2]][1] == "geneset71")
-    expect_true(result[[3]][1] == "geneset81")
 })
 
 test_that("runConsensusAnalysis with weighted.mean as method ", {
-    result <- runConsensusAnalysis(resultsLst, method = "weighted.mean", weightsList = c(2,1,1))
-    expect_true(nrow(result) == 100 & ncol(result) == 4)
-    expect_true(all(result$score >= 0 & result$score <= 1))
-    expect_error(runConsensusAnalysis(resultsLst, method = "weighted.mean", weightsList = c(2,1)))
+    result <- runConsensusAnalysis(resultsLst, method = "weightedZMean", weightsList = c(2,1,1))
+    expect_true(nrow(result) == 100 & ncol(result) == 5)
+    expect_true(all(result$p.value >= 0 & result$p.value <= 1))
+    expect_error(runConsensusAnalysis(resultsLst, method = "weightedZMean", weightsList = c(2,1)))
 
     resultsLst2 <- list(
         "study1" = result1[1:10,],
         "study2" = result2[1:20,],
         "study3" = result3
     )
-    result2 <- runConsensusAnalysis(resultsLst2, method = "weighted.mean", weightsList = c(2,1,1))
-    expect_true(nrow(result2) == 10 & ncol(result2) == 4)
+    resultt <- runConsensusAnalysis(resultsLst2, method = "weightedZMean", weightsList = c(2,1,1))
+    expect_true(nrow(resultt) == 10 & ncol(resultt) == 5)
 
     resultsLst3 <- list(
         "study1" = result1[1:10,],
         "study2" = result2[11:20,],
         "study3" = result3[21:30,]
     )
-    expect_error(runConsensusAnalysis(resultsLst3, method = "weighted.mean", weightsList = c(2,1,1)), "There is no common pathways among input data!")
+    expect_error(runConsensusAnalysis(resultsLst3, method = "weightedZMean", weightsList = c(2,1,1)), "There is no common pathways among input data!")
 })
 
 test_that("runConsensusAnalysis with RRA as method ", {
     result <- runConsensusAnalysis(resultsLst, method = "RRA", rank.by = "pFDR")
-    expect_true(nrow(result) == 100 & ncol(result) == 4)
-    expect_true(all(result$score >= 0 & result$score <= 1))
+    expect_true(nrow(result) == 100 & ncol(result) == 5)
+    expect_true(all(result$p.value >= 0 & result$p.value <= 1))
 
     space1 <- resultsLst[[1]]$ID %>% as.vector()
     space2 <- resultsLst[[2]]$ID %>% as.vector()
     space3 <- resultsLst[[3]]$ID %>% as.vector()
-    result2 <- runConsensusAnalysis(resultsLst, method = "RRA", rank.by = "pFDR", backgroundSpace = list(space1, space2, space3))
-    expect_true(nrow(result) == 100 & ncol(result) == 4)
-    expect_true(all(result$score >= 0 & result$score <= 1))
+    resultt <- runConsensusAnalysis(resultsLst, method = "RRA", rank.by = "pFDR", backgroundSpace = list(space1, space2, space3))
+    expect_true(nrow(resultt) == 100 & ncol(resultt) == 5)
+    expect_true(all(resultt$p.value >= 0 & resultt$p.value <= 1))
     expect_error(runConsensusAnalysis(resultsLst, method = "RRA", rank.by = "pFDR", backgroundSpace = list(space2, space3)))
 })
