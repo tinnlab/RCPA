@@ -56,8 +56,8 @@ plotMA <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, logFCThreshold = 
                 "0" = "darkgray"
             ),
             labels = c(
-                "1" = paste0("Up-regulated (", sum(plotDat$color == 1, na.rm = TRUE), ")"),
-                "-1" = paste0("Down-regulated (", sum(plotDat$color == -1, na.rm = TRUE), ")"),
+                "1" = paste0("Upregulated (", sum(plotDat$color == 1, na.rm = TRUE), ")"),
+                "-1" = paste0("Downregulated (", sum(plotDat$color == -1, na.rm = TRUE), ")"),
                 "0" = paste0("Not significant (", sum(plotDat$color == 0, na.rm = TRUE), ")")
             ),
             guide = guide_legend(override.aes = list(size = 3), title = "Significance")

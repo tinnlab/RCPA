@@ -119,7 +119,7 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
             limits = c(negLog10pValueLims[1], negLog10pValueLims[2]),
             breaks = c(negLog10pValueLims[1], (negLog10pValueLims[1] + negLog10pValueLims[2]) / 2, negLog10pValueLims[2]),
             guide = guide_colorbar(
-                title = "-Log10 P-value"
+                title = paste0("-log10", ifelse(useFDR, " pFDR", " p-value"))
             )
         ) +
         new_scale_fill() +
