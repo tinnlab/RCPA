@@ -50,6 +50,8 @@ Imports:
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
+    rmarkdown,
+    markdown,
     testthat (>= 3.0.0),
     ROntoTools,
     RCyjs,
@@ -69,3 +71,5 @@ Suggests:
     oligo
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false
+VignetteBuilder: knitr, rmarkdown
+BugReports: https://github.com/tinnlab/RCPA/issues
