@@ -54,7 +54,6 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select filter
-#' @importFrom CePa generate.pathway
 #' @noRd
 .runCePaORA <- function(summarizedExperiment, network, pThreshold, bk, ...){
 

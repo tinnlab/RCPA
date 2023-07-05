@@ -30,7 +30,7 @@
 
     allResults <- resultsDFs %>% do.call(what = rbind)
 
-    consensusResults <- allResults %>% group_by(ID) %>% group_split() %>% lapply(function (data){
+    consensusResults <- allResults %>% group_by(.data$ID) %>% group_split() %>% lapply(function (data){
         if(useFDR == TRUE){
             data$zscore <- data$pFDR %>% qnorm()
         }else{

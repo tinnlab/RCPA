@@ -83,7 +83,7 @@ test_that('Combine Pathway Analysis Results using REML ', {
   metaRes <- runPathwayMetaAnalysis(allDFs, method = "REML")
   selected_pval <- metaRes$p.value[metaRes$ID == "geneset1"]
   DFs_pvals <- c(DF1$p.value[DF1$ID == "geneset1"], DF2$p.value[DF2$ID == "geneset1"], DF3$p.value[DF3$ID == "geneset1"])
-  expect_true(all(c("ID", "p.value", "score", "pFDR", "normalizedScore") %in% colnames(metaRes)))
+  expect_true(all(c("ID", "p.value", "score", "pFDR") %in% colnames(metaRes)))
   expect_true(! selected_pval %in% DFs_pvals)
   expect_true(all(metaRes$p.value <= 1))
   expect_true(all(metaRes$p.value >= 0))
@@ -95,7 +95,7 @@ test_that('Combine Pathway Analysis Results using Stouffer ', {
   metaRes <- runPathwayMetaAnalysis(allDFs, method = "stouffer")
   selected_pval <- metaRes$p.value[metaRes$ID == "geneset1"]
   DFs_pvals <- c(DF1$p.value[DF1$ID == "geneset1"], DF2$p.value[DF2$ID == "geneset1"], DF3$p.value[DF3$ID == "geneset1"])
-  expect_true(all(c("ID", "p.value", "score", "pFDR", "normalizedScore") %in% colnames(metaRes)))
+  expect_true(all(c("ID", "p.value", "score", "pFDR") %in% colnames(metaRes)))
   expect_true(! selected_pval %in% DFs_pvals)
   expect_true(all(metaRes$p.value <= 1))
   expect_true(all(metaRes$p.value >= 0))
