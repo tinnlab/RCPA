@@ -37,8 +37,6 @@ Imports:
     Biobase,
     DESeq2,
     GEOquery,
-    affy,
-    affyPLM,
     edgeR,
     limma,
     oligo,
