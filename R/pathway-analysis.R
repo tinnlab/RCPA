@@ -54,6 +54,7 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>% select filter
+#' @importFrom CePa generate.pathway
 #' @noRd
 .runCePaORA <- function(summarizedExperiment, network, pThreshold, bk, ...){
 
@@ -68,26 +69,25 @@
     res <- CePa::cepa.all(dif = dif, bk = bk, pc = network, ...)
 
     res_stats <- res %>% lapply(function(pathData) {
-        path_res <- lapply(pathData, function(data){
-            data.frame(
-                p.value <- data[["p.value"]],
-                score <- data[["score"]],
-                stringsAsFactors = FALSE
-            )
-        }) %>% do.call(what = rbind)
+        data <- pathData[[1]]
+        GSOverlap <- sum(data[["weight"]][which(data$node.level.t.value == 1)])
+        Expected <- GSOverlap * length(data$node.level.t.value[data$node.level.t.value == 1]) / length(data$node.level.t.value)
 
-        path_res[which(path_res$p.value == min(path_res$p.value))[1],]
-    }) %>% do.call(what = rbind) %>% data.frame(pathway = names(res), stringsAsFactors = FALSE)
+        # GSOverlap2 <- sum(data[["weight"]])
+        # Expected2 <- GSOverlap2 * length(data$node.level.t.value) / length(bk)
 
-    colnames(res_stats) <- c("p.value", "score", "pathway")
+        data.frame(
+            p.value = data[["p.value"]],
+            score = data[["score"]],
+            normalizedScore = log2(data[["score"]] / Expected + 1),
+            # expected1 = Expected,
+            # expected2 = Expected2,
+            stringsAsFactors = FALSE
+        )
+    }) %>% do.call(what = rbind) %>% data.frame(ID = names(res), stringsAsFactors = FALSE)
 
-    data.frame(
-      ID = res_stats$pathway,
-      p.value = res_stats$p.value,
-      score = res_stats$score,
-      normalizedScore = res_stats$score,
-      stringsAsFactors = FALSE
-    )
+    colnames(res_stats) <- c("p.value", "score", "normalizedScore", "ID")
+    res_stats <- res_stats[, c("ID", "p.value", "score", "normalizedScore")]
 }
 
 #' @title Pathway Enrichment Analysis using CePaGSA
@@ -172,8 +172,8 @@
 #' @export
 runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia", "cepaORA", "cepaGSA"),
                                SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher", pThreshold = 0.05),
-                              CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold = 0.05),
-                              CePaGSAArgs = list(cen = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+                              CePaORAArgs = list(bk = NULL, cen = c("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = c("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold = 0.05),
+                              CePaGSAArgs = list(cen = c("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), cen.name = c("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 ){
     method <- match.arg(method)
 
@@ -209,7 +209,7 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
 
         tmp <- SPIAArgs
         SPIAArgs <- SPIAArgs.default
-        SPIAArgs[names(tmp)] <- SPIAArgs.default[names(tmp)]
+        SPIAArgs[names(tmp)] <- tmp[names(tmp)]
 
         if(!SPIAArgs$combine %in% c("fisher", "norminv")){
             stop("The combine argument should be either 'fisher' or 'norminv'.")
@@ -227,8 +227,9 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
             stop("The network definition does not match with the names attribute.")
         }
 
-        default.centralities <- list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach")
-        CePaORAArgs.default = list(bk = NULL, cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), iter = 1000, pThreshold = 0.05)
+        default.centrality <- "equal.weight"
+
+        CePaORAArgs.default = list(bk = NULL, cen = default.centrality, cen.name = default.centrality, iter = 1000, pThreshold = 0.05)
 
         if (any(!names(CePaORAArgs) %in% names(CePaORAArgs.default))) {
             stop("The names of arguments should be matched with CePaORA definition.")
@@ -236,10 +237,18 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
 
         tmp <- CePaORAArgs
         CePaORAArgs <- CePaORAArgs.default
-        CePaORAArgs[names(tmp)] <- CePaORAArgs.default[names(tmp)]
+        CePaORAArgs[names(tmp)] <- tmp[names(tmp)]
 
         if(CePaORAArgs$pThreshold < 0 | CePaORAArgs$pThreshold > 1){
             stop("The pThreshold must be between zero and one.")
+        }
+
+        if(length(CePaORAArgs$cen) > 1){
+            stop("The length of cen should be 1.")
+        }
+
+        if(length(CePaORAArgs$cen.name) > 1){
+            stop("The length of cen.name should be 1.")
         }
 
         paArgs <- CePaORAArgs
@@ -251,8 +260,9 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
             stop("The network definition does not match with the names attribute.")
         }
 
-        default.centralities <- list("equal.weight", "in.degree", "out.degree", "betweenness", "in.reach", "out.reach")
-        CePaGSAArgs.default <- list(cen = default.centralities, cen.name = sapply(default.centralities, function(x) ifelse(mode(x) == "name", deparse(x), x)), nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
+        default.centrality <- "equal.weight"
+
+        CePaGSAArgs.default <- list(cen = default.centrality, cen.name = default.centrality, nlevel = "tvalue_abs", plevel = "mean", iter = 1000)
 
         if (any(!names(CePaGSAArgs) %in% names(CePaGSAArgs.default))) {
             stop("The names of arguments should be matched with CePaGSA definition.")
@@ -260,7 +270,15 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
 
         tmp <- CePaGSAArgs
         CePaGSAArgs <- CePaGSAArgs.default
-        CePaGSAArgs[names(tmp)] <- CePaGSAArgs.default[names(tmp)]
+        CePaGSAArgs[names(tmp)] <- tmp[names(tmp)]
+
+        if(length(CePaORAArgs$cen) > 1){
+            stop("The length of cen should be 1.")
+        }
+
+        if(length(CePaORAArgs$cen.name) > 1){
+            stop("The length of cen.name should be 1.")
+        }
 
         # if(CePaGSAArgs$pThreshold < 0 | CePaGSAArgs$pThreshold > 1){
         #     stop("The pThreshold must be between zero and one.")
