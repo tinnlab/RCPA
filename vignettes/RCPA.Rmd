@@ -1,18 +1,20 @@
 ---
 title: 'RCPA: a complete protocol for data processing, differential analysis, integrative pathway analysis, and visualization'
-author: "Hung Phi Bya,  Zeynab Maghsoudi, Bang Tran, Sorin Draghici, and Tin Nguyen"
+author: "Phi Hung Bya,  Zeynab Maghsoudi, Bang Tran, Sorin Draghici, and Tin Nguyen"
+date: "`r Sys.Date()`"
 output:
+  pdf_document: default
+  word_document:
   html_document:
     df_print: paged
-    toc: yes
-  pdf_document:
-    toc: yes
 editor_options:
   chunk_output_type: inline
 csl: ieee.csl
 bibliography: ref.bib
-vignette: "%\\VignetteIndexEntry{RCPA} \n%\\usepackage[UTF-8]{inputenc}\n%\\VignetteEngine{knitr::rmarkdown}
-  \n"
+vignette: >
+  %\VignetteIndexEntry{RCPA}
+  %\VignetteEngine{knitr::knitr}
+  %\usepackage[UTF-8]{inputenc}
 ---
 ## Introduction
 Here, we present RPCA, an R package for performing consensus pathway analysis using publicly available tools and resources. We describe the key steps involved in the analysis, including data preparation, genes annotation mapping, pathway analysis, meta-analysis, and consensus analysis. Further, we present several innovative plotting functions embedded in RCPA to visualize results in a more engaging and intuitive manner. These plotting functions leverage advanced data visualization techniques to enhance the understanding and interpretation of the results. We also provide guidelines for selecting appropriate data sources and statistical thresholds to ensure robust and reproducible results. To demonstrate the application of the developed pipeline, we provide case studies using gene expression data downloaded from NCBI GEO.
@@ -66,7 +68,7 @@ colnames(21): GSM1499379 GSM1499380 ... GSM1499398 GSM1499399
 colData names(48): title geo_accession ... tissue.ch1 tissue.ch2
 ```
 
-### Downlaod RNA-Seq read counts
+### Download RNA-Seq read counts
 
 One can also download read counts data from GEO and create the *SummarizedExperiment* object to be used in later stages. Here, we download read counts data for *GSE153873* from GEO:
 

@@ -14,3 +14,5 @@
 ^.Dockerfile
 ^.dockerignore
 ^.DS_Store
+^doc$
+^Meta$
