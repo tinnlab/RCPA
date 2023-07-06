@@ -87,7 +87,9 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 
     method <- match.arg(method)
 
-    .requirePackage("meta")
+    if (!.requirePackage("meta")){
+        return(NULL)
+    }
 
     if (length(PAResults) == 1) {
         stop("Meta analysis is valid for two or more studies.")
@@ -221,7 +223,9 @@ runDEMetaAnalysis <- function(DEResults, method = c("stouffer", "fisher", "addCL
 
     method <- match.arg(method)
 
-    .requirePackage("meta")
+    if (!.requirePackage("meta")){
+        return(NULL)
+    }
 
     if (length(DEResults) == 1) {
         stop("Meta analysis is valid for two or more studies.")

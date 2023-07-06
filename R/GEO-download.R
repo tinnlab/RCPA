@@ -152,7 +152,9 @@
         stop("The input metadata and sampleIDs do not match. Make sure the sample IDs match with geo_accession IDs from dataset.")
     }
 
-    .requirePackage("oligo")
+    if (!.requirePackage("oligo")){
+        return(NULL)
+    }
 
     #Normalize expression data based on RMA method
     expression <- try({
@@ -326,6 +328,9 @@ downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), 
     }
 
     if(is.null(summarizedExperimentObject)){
+        if (pkgEnv$isMissingDependency){
+            return(NULL)
+        }
         stop("There is an error in processing and normalizing data.")
     }
 

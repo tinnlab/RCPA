@@ -71,7 +71,9 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
     }
 
-    .requirePackage("ggvenn")
+    if (!.requirePackage("ggvenn")){
+        return(NULL)
+    }
 
     ggvenn::ggvenn(plotDat,
            fill_color = c(
@@ -164,7 +166,9 @@ plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
     }
 
-    .requirePackage("ggvenn")
+    if (!.requirePackage("ggvenn")){
+        return(NULL)
+    }
 
     ggvenn::ggvenn(plotDat,
            fill_color = c(

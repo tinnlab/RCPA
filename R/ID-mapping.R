@@ -94,7 +94,9 @@ getSupportedPlatforms <- function(){
     if (grep("GPL", platform)) {
         if (!is.null(annotations[[platform]])) {
             anno <- annotations[[platform]]
-            .requirePackage(anno)
+            if (!.requirePackage(anno)){
+                return(NULL)
+            }
             annotation <- get(anno)
         } else {
             stop(paste0("Platform ", platform, " is not supported. Please pass an AnnotationDbi object instead"))

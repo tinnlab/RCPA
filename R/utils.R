@@ -4,15 +4,31 @@
 #' @param pkg The name of the package to be loaded.
 #' @return TRUE if the package is installed, FALSE otherwise.
 #' @importFrom BiocManager install
+#' @importFrom rlang is_interactive
 #' @noRd
 .requirePackage <- function(pkg) {
+    pkgEnv$isMissingDependency <- FALSE
     if (!(pkg %in% .packages(all.available = TRUE)))
     {
         # Try to install the package
-        BiocManager::install(pkg, update = FALSE, ask = FALSE)
+        if (is_interactive()){
+            BiocManager::install(pkg, update = FALSE, ask = TRUE)
+            if (pkg %in% .packages(all.available = TRUE)) {
+                cat("Package", pkg, "is installed.\n")
+            } else {
+                cat("Package", pkg, "is not installed. Please install it first.\n")
+                pkgEnv$isMissingDependency <- TRUE
+                return(FALSE)
+            }
+        } else {
+            cat("Package", pkg, "is not installed. Please install it first.\n")
+            pkgEnv$isMissingDependency <- TRUE
+            return(FALSE)
+        }
     }
 
     require(pkg, character.only = TRUE, quietly = TRUE)
+    return(TRUE)
 }
 
 #' @title extract grouping information from design matrix and contrast matrix

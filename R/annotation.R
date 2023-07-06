@@ -12,7 +12,9 @@
 #' @export
 getEntrezAnnotation <- function(entrezIds) {
 
-    .requirePackage("XML")
+    if (!.requirePackage("XML")){
+        return(NULL)
+    }
 
     url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
     query <- list(

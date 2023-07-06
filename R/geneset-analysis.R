@@ -70,7 +70,9 @@
         as.vector()
     names(statistic) <- rownames(DE_data)
 
-    .requirePackage("fgsea")
+    if (!.requirePackage("fgsea")){
+        return(NULL)
+    }
 
     res <- fgsea::fgsea(pathways = genesets, stats = statistic, ...)
 
@@ -98,8 +100,12 @@
 #' @noRd
 .runGSA <- function(summarizedExperiment, genesets, ...) {
 
-    .requirePackage("GSA")
-    .requirePackage("S4Vectors")
+    if (!.requirePackage("GSA")){
+        return(NULL)
+    }
+    if (!.requirePackage("S4Vectors")){
+        return(NULL)
+    }
 
     assay <- assay(summarizedExperiment)
     if (is.null(assay) |
@@ -385,6 +391,9 @@ runGeneSetAnalysis <- function(summarizedExperiment, genesets, method = c("ora",
     result <- do.call(methodFnc, gsArgs)
 
     if (is.null(result)) {
+        if (pkgEnv$isMissingDependency) {
+            return(NULL)
+        }
         stop("There is an error in geneset analysis procedure.")
     }
 

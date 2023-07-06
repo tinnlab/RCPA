@@ -57,7 +57,9 @@
 #' @noRd
 .runCePaORA <- function(summarizedExperiment, network, pThreshold, bk, ...){
 
-    .requirePackage("CePa")
+    if (!.requirePackage("CePa")){
+        return(NULL)
+    }
 
     DE_data <- rowData(summarizedExperiment)
     dif <- DE_data[DE_data$p.value <= pThreshold,] %>% rownames(.)
@@ -102,7 +104,9 @@
 #' @noRd
 .runCePaGSA <- function(summarizedExperiment, network, ...){
 
-    .requirePackage("CePa")
+    if (!.requirePackage("CePa")){
+        return(NULL)
+    }
 
     assay <- assay(summarizedExperiment)
 
@@ -299,6 +303,9 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
     result <- do.call(methodFnc, paArgs)
 
     if (is.null(result)) {
+        if (pkgEnv$isMissingDependency){
+            return(NULL)
+        }
         stop("There is an error in geneset analysis procedure.")
     }
 

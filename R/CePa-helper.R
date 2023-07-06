@@ -14,8 +14,12 @@
 #' @importFrom stringr str_split
 getCePaPathwayCatalogue <- function(org = "hsa", updateCache = FALSE){
 
-  .requirePackage("CePa")
-  .requirePackage("ROntoTools")
+  if (!.requirePackage("CePa")){
+    return(NULL)
+  }
+  if (!.requirePackage("ROntoTools")){
+    return(NULL)
+  }
 
   keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
 

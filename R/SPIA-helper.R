@@ -15,7 +15,10 @@
 #' @importFrom stringr str_split str_length
 getSPIAKEGGNetwork <- function(org = "hsa", updateCache = FALSE) {
 
-    .requirePackage("ROntoTools")
+    if (!.requirePackage("ROntoTools")){
+        return(NULL)
+    }
+
     keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
 
     relationships <- c("activation", "compound", "binding/association",
