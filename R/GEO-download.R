@@ -36,6 +36,7 @@
 #' @importFrom GEOquery getGEOSuppFiles
 #' @importFrom dplyr %>%
 #' @importFrom utils URLdecode
+#' @importFrom httr HEAD
 #' @noRd
 .downloadSamples <- function(sampleIDs, protocol, destDir) {
 
@@ -53,7 +54,38 @@
 
             if (file.exists(file.path(destDir, paste0(id, ".CEL.gz")))) next()
 
-            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
+            filesURL <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE, fetch_files = FALSE)
+
+            actualInfo <- lapply(1:nrow(filesURL), function(curRow){
+                actualFileLength <- httr::HEAD(filesURL[curRow, 2])$headers$`content-length`
+                data.frame(
+                    fname = filesURL[curRow, 1],
+                    fsize = actualFileLength,
+                    stringsAsFactors = FALSE
+                )
+            }) %>% do.call(what = rbind)
+
+            downloadedInfo <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
+
+            isDeletedFlag <- FALSE
+            for(i in 1:2){
+                 lapply(nrow(downloadedInfo), function(curRow){
+                    if(downloadedInfo[curRow, "size"] != actualInfo[curRow, "fsize"]){
+                        file.remove(fileNames[curRow])
+                        isDeletedFlag <- TRUE
+                    }
+                })
+
+                if(i == 2 & isDeletedFlag == TRUE){
+                    stop(paste0("There is an error in downloading sample ", id))
+                }else if(isDeletedFlag){
+                    downloadedInfo <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
+                    isDeletedFlag <- FALSE
+                }else break
+            }
+
+            #downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
+            downloadedFiles <- downloadedInfo %>% rownames()
 
             if(is.null(downloadedFiles)){
                 stop("Check the specified samples IDs to be valid. No file is found.")
@@ -123,17 +155,17 @@
     .requirePackage("oligo")
 
     #Normalize expression data based on RMA method
-    # expression <- try({
-    #     ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
-    #         threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
-    #         exprs() %>%
-    #         as.data.frame()
-    # })
+    expression <- try({
+        ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
+            threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
+            exprs() %>%
+            as.data.frame()
+    })
 
     # if ("try-error" %in% class(expression)) {
     expression <- oligo::read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
         oligo::rma(normalize = TRUE) %>%
-        oligo::exprs() %>%
+        Biobase::exprs() %>%
         as.data.frame()
     if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
     colnames(expression) <- sampleIDs
