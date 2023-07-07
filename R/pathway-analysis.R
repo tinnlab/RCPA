@@ -163,12 +163,12 @@
 #' \donttest{
 #' library(RCPA)
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
-#' spiaNetwork <- loadData("spiaNetwork")
+#' #spiaNetwork <- loadData("spiaNetwork")
 #' cepaNetwork <- loadData("cepaNetwork")
 #'
-#' spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
+#' #spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
 #' cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
-#' cepaGSAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaGSA")
+#' #cepaGSAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaGSA")
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment assay
 #' @importFrom dplyr %>%
@@ -247,11 +247,12 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
         }
 
         if(length(CePaORAArgs$cen) > 1){
-            stop("The length of cen should be 1.")
+            CePaORAArgs$cen <- CePaORAArgs$cen[1]
+            message(paste0("The '", CePaORAArgs$cen, "' is used as centrality measurement."))
         }
 
         if(length(CePaORAArgs$cen.name) > 1){
-            stop("The length of cen.name should be 1.")
+            CePaORAArgs$cen.name <- CePaORAArgs$cen.name[1]
         }
 
         paArgs <- CePaORAArgs
@@ -276,11 +277,12 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
         CePaGSAArgs[names(tmp)] <- tmp[names(tmp)]
 
         if(length(CePaORAArgs$cen) > 1){
-            stop("The length of cen should be 1.")
+            CePaORAArgs$cen <- CePaORAArgs$cen[1]
+            message(paste0("The '", CePaORAArgs$cen, "' is used as centrality measurement."))
         }
 
         if(length(CePaORAArgs$cen.name) > 1){
-            stop("The length of cen.name should be 1.")
+            CePaORAArgs$cen.name <- CePaORAArgs$cen.name[1]
         }
 
         # if(CePaGSAArgs$pThreshold < 0 | CePaGSAArgs$pThreshold > 1){

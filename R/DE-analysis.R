@@ -111,15 +111,23 @@
 #' library(RCPA)
 #' library(SummarizedExperiment)
 #'
+#' #if (!require("hgu133plus2.db", quietly = TRUE)) {
+#'  #BiocManager::install("hgu133plus2.db")
+#' #}
+#' #library(hgu133plus2.db)
+#'
 #' # GSE5281
 #' affyDataset <- loadData("affyDataset")
 #' affyDesign <- model.matrix(~0 + condition + region + condition:region, data = colData(affyDataset))
 #' colnames(affyDesign) <- make.names(colnames(affyDesign))
 #' affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=affyDesign)
 #'
+#' if (require("hgu133plus2.db", quietly = TRUE)){
 #' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign,
 #'                                         contrast = affyContrast, annotation = "GPL570")
+#' }
 #' # print(rowData(affyDEExperiment)) # check the DE analysis results
+#'
 #'
 #' # GSE61196
 #' agilDataset <- loadData("agilDataset")
@@ -152,8 +160,11 @@
 #'                                             columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
 #'     colnames(ENSEMBLMapping) <- c("FROM", "TO")
 #'
-#'     RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset, method = "DESeq2", design = RNASeqDesign,
-#'                                               contrast = RNASeqContrast, annotation = ENSEMBLMapping)
+#'     RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset,
+#'                            method = "DESeq2",
+#'                            design = RNASeqDesign,
+#'                            contrast = RNASeqContrast,
+#'                            annotation = ENSEMBLMapping)
 #'     # print(rowData(RNASeqDEExperiment))
 #' }
 #' }

@@ -279,16 +279,10 @@
 #' \donttest{
 #' library(RCPA)
 #' # Affymetrix
-#' downloadPath <- file.path(tempdir(), "GSE5281")
+#' downloadPath <- file.path(tempdir(), "GSE230534")
 #' if(!dir.exists(downloadPath)) dir.create(downloadPath)
-#' affyDataset <- RCPA::downloadGEO(GEOID = "GSE5281", platform ="GPL570",
+#' affyDataset <- RCPA::downloadGEO(GEOID = "GSE230534", platform ="GPL23126",
 #'                                  protocol ="affymetrix", destDir = downloadPath)
-#'
-#' # Agilent
-#' downloadPath <- file.path(tempdir(), "GSE61196")
-#' if(!dir.exists(downloadPath)) dir.create(downloadPath)
-#' agilDataset <- RCPA::downloadGEO(GEOID = "GSE61196", platform ="GPL4133",
-#'                                  protocol ="agilent", destDir = downloadPath)
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
