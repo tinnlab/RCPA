@@ -11,7 +11,7 @@
     if (!(pkg %in% .packages(all.available = TRUE)))
     {
         # Try to install the package
-        if (is_interactive()){
+        if (rlang::is_interactive()){
             BiocManager::install(pkg, update = FALSE, ask = TRUE)
             if (pkg %in% .packages(all.available = TRUE)) {
                 cat("Package", pkg, "is installed.\n")

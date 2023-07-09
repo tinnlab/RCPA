@@ -66,12 +66,13 @@
             }) %>% do.call(what = rbind)
 
             downloadedInfo <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
+            downloadedFiles <- downloadedInfo %>% rownames()
 
             isDeletedFlag <- FALSE
             for(i in 1:2){
                  lapply(nrow(downloadedInfo), function(curRow){
                     if(downloadedInfo[curRow, "size"] != actualInfo[curRow, "fsize"]){
-                        file.remove(fileNames[curRow])
+                        file.remove(downloadedFiles[curRow])
                         isDeletedFlag <- TRUE
                     }
                 })
@@ -85,7 +86,6 @@
             }
 
             #downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
-            downloadedFiles <- downloadedInfo %>% rownames()
 
             if(is.null(downloadedFiles)){
                 stop("Check the specified samples IDs to be valid. No file is found.")
@@ -157,12 +157,12 @@
     }
 
     #Normalize expression data based on RMA method
-    expression <- try({
-        ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
-            threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
-            exprs() %>%
-            as.data.frame()
-    })
+    # expression <- try({
+    #     ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
+    #         threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
+    #         exprs() %>%
+    #         as.data.frame()
+    # })
 
     # if ("try-error" %in% class(expression)) {
     expression <- oligo::read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
