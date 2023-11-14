@@ -1,11 +1,12 @@
-#' @title Plot venndiagram from multiple DE Analysis results
-#' @description Plot a venndiagram from multiple DE Analysis results.
+#' @title Plot Venn diagram from multiple DE Analysis results
+#' @description Plot a Venn diagram from multiple DE Analysis results.
 #' @param DEResults A list of data frames with the results of DE analysis.
 #' @param pThreshold The p-value threshold to determine if a gene is differentially expressed.
 #' @param useFDR Use the FDR adjusted p-value instead of the raw p-value.
-#' @param stat The additional statistis column to use for filtering differentially expressed genes.
+#' @param stat The additional statistics column to use for filtering differentially expressed genes.
 #' @param statThreshold The absolute value of the statistic threshold to use for filtering differentially expressed genes.
 #' Default is 0, which means no filtering.
+#' @param topToList The number of common DE genes that are used to annotate the plot
 #' @return A ggplot2 object.
 #' @examples
 #' \donttest{
@@ -30,11 +31,11 @@
 #' }
 #'
 #' }
-#' @importFrom ggplot2 scale_fill_gradient theme
+#' @importFrom ggplot2 scale_fill_gradient theme layer_scales
 #' @importFrom dplyr %>% filter
 #' @importFrom scales trans_new
 #' @export
-plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logFC", statThreshold = 0) {
+plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logFC", statThreshold = 0, topToList = 10) {
 
     if (length(DEResults) < 2) {
         stop("The number of DE results must be at least 2.")
@@ -67,6 +68,13 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
             ) %>%
             `[[`("ID")
     })
+    
+    commonGenes <- Reduce(f = intersect, plotDat)
+    commonGenes <- commonGenes[1:min(topToList, length(commonGenes))]
+    
+    commonGenesSym <- getEntrezAnnotation(commonGenes)$Symbol
+    
+    labelsToList <- sapply(1:topToList, function(i) paste0(commonGenes[i], " - ", commonGenesSym[i]))
 
     if (is.null(names(plotDat))) {
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
@@ -76,7 +84,7 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
         return(NULL)
     }
 
-    ggvenn::ggvenn(plotDat,
+    pR <- ggvenn::ggvenn(plotDat,
            fill_color = c(
                "#316b9d",
                # "#fce397",
@@ -93,14 +101,37 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
            stroke_size = 0.5,
            set_name_size = 4,
            fill_alpha = 0.75
-    )
+    ) 
+    
+    xrange <- layer_scales(pR)$x$range$range
+    yrange <- layer_scales(pR)$y$range$range
+    
+    pR <- pR + ggplot2::theme(plot.margin = margin(0, 0, 0, 0, "pt")) +
+      ggplot2::annotate(geom="text", x=xrange[2] + 0.1, y=yrange[2] + 0.1, label="Top Common\nSignificant Genes\n(Entrez ID - Symbol)",
+                        color="black", hjust = 0, vjust = 1, fontface = 2) +
+      ggplot2::annotate(geom="text", x=xrange[2] + 0.1, y=yrange[2] + 0.1, label= paste0("\n\n\n\n", paste0(labelsToList, collapse = "\n"), "\n...\t..."),
+                        color="black", hjust = 0, vjust = 1) +
+      scale_x_continuous(limits = c(xrange[1], xrange[2] + 1.5))
+    return(pR)
+    
+    # pR + ggplot2::theme(plot.margin = margin(0, 0, 0, 0, "pt")) +
+    #   
+    #   ggplot2::annotate(geom="text", x=xrange[2] + 0.1, y=yrange[2] + 0.05, label="Top Common\nSignificant Genes",
+    #                     color="red", hjust = 0, fontface = 2) + 
+    #   
+    #   ggplot2::annotate(geom="text", x=xrange[2] + 0.1, y=yrange[2] - 1.5, label= paste0(labelsToList, collapse = "\n"),
+    #                     color="red", hjust = 0) +
+    #   
+    #   scale_x_continuous(limits = c(xrange[1], xrange[2] + 1))
+    # 
 }
 
-#' @title Plot venndiagram from multiple pathway analysis results
-#' @description Plot a venndiagram from multiple pathway analysis results.
+#' @title Plot Venn diagram from multiple pathway analysis results
+#' @description Plot a Venn diagram from multiple pathway analysis results.
 #' @param PAResults A list of data frames with the results of pathway analysis.
 #' @param pThreshold The p-value threshold to determine if a pathway is enriched.
 #' @param useFDR Use the FDR adjusted p-value instead of the raw p-value.
+#' @param topToList The number of common signifcant pathways that are used to annotate the plot.
 #' @return A ggplot2 object.
 #' @examples
 #' \donttest{
@@ -135,11 +166,11 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #'     ggplot2::ggtitle("Significantly Down-regulated Pathways")
 #'}
 #' }
-#' @importFrom ggplot2 scale_fill_gradient theme
+#' @importFrom ggplot2 scale_fill_gradient theme layer_scales
 #' @importFrom dplyr %>% filter
 #' @importFrom scales trans_new
 #' @export
-plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
+plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE, topToList = 10) {
 
     if (length(PAResults) < 2) {
         stop("The number of results must be at least 2.")
@@ -168,6 +199,17 @@ plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
             ) %>%
             `[[`("ID")
     })
+    
+    commonPathways <- Reduce(f = intersect, plotDat)
+    
+    commonPathways <- commonPathways[1:min(topToList, length(commonPathways))]
+    
+    allPathNames <- PAResults[[1]]$name
+    names(allPathNames) <- PAResults[[1]]$ID
+    labelsToList <- allPathNames[commonPathways]
+    labelsToList <- sapply(1:length(labelsToList), function(i) paste0(names(labelsToList)[i], " - ", labelsToList[i]))
+    labelsToList <- stringr::str_sub(labelsToList, 0, 40)
+    labelsToList <- ifelse(stringr::str_length(labelsToList) == 40, paste0(labelsToList, "..."), labelsToList)
 
     if (is.null(names(plotDat))) {
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
@@ -177,7 +219,7 @@ plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
         return(NULL)
     }
 
-    ggvenn::ggvenn(plotDat,
+    pR <- ggvenn::ggvenn(plotDat,
            fill_color = c(
                "#316b9d",
                # "#fce397",
@@ -194,6 +236,17 @@ plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
            stroke_size = 0.5,
            set_name_size = 4,
            fill_alpha = 0.75
-    )
+    ) 
+    
+    xrange <- layer_scales(pR)$x$range$range
+    yrange <- layer_scales(pR)$y$range$range
+    
+    pR <- pR + ggplot2::theme(plot.margin = margin(0, 0, 0, 0, "pt")) +
+      ggplot2::annotate(geom="text", x=xrange[2] + 0.1, y=yrange[2] + 0.1, label="Top Common\nSignificant Pathways\n(ID - Name)",
+                        color="black", hjust = 0, vjust = 1, fontface = 2) +
+      ggplot2::annotate(geom="text", x=xrange[2] + 0.1, y=yrange[2] + 0.1, label= paste0("\n\n\n\n", paste0(labelsToList, collapse = "\n"), "\n... ..."),
+                        color="black", hjust = 0, vjust = 1) +
+      scale_x_continuous(limits = c(xrange[1], xrange[2] + 3))
+   return(pR)
 }
 

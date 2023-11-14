@@ -105,7 +105,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
                     label = factor(labels, levels = labels),
                     dataset = n
                 ) %>%
-                select("label", "logFC", "p.value", "dataset")
+                dplyr::select("label", "logFC", "p.value", "dataset")
         }) %>%
         do.call(what = rbind) %>%
         gather("type", "value", -"label", -"dataset") %>%
@@ -113,12 +113,13 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
             label = factor(.data$label, levels = labels),
             dataset = factor(.data$dataset, levels = names(DEdfs)),
             type = factor(.data$type, levels = c("p.value", "logFC")),
-            colOrder = as.numeric(.data$dataset)*2 + as.numeric(.data$type) + as.numeric(.data$dataset)*0.1 + as.numeric(.data$type)*0.01
+            # colOrder = as.numeric(.data$dataset)*2 + as.numeric(.data$type) + as.numeric(.data$dataset)*0.1 + as.numeric(.data$type)*0.01
+            colOrder = as.numeric(.data$dataset) + as.numeric(.data$type)*length(DEdfs) + as.numeric(.data$dataset)*0.01 + as.numeric(.data$type)*0.1
         )
 
     uniqueY <- sort(unique(plotData$colOrder))
 
-    ggplot() +
+    x <- ggplot() +
         geom_tile(data = plotData[plotData$type == "logFC",], aes(x = .data$label, y = .data$colOrder, fill = .data$value, width = 1, height = 1)) +
         scale_fill_gradient2(
             high = "#B80F0A",
@@ -144,6 +145,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
         theme(
             axis.title.y = element_blank(),
             axis.title.x = element_blank(),
+            axis.text.x.bottom = element_text(angle = 45, vjust = 1, hjust = 1),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank()
         ) +
@@ -152,11 +154,26 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
         ) +
         scale_y_continuous(
             breaks = uniqueY,
-            labels = rep(c(
-                paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
-                "log2 FC"
-            ), length(DEdfs)),
+            # labels = rep(c(
+            #     paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+            #     "log2 FC"
+            # ), length(DEdfs)),
+            labels = rep(names(DEdfs), 2),
             expand = c(0, 0),
-            sec.axis = sec_axis(~., breaks = sapply(seq_along(DEdfs), function(i) mean(uniqueY[(i-1)*2 + 1:2])), labels = names(DEdfs))
+            # sec.axis = sec_axis(~., breaks = sapply(seq_along(DEdfs), function(i) mean(uniqueY[(i-1)*2 + 1:2])), labels = names(DEdfs))
+            # sec.axis = sec_axis(~., breaks = sapply(seq_along(c(
+            #       paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+            #       "log2 FC"
+            #   )), function(i) mean(uniqueY[(i-1)*4 + 1:4])), labels = c(
+            #     paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+            #     "log2 FC"
+            #   ))
+            sec.axis = sec_axis(~., breaks = sapply(seq_along(c(
+              paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+              "log2 FC"
+            )), function(i) mean(uniqueY[(i-1)*length(DEdfs) + 1:length(DEdfs)])), labels = c(
+              paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+              "log2 FC"
+            ))
         )
 }

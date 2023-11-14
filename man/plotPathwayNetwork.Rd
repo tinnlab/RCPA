@@ -7,16 +7,16 @@
 plotPathwayNetwork(
   PAResults,
   genesets,
+  selectedPathways = NULL,
   statistic = "pFDR",
   mode = c("continuous", "discrete"),
-  labels = NULL,
   pThreshold = 0.05,
   useFDR = TRUE,
   edgeThreshold = 0.5,
   statLimit = 4,
   discreteColors = NULL,
   continuousScaleFunc = NULL,
-  NAColor = "#dddddd",
+  NAColor = "#ffffff",
   borderColor = "#333333",
   nodeSizeFnc = function(id) length(genesets[[id]])^0.75,
   borderWidthFnc = function(id) 1,
@@ -30,17 +30,18 @@ The columns of each data frame should be at least ID, name, p.value and pFDR.
 An optional column "color" can be used to specify the color of the nodes.
 If the column "color" is not specified, the color of the nodes will be determined by the mode and the statistic.}
 
-\item{genesets}{A named list of character vectors of gene sets.}
+\item{genesets}{A genesets object that is obtained from getGeneSets function.}
+
+\item{selectedPathways}{A vector of pathway IDs to be included in the plot.
+If it is NULL, all pathways from genesets will be included.}
 
 \item{statistic}{A character value of the statistic to use for the network.
 The statistic should be one of the columns of the data frame in the results.}
 
 \item{mode}{A character value of the mode to use to color the nodes.
-The mode should be one of "discrete", "continous".
+The mode should be one of "discrete", "continuous".
 If the mode is "discrete", the color of the nodes are determined by whether the p-value is significant or not.
-If the mode is "continous", the color of the nodes are proportional to the statistic.}
-
-\item{labels}{A named character vector of labels for the results.}
+If the mode is "continuous", the color of the nodes are proportional to the statistic.}
 
 \item{pThreshold}{A numeric value of p-value threshold.}
 
@@ -89,7 +90,10 @@ The width of the edges are proportional to the number of genes in common.
 \examples{
 \donttest{
 # Loading libraries
-library(RCyjs)
+#if (!require("RCyjs", quietly = TRUE)) {
+ #BiocManager::install("RCyjs")
+#}
+#library(RCyjs)
 library(RCPA)
 affyFgseaResult <- loadData("affyFgseaResult")
 agilFgseaResult <- loadData("agilFgseaResult")
@@ -105,7 +109,7 @@ PAResults <- list(
 )
 
 genesetsToPlot <- metaPAResult$ID[order(metaPAResult$pFDR)][1:30]
-
+if (require("RCyjs", quietly = TRUE)){
 pltObj <- RCPA::plotPathwayNetwork(
     PAResults,
     genesets = genesets$genesets[genesetsToPlot],
@@ -114,8 +118,9 @@ pltObj <- RCPA::plotPathwayNetwork(
     mode = "continuous",
     statistic = "normalizedScore"
 )
+}
 
-pltObj$plot()
+# pltObj$plot() This function requires a browser to work
 
 }
 

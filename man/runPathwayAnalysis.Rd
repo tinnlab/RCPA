@@ -2,7 +2,7 @@
 % Please edit documentation in R/pathway-analysis.R
 \name{runPathwayAnalysis}
 \alias{runPathwayAnalysis}
-\title{Pathway Enrichment Analysis}
+\title{Topology-based Pathway Analysis}
 \usage{
 runPathwayAnalysis(
   summarizedExperiment,
@@ -10,12 +10,12 @@ runPathwayAnalysis(
   method = c("spia", "cepaORA", "cepaGSA"),
   SPIAArgs = list(all = NULL, nB = 2000, verbose = TRUE, beta = NULL, combine = "fisher",
     pThreshold = 0.05),
-  CePaORAArgs = list(bk = NULL, cen = list("equal.weight", "in.degree", "out.degree",
-    "betweenness", "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree",
+  CePaORAArgs = list(bk = NULL, cen = c("equal.weight", "in.degree", "out.degree",
+    "betweenness", "in.reach", "out.reach"), cen.name = c("equal.weight", "in.degree",
     "out.degree", "betweenness", "in.reach", "out.reach"), iter = 1000, pThreshold =
     0.05),
-  CePaGSAArgs = list(cen = list("equal.weight", "in.degree", "out.degree", "betweenness",
-    "in.reach", "out.reach"), cen.name = list("equal.weight", "in.degree", "out.degree",
+  CePaGSAArgs = list(cen = c("equal.weight", "in.degree", "out.degree", "betweenness",
+    "in.reach", "out.reach"), cen.name = c("equal.weight", "in.degree", "out.degree",
     "betweenness", "in.reach", "out.reach"), nlevel = "tvalue_abs", plevel = "mean", iter
     = 1000)
 )
@@ -34,7 +34,17 @@ runPathwayAnalysis(
 \item{CePaGSAArgs}{A list of other passed arguments to CePaGSA. See CePa function.}
 }
 \value{
-A dataframe of pathway analysis result
+A dataframe of pathway analysis result, which contains the following columns
+\itemize{
+\item{ID: }{The ID of the gene set}
+\item{p.value: }{The p-value of the gene set}
+\item{pFDR: }{The adjusted p-value of the gene set using the Benjamini-Hochberg method}
+\item{score: }{The enrichment score of the gene set}
+\item{normalizedScore: }{The normalized enrichment score of the gene set}
+\item{sampleSize: }{The total number of samples in the study}
+\item{name: }{The name of the gene set}
+\item{pathwaySize: }{The size of the gene set}
+}
 }
 \description{
 This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods.
@@ -43,11 +53,11 @@ This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods
 \donttest{
 library(RCPA)
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
-spiaNetwork <- loadData("spiaNetwork")
+#spiaNetwork <- loadData("spiaNetwork")
 cepaNetwork <- loadData("cepaNetwork")
 
-spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
+#spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
 cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
-cepaGSAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaGSA")
+#cepaGSAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaGSA")
 }
 }

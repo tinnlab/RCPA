@@ -11,7 +11,8 @@ plotBarChart(
   by = c("normalizedScore", "score", "pFDR", "p.value"),
   maxNegLog10PValue = 5,
   pThreshold = 0.05,
-  useFDR = TRUE
+  useFDR = TRUE,
+  selectedPathways = NULL
 )
 }
 \arguments{
@@ -32,6 +33,9 @@ Otherwise, the pathway will be sorted by the average value of the 'by' parameter
 
 \item{useFDR}{If TRUE, use FDR adjusted p-values for the significance threshold. Otherwise, use raw p-values.
 This parameter is used to mark the color of the bars and is independent of the 'by' parameter.}
+
+\item{selectedPathways}{A vector of pathways ID, which is in the same format as ID column in the pathway analysis result, to be included in the plot.
+If it is NULL, all pathways will be included.}
 }
 \value{
 A ggplot2 object.

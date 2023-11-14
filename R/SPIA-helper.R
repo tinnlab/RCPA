@@ -12,104 +12,123 @@
 #' @importFrom graph nodes edges
 #' @importFrom dplyr %>% filter select group_by group_split
 #' @importFrom tidyr spread
-#' @importFrom stringr str_split str_length
+#' @importFrom stringr str_split str_length str_replace
 getSPIAKEGGNetwork <- function(org = "hsa", updateCache = FALSE) {
 
     if (!.requirePackage("ROntoTools")){
         return(NULL)
     }
 
-    keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
-
-    relationships <- c("activation", "compound", "binding/association",
-                       "expression", "inhibition", "activation_phosphorylation",
-                       "phosphorylation", "inhibition_phosphorylation",
-                       "inhibition_dephosphorylation", "dissociation", "dephosphorylation",
-                       "activation_dephosphorylation", "state change", "activation_indirect effect",
-                       "inhibition_ubiquination", "ubiquination", "expression_indirect effect",
-                       "inhibition_indirect effect", "repression", "dissociation_phosphorylation",
-                       "indirect effect_phosphorylation", "activation_binding/association",
-                       "indirect effect", "activation_compound", "activation_ubiquination")
-
-    replacements <- list(
-        c('ubiquitination', 'ubiquination'),
-        c(',missing interaction', ''),
-        c('missing interaction', ''),
-        c('compound,activation', 'activation,compound')
-    )
-
-    keggRels <- keggPathway %>%
-        lapply(function(e) e@edgeData@data %>% lapply(function(e) {
-            s <- e$subtype
-            for (r in replacements) {
-                s <- sub(r[1], r[2], s)
-            }
-            s
-        })) %>%
-        unlist() %>%
-        unique() %>%
-        sub(pattern = ",", replacement = "_") %>%
-        strsplit(',') %>%
-        unlist() %>%
-        unique()
-
-    keggPathwayNames <- ROntoTools::keggPathwayNames(org)
-
-    pathInfo <- lapply(keggPathway, function(pathway) {
-        nodes <- pathway@nodes
-        edgeData <- pathway@edgeData@data
-
-        rels <- lapply(keggRels, function(relationship) {
-            dat <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
-
-            reactions <- edgeData %>%
-                lapply(function(e) {
-                    s <- e$subtype
-                    for (r in replacements) {
-                        s <- sub(r[1], r[2], s)
-                    }
-                    s <- sub(',', '_', s)
-                    relationship %in% (strsplit(s, ",") %>% unlist())
-                }) %>%
-                unlist() %>%
-                which() %>%
-                names() %>%
-                strsplit('\\|')
-
-            for (r in reactions) {
-                dat[r[2], r[1]] <- 1
-            }
-
-            return(dat)
-        })
-        names(rels) <- keggRels
-        rels <- rels[relationships]
-        rels$dissociation_phosphorylation <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
-
-        for (i in seq_along(rels)) {
-            if (is.null(rels[[i]])) next()
-            colnames(rels[[i]]) <- gsub("^.*:", "", colnames(rels[[i]]))
-            rownames(rels[[i]]) <- gsub("^.*:", "", rownames(rels[[i]]))
-        }
-
-        rels$nodes <- gsub("^.*:", "", nodes)
-        rels$NumberOfReactions <- 0
-
-        return(rels)
-    })
-
-    for (pathwayId in names(pathInfo)) {
-        pathInfo[[pathwayId]]$title <- keggPathwayNames[pathwayId] %>% as.character()
+    keggPathway <- ROntoTools::keggPathwayGraphs(org, relPercThresh = 0, updateCache = updateCache)
+    
+    for (i in seq_along(keggPathway)) {
+      nodeNames <- graph::nodes(keggPathway[[i]])
+      graph::nodes(keggPathway[[i]]) <- stringr::str_replace(nodeNames, paste0(org,":"), "")
     }
-
-    pathways_size <- pathInfo %>% lapply(function (path) length(path[["nodes"]])) %>% unlist() %>% as.vector()
-    names(pathways_size) <- names(pathInfo)
-
+    
+    keggPathwayNames <- ROntoTools::keggPathwayNames(org)
+    
+    pathways_size <- keggPathway %>% lapply(function (path) length(graph::nodes(path))) %>% unlist() %>% as.vector()
+    names(pathways_size) <- names(keggPathway)
+    
+    # return(keggPathway)
+    
     list(
-        network = pathInfo,
-        names = .getKEGGPathwayNames(org)[names(pathInfo)],
+        network = keggPathway,
+        names = .getKEGGPathwayNames(org)[names(keggPathway)],
         sizes = pathways_size
     )
+
+
+    # relationships <- c("activation", "compound", "binding/association",
+    #                    "expression", "inhibition", "activation_phosphorylation",
+    #                    "phosphorylation", "inhibition_phosphorylation",
+    #                    "inhibition_dephosphorylation", "dissociation", "dephosphorylation",
+    #                    "activation_dephosphorylation", "state change", "activation_indirect effect",
+    #                    "inhibition_ubiquination", "ubiquination", "expression_indirect effect",
+    #                    "inhibition_indirect effect", "repression", "dissociation_phosphorylation",
+    #                    "indirect effect_phosphorylation", "activation_binding/association",
+    #                    "indirect effect", "activation_compound", "activation_ubiquination")
+    # 
+    # replacements <- list(
+    #     c('ubiquitination', 'ubiquination'),
+    #     c(',missing interaction', ''),
+    #     c('missing interaction', ''),
+    #     c('compound,activation', 'activation,compound')
+    # )
+    # 
+    # keggRels <- keggPathway %>%
+    #     lapply(function(e) e@edgeData@data %>% lapply(function(e) {
+    #         s <- e$subtype
+    #         for (r in replacements) {
+    #             s <- sub(r[1], r[2], s)
+    #         }
+    #         s
+    #     })) %>%
+    #     unlist() %>%
+    #     unique() %>%
+    #     sub(pattern = ",", replacement = "_") %>%
+    #     strsplit(',') %>%
+    #     unlist() %>%
+    #     unique()
+    # 
+    # keggPathwayNames <- ROntoTools::keggPathwayNames(org)
+    # 
+    # pathInfo <- lapply(keggPathway, function(pathway) {
+    #     nodes <- pathway@nodes
+    #     edgeData <- pathway@edgeData@data
+    # 
+    #     rels <- lapply(keggRels, function(relationship) {
+    #         dat <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
+    # 
+    #         reactions <- edgeData %>%
+    #             lapply(function(e) {
+    #                 s <- e$subtype
+    #                 for (r in replacements) {
+    #                     s <- sub(r[1], r[2], s)
+    #                 }
+    #                 s <- sub(',', '_', s)
+    #                 relationship %in% (strsplit(s, ",") %>% unlist())
+    #             }) %>%
+    #             unlist() %>%
+    #             which() %>%
+    #             names() %>%
+    #             strsplit('\\|')
+    # 
+    #         for (r in reactions) {
+    #             dat[r[2], r[1]] <- 1
+    #         }
+    # 
+    #         return(dat)
+    #     })
+    #     names(rels) <- keggRels
+    #     rels <- rels[relationships]
+    #     rels$dissociation_phosphorylation <- matrix(0, nrow = length(nodes), ncol = length(nodes), dimnames = list(nodes, nodes))
+    # 
+    #     for (i in seq_along(rels)) {
+    #         if (is.null(rels[[i]])) next()
+    #         colnames(rels[[i]]) <- gsub("^.*:", "", colnames(rels[[i]]))
+    #         rownames(rels[[i]]) <- gsub("^.*:", "", rownames(rels[[i]]))
+    #     }
+    # 
+    #     rels$nodes <- gsub("^.*:", "", nodes)
+    #     rels$NumberOfReactions <- 0
+    # 
+    #     return(rels)
+    # })
+    # 
+    # for (pathwayId in names(pathInfo)) {
+    #     pathInfo[[pathwayId]]$title <- keggPathwayNames[pathwayId] %>% as.character()
+    # }
+    # 
+    # pathways_size <- pathInfo %>% lapply(function (path) length(path[["nodes"]])) %>% unlist() %>% as.vector()
+    # names(pathways_size) <- names(pathInfo)
+    # 
+    # list(
+    #     network = pathInfo,
+    #     names = .getKEGGPathwayNames(org)[names(pathInfo)],
+    #     sizes = pathways_size
+    # )
 }
 
 #' @title SPIA combfunc method.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/geneset-analysis.R
 \name{runGeneSetAnalysis}
 \alias{runGeneSetAnalysis}
-\title{Geneset Enrichment Analysis}
+\title{Gene Set Enrichment Analysis}
 \usage{
 runGeneSetAnalysis(
   summarizedExperiment,
@@ -19,9 +19,9 @@ runGeneSetAnalysis(
 \arguments{
 \item{summarizedExperiment}{The generated SummarizedExpriment object from DE analysis result.}
 
-\item{genesets}{The genesets definition, ex. KEGG genesets from getGeneSets function.}
+\item{genesets}{The gene sets definition, ex. KEGG genesets from getGeneSets function.}
 
-\item{method}{The geneset analsyis method, including ORA, fgsea, GSA, ks, and wilcox.}
+\item{method}{The gene set enrichment analsyis method, including ORA, fgsea, GSA, ks, and wilcox.}
 
 \item{ORAArgs}{A list of other passed arguments to ORA. pThreshold is used as p.value cutoff to pick DE genes.}
 
@@ -30,10 +30,22 @@ runGeneSetAnalysis(
 \item{GSAArgs}{A list of other passed arguments to GSA. See GSA function.}
 }
 \value{
-A dataframe of geneset analysis result
+A dataframe of gene set enrichment analysis result, which contains the following columns:
+\itemize{
+\item{ID: }{The ID of the gene set}
+\item{p.value: }{The p-value of the gene set}
+\item{pFDR: }{The adjusted p-value of the gene set using the Benjamini-Hochberg method}
+\item{score: }{The enrichment score of the gene set}
+\item{normalizedScore: }{The normalized enrichment score of the gene set}
+\item{sampleSize: }{The total number of samples in the study}
+\item{name: }{The name of the gene set}
+\item{pathwaySize: }{The size of the gene set}
+}
+
+The returned data frame is sorted based on the pathways' nominal p-values.
 }
 \description{
-This function performs geneset analysis using either ORA, fgsea, GSA, ks, or wilcox approaches.
+This function performs gene set enrichment analysis using either ORA, fgsea, GSA, ks, or wilcox approaches.
 }
 \examples{
 \donttest{

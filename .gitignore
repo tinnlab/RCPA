@@ -39,3 +39,12 @@ vignettes/*.pdf
 .Renviron
 /doc/
 /Meta/
+.DS_Store
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/rAvailablePackageCache.xml
+.idea/RCPA.iml
+.idea/rGraphicsSettings.xml
+.idea/rSettings.xml
+.idea/vcs.xml

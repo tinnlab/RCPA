@@ -5,10 +5,7 @@
 #' @param weightsLst A vector of integer values.
 #' Each element shows the corresponding input result weight.
 #' When selected method is weightedAvg this parameter needs to be specified.
-#' If it is null all the weights are considered
-#'
-#'
-#' as equal.
+#' If it is null all the weights are considered as equal.
 #' @param useFDR A logical parameter, indicating if adjusted p-values should be used.
 #' @return A dataframe of consensus analysis results
 #' @details This function is used internally by runConsensusAnalysis.
@@ -55,7 +52,7 @@
 #' Each list includes pathways IDs in order of their importance.
 #' This function is used internally by runConsensusAnalysis.
 #' @param resultsDFs A list of at least length two from enrichment analysis results.
-#' @param rankParam An string parameter which specifies how the input results should be ranked.
+#' @param rankParam A character parameter which specifies how the input results should be ranked.
 #' @return A list of lists each containing ordered pathways IDs.
 #' @details This function is used internally by runConsensusAnalysis.
 #' @importFrom dplyr %>%
@@ -98,7 +95,14 @@
 #' This parameter is optional.
 #' NULL means all input dataframes share a common space.
 #' So the union pathways of all input dataframes is taken into account.
-#' @return A dataframe of consensus analysis result
+#' @return A dataframe of consensus analysis result, which contains the following columns:
+#' \itemize{
+#' \item{ID: }{The ID of pathway}
+#' \item{p.value: }{The p-value of pathway}
+#' \item{pFDR: }{The adjusted p-value using Benjamini-Hochberg method}
+#' \item{name: }{The name of pathway}
+#' \item{pathwaySize: }{The size of pathway}
+#' }
 #' @examples
 #' \donttest{
 #'
@@ -203,6 +207,7 @@ runConsensusAnalysis <- function(PAResults,
     if(is.null(result)){
         stop("There is an error in performing consensus analysis!")
     }
-
+    result <- result[order(result$p.value),]
+    rownames(result) <- NULL
     return(result)
 }
