@@ -100,10 +100,13 @@
 .getGOTerms <- function(taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component")) {
 
     namespace <- match.arg(namespace)
-
+    
+    oldTimeout <- options("timeout")
+    options(timeout = 100000000)
     con <- gzcon(url("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz"))
     txt <- readLines(con)
     close(con)
+    options(timeout = oldTimeout)
 
     cat <- switch(namespace,
                   biological_process = "Process",
@@ -160,7 +163,7 @@
 #'
 #' }
 #' @export
-getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 10, maxSize = 1000) {
+getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 1, maxSize = 1000) {
     database <- match.arg(database)
 
     if (database == "KEGG") {

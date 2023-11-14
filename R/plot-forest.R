@@ -1,15 +1,16 @@
-#' @title Plot forest plot from pathway/geneset/meta analysis results
-#' @description Plot forest plot from pathway/geneset/meta analysis results.
+#' @title Plot pathway forest plot from pathway/geneset/meta analysis results
+#' @description pathways heatmap plot from pathway/geneset/meta analysis results.
 #' @param resultsList A named list of dataframes from pathway analysis, geneset analysis, and/or meta analysis results.
 #' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param yAxis The column to use for the y-axis.
-#' @param statLims A vector of length 2 specifying the limits for score to use in the x axis.
-#' @param useFDR A boolean parameter to specify if adjusted p-value should be considered.
-#' @return A list of ggplot objects.
+#' @param statLims A numeric vector of length 2 specifying the limits for score to use in the x-axis.
+#' @param useFDR Logical to indicate whether to use FDR or p-value.
+#' @param selectedPathways A vector of pathways ID, which is in the same format as ID column in the pathway analysis result, to be included in the plot.
+#' If it is NULL, all pathways will be included.
+#' @return A ggplot2 object for presenting the heatmap of the pathways.
 #' @examples
 #' \donttest{
 #' library(RCPA)
-#'
 #' affyFgseaResult <- loadData("affyFgseaResult")
 #' agilFgseaResult <- loadData("agilFgseaResult")
 #' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
@@ -32,10 +33,14 @@
 #' RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
 #'
 #' }
-#' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs geom_rect coord_cartesian geom_errorbarh ggtitle unit
+#' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs scale_fill_continuous scale_size geom_tile geom_errorbarh
+#' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>%
 #' @export
-plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 2.5), useFDR = TRUE) {
+plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 2.5), useFDR = TRUE, selectedPathways = NULL) {
+    if (!is.null(selectedPathways)) {
+      resultsList <- lapply(resultsList, function(df) df[df$ID %in% selectedPathways,])
+    }
     yAxis <- match.arg(yAxis)
 
     for (result in resultsList) {
@@ -105,6 +110,7 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
     yLabels <- plotData %>% select("ID", sym(yAxis)) %>% unique() %>% arrange(as.numeric(.data$ID)) %>% pull(sym(yAxis))
 
     statRange <- statLims[2] - statLims[1]
+    statMid <- (statLims[2] + statLims[1]) / 2
     gap <- 1
 
     plotData$normalizedScoreShifted <- plotData$normalizedScore + (as.numeric(plotData$dataset) - 1) * statRange + (as.numeric(plotData$dataset) - 1) * gap
@@ -134,8 +140,8 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
             mapping = aes(
                 ymin = -Inf,
                 ymax = Inf,
-                xmin = (seq_along(resultsList) - 1) * statRange - statRange / 2 + (seq_along(resultsList) - 1) * gap,
-                xmax = (seq_along(resultsList) - 1) * statRange + statRange / 2 + (seq_along(resultsList) - 1) * gap
+                xmin = (seq_along(resultsList) - 1) * statRange - statRange / 2 + (seq_along(resultsList) - 1) * gap + statMid,
+                xmax = (seq_along(resultsList) - 1) * statRange + statRange / 2 + (seq_along(resultsList) - 1) * gap + statMid
             ),
             fill = "transparent",
             color = "black"
@@ -175,7 +181,7 @@ plotForest <- function(resultsList, yAxis = c("ID", "name"), statLims = c(-2.5, 
         scale_x_continuous(breaks = breaks,
                            labels = labels,
                            name = "Normalized Score",
-                           sec.axis = sec_axis(~. / 1, breaks = zeros, labels = names(resultsList))) +
+                           sec.axis = sec_axis(~. / 1, breaks = zeros + statMid, labels = names(resultsList))) +
         theme_bw() +
         theme(
             panel.grid.major = element_blank(),

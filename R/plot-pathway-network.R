@@ -5,14 +5,15 @@
 #' The columns of each data frame should be at least ID, name, p.value and pFDR.
 #' An optional column "color" can be used to specify the color of the nodes.
 #' If the column "color" is not specified, the color of the nodes will be determined by the mode and the statistic.
-#' @param genesets A named list of character vectors of gene sets.
+#' @param genesets A genesets object that is obtained from getGeneSets function.
 #' @param statistic A character value of the statistic to use for the network.
 #' The statistic should be one of the columns of the data frame in the results.
+#' @param selectedPathways A vector of pathway IDs to be included in the plot.
+#' If it is NULL, all pathways from genesets will be included. 
 #' @param mode A character value of the mode to use to color the nodes.
-#' The mode should be one of "discrete", "continous".
+#' The mode should be one of "discrete", "continuous".
 #' If the mode is "discrete", the color of the nodes are determined by whether the p-value is significant or not.
-#' If the mode is "continous", the color of the nodes are proportional to the statistic.
-#' @param labels A named character vector of labels for the results.
+#' If the mode is "continuous", the color of the nodes are proportional to the statistic.
 #' @param pThreshold A numeric value of p-value threshold.
 #' @param useFDR A logical value indicating whether to use FDR or not.
 #' This parameter is independent of the pThreshold.
@@ -78,23 +79,37 @@
 #'
 #' @importFrom graph graphNEL addEdge `nodeDataDefaults<-` `nodeData<-`
 #' @importFrom grDevices colorRampPalette
-plotPathwayNetwork <- function(PAResults, genesets,
+plotPathwayNetwork <- function(PAResults, genesets, selectedPathways = NULL,
                                statistic = "pFDR",
                                mode = c("continuous", "discrete"),
-                               labels = NULL,
+                               # labels = NULL,
                                pThreshold = 0.05,
                                useFDR = TRUE,
                                edgeThreshold = 0.5,
                                statLimit = 4,
                                discreteColors = NULL,
                                continuousScaleFunc = NULL,
-                               NAColor = "#dddddd",
+                               # NAColor = "#dddddd",
+                               NAColor = "#ffffff",
                                borderColor = "#333333",
                                nodeSizeFnc = function(id) length(genesets[[id]])^.75,
                                borderWidthFnc = function(id) 1,
                                edgeWidthFnc = function(from, to) 1,
                                styleFile = system.file(package = "RCPA", "extdata", "pieStyle.js")) {
 
+    genesetLabels <-  genesets[["names"]]
+    
+    allGeneSets <- genesets[["genesets"]]
+    
+    
+    if (!is.null(selectedPathways)) {
+      genesets <- allGeneSets[selectedPathways]
+      labels <- genesetLabels[selectedPathways]
+    } else {
+      genesets <- allGeneSets
+      labels <- NULL
+    }
+  
     mode <- match.arg(mode)
 
     if (!.requirePackage("BrowserViz")){
@@ -187,7 +202,8 @@ plotPathwayNetwork <- function(PAResults, genesets,
             if (statistic == "p.value") 0
             else if (statistic == "pFDR") 0
             else -statLimit
-        )
+        ),
+        mode = mode
     )
 
     for (i in seq_along(PAResults)) {

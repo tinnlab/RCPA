@@ -1,3 +1,17 @@
+#' @title Combine p-values using Fisher
+#' @description This function combines P-Values based on Fisher method.
+#' This function is used internally by .runSPIA.
+#' @param pvals The vector of p-values to be combined.
+#' @return A combined p-value
+#' @details This function is used internally by .combinePvalues.
+#' @importFrom stats qnorm pchisq
+#' @noRd
+.runFisher <- function(pvals) {
+  pvals[pvals == 0] <- .Machine$double.eps
+  p.value <- pchisq(-2 * sum(log(pvals)), df = 2 * length(pvals), lower.tail = FALSE)
+  return(p.value)
+}
+
 #' @title Pathway Enrichment Analysis using SPIA
 #' @description This function performs patwhay analysis using SPIA method.
 #' This function is used internally by runPathwayAnalysis.
@@ -10,8 +24,9 @@
 #' @details This function is used internally by runPathwayAnalysis.
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData
 #' @importFrom dplyr %>%
+#' @importFrom methods Summary
 #' @noRd
-.runSPIA <- function(summarizedExperiment, network, pThreshold, all, ...){
+.runSPIA <- function(summarizedExperiment, network, pThreshold, all, nB = 2000, ...){
 
     DE_data <- rowData(summarizedExperiment)
 
@@ -21,9 +36,21 @@
     if(is.null(all))
       all = rownames(DE_data)
 
-    res <- .SPIAMod(de = DE_stat, all = all, pathInfo = network, ...)
-    res <- res[, c('ID', 'pG', 'tA', 'NDE')]
-    colnames(res) <- c("ID", "p.value", "score", "NDE")
+    # res <- .SPIAMod(de = DE_stat, all = all, pathInfo = network, ...)
+    res <- ROntoTools::pe(x = DE_stat, graphs = network, nboot = nB, verbose = TRUE, ref = all)
+    res <- Summary(res)
+    # res <- res[, c('ID', 'pG', 'tA', 'NDE')]
+    # colnames(res) <- c("ID", "p.value", "score", "NDE")
+    
+    datP <- res[,c("pAcc", "pORA")] %>% as.matrix()
+    # datP <- res[,c("pAcc", "pComb")] %>% as.matrix()
+    pCombined <- apply(datP, 1, .runFisher)
+
+    resF <- cbind(res[, c("totalAcc", "totalAccNorm"),], pCombined)
+    colnames(resF) <- c("score", "normalizedScore", "p.value")
+    
+    # resF <- res[,c("totalPert", "totalPertNorm", "pComb")]
+    # colnames(resF) <- c("score", "normalizedScore", "p.value")
 
     # constructed_genesets <- network %>% lapply(function(path){
     #     path$nodes %>% as.list %>% as.vector()
@@ -33,13 +60,22 @@
     # oraRes <- oraRes[oraRes$ID %in% res$ID,] %>% `rownames<-`(.$ID)
     # oraRes <- oraRes[res$ID,]
 
+    # data.frame(
+    #   ID = res$ID,
+    #   p.value = res$p.value,
+    #   score = res$score,
+    #   normalizedScore = res$score/res$NDE,
+    #   stringsAsFactors = FALSE
+    # )
+    
     data.frame(
-      ID = res$ID,
-      p.value = res$p.value,
-      score = res$score,
-      normalizedScore = res$score/res$NDE,
-      stringsAsFactors = FALSE
-    )
+      ID = rownames(resF),
+      p.value = resF$p.value,
+      score = resF$score,
+      normalizedScore = resF$normalizedScore,
+      stringsAsFactors = FALSE,
+      row.names = NULL
+    ) 
 }
 
 #' @title Pathway Enrichment Analysis using CePaORA
@@ -71,8 +107,8 @@
 
     res_stats <- res %>% lapply(function(pathData) {
         data <- pathData[[1]]
-        GSOverlap <- sum(data[["weight"]][which(data$node.level.t.value == 1)])
-        Expected <- GSOverlap * length(data$node.level.t.value[data$node.level.t.value == 1]) / length(data$node.level.t.value)
+        # GSOverlap <- sum(data[["weight"]][which(data$node.level.t.value == 1)])
+        # Expected <- GSOverlap * length(data$node.level.t.value[data$node.level.t.value == 1]) / length(data$node.level.t.value)
 
         # GSOverlap2 <- sum(data[["weight"]])
         # Expected2 <- GSOverlap2 * length(data$node.level.t.value) / length(bk)
@@ -80,7 +116,9 @@
         data.frame(
             p.value = data[["p.value"]],
             score = data[["score"]],
-            normalizedScore = log2(data[["score"]] / Expected + 1),
+            # normalizedScore = log2(data[["score"]] / Expected + 1),
+            normalizedScore = data[["score"]] / sum(data[["weight"]]),
+            # normalizedScore = (data[["score"]] - mean(data[["score.random"]])) / sd(data[["score.random"]]),
             # expected1 = Expected,
             # expected2 = Expected2,
             stringsAsFactors = FALSE
@@ -102,7 +140,7 @@
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
 #' @importFrom dplyr %>% select
 #' @noRd
-.runCePaGSA <- function(summarizedExperiment, network, ...){
+.runCePaGSA <- function(summarizedExperiment, network, plevel, ...){
 
     if (!.requirePackage("CePa")){
         return(NULL)
@@ -125,13 +163,16 @@
 
     label <- CePa::sampleLabel(group, treatment = "1", control = "0")
 
-    res <- CePa::cepa.all(mat = assay, label = label, pc = network, ...)
+    res <- CePa::cepa.all(mat = assay, label = label, pc = network, plevel = plevel, ...)
+    # res <- CePa::cepa.all(mat = assay, label = label, pc = network, ...)
 
     res_stats <- res %>% lapply(function(pathData) {
         path_res <- lapply(pathData, function(data){
             data.frame(
                 p.value <- data[["p.value"]],
                 score <- data[["score"]],
+                normalizedScore <- ifelse(plevel != "sum", data[["score"]], data[["score"]]/sum(data[["weight"]])),
+                # normalizedScore = (data[["score"]] - mean(data[["score.random"]])) / sd(data[["score.random"]]),
                 stringsAsFactors = FALSE
             )
         }) %>% do.call(what = rbind)
@@ -139,18 +180,18 @@
         path_res[which(path_res$p.value == min(path_res$p.value))[1],]
     }) %>% do.call(what = rbind) %>% data.frame(pathway = names(res), stringsAsFactors = FALSE)
 
-    colnames(res_stats) <- c("p.value", "score", "pathway")
+    colnames(res_stats) <- c("p.value", "score", "normalizedScore", "pathway")
 
     data.frame(
         ID = res_stats$pathway,
         p.value = res_stats$p.value,
         score = res_stats$score,
-        normalizedScore = res_stats$score,
+        normalizedScore = res_stats$normalizedScore,
         stringsAsFactors = FALSE
     )
 }
 
-#' @title Pathway Enrichment Analysis
+#' @title Topology-based Pathway Analysis
 #' @description This function performs patwhay analysis using SPIA, CePaORA, and CePaGSA methods.
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
 #' @param network The pathways network object.
@@ -158,7 +199,17 @@
 #' @param SPIAArgs A list of other passed arguments to spia. See spia function.
 #' @param CePaORAArgs A list of other passed arguments to CePaORA. See CePa function.
 #' @param CePaGSAArgs A list of other passed arguments to CePaGSA. See CePa function.
-#' @return A dataframe of pathway analysis result
+#' @return A dataframe of pathway analysis result, which contains the following columns
+#' \itemize{
+#' \item{ID: }{The ID of the gene set}
+#' \item{p.value: }{The p-value of the gene set}
+#' \item{pFDR: }{The adjusted p-value of the gene set using the Benjamini-Hochberg method}
+#' \item{score: }{The enrichment score of the gene set}
+#' \item{normalizedScore: }{The normalized enrichment score of the gene set}
+#' \item{sampleSize: }{The total number of samples in the study}
+#' \item{name: }{The name of the gene set}
+#' \item{pathwaySize: }{The size of the gene set}
+#' }
 #' @examples
 #' \donttest{
 #' library(RCPA)
@@ -190,11 +241,12 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
     }
 
     paArgs <- NULL
-
+    
     pathways_names <- network[["names"]]
     network_obj <- network[["network"]]
-
+    
     if(method == "spia"){
+        # network_obj <- network
 
         if(length(network_obj) != length(pathways_names)){
             stop("The network definition does not match with the names attribute.")
@@ -317,6 +369,11 @@ runPathwayAnalysis <- function(summarizedExperiment, network, method = c("spia",
     result$name <- pathways_names[as.character(result$ID)]
     result$pFDR <- p.adjust(result$p.value, method = "fdr")
     result$pathwaySize <- pathways_size[result$ID]
+    
+    result <- result %>% drop_na()
+    result <- result[order(result$p.value),]
+    
+    rownames(result) <- NULL
 
     return(result)
 }

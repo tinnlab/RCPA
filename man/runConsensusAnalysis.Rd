@@ -6,8 +6,9 @@
 \usage{
 runConsensusAnalysis(
   PAResults,
-  method = c("weighted.mean", "RRA", "min", "geom.mean", "mean", "median", "stuart"),
+  method = c("weightedZMean", "RRA"),
   weightsList = NULL,
+  useFDR = TRUE,
   rank.by = c("normalizedScore", "pFDR", "both"),
   backgroundSpace = NULL
 )
@@ -15,14 +16,17 @@ runConsensusAnalysis(
 \arguments{
 \item{PAResults}{A list of at least length two from enrichment analysis results.}
 
-\item{method}{The consensus analsyis method.}
+\item{method}{The consensus analsyis method. This can be either weighted.mean or RRA.}
 
 \item{weightsList}{A vector of integer values.
 Each element shows the corresponding input result weight.
-When selected method is weightedAvg this parameter needs to be specified.
+When selected method is weighted.mean this parameter needs to be specified.
 If it is null all the weights are considered as equal.}
 
-\item{rank.by}{An string parameter which specifies how the input results should be ranked.}
+\item{useFDR}{A logical parameter, indicating if adjusted p-values should be used.}
+
+\item{rank.by}{An string parameter which specifies how the input results should be ranked.
+This parameter is used when the selected method is RRA.}
 
 \item{backgroundSpace}{A list of lists with the same length as PAResults.
 Each list contains underlying space (set of pathways) for each input dataframe in PAResults.
@@ -31,11 +35,18 @@ NULL means all input dataframes share a common space.
 So the union pathways of all input dataframes is taken into account.}
 }
 \value{
-A dataframe of consensus analysis result
+A dataframe of consensus analysis result, which contains the following columns:
+\itemize{
+\item{ID: }{The ID of pathway}
+\item{p.value: }{The p-value of pathway}
+\item{pFDR: }{The adjusted p-value using Benjamini-Hochberg method}
+\item{name: }{The name of pathway}
+\item{pathwaySize: }{The size of pathway}
+}
 }
 \description{
-This function performs consensus analysis using several methods.
-These methods are: weightedAvg, RRA, min, geom.mean, mean, median, and stuart.
+This function performs consensus analysis using two methods.
+These methods are weighted.mean and RRA.
 }
 \examples{
 \donttest{
@@ -48,7 +59,8 @@ RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
 
 consensusPAResult <- RCPA::runConsensusAnalysis(
     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
-    method = "geom.mean"
+    method = "weightedZMean"
 )
+
 }
 }

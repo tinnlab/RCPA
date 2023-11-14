@@ -174,7 +174,7 @@
         score = gsa_res$GSA.scores,
         normalizedScore = gsa_res$GSA.scores,
         stringsAsFactors = FALSE
-    )
+    ) 
 }
 
 #' @title Geneset Enrichment Analysis using KS or Wilcox
@@ -236,15 +236,28 @@
     )
 }
 
-#' @title Geneset Enrichment Analysis
-#' @description This function performs geneset analysis using either ORA, fgsea, GSA, ks, or wilcox approaches.
+#' @title Gene Set Enrichment Analysis
+#' @description This function performs gene set enrichment analysis using either ORA, fgsea, GSA, ks, or wilcox approaches.
 #' @param summarizedExperiment The generated SummarizedExpriment object from DE analysis result.
-#' @param genesets The genesets definition, ex. KEGG genesets from getGeneSets function.
-#' @param method The geneset analsyis method, including ORA, fgsea, GSA, ks, and wilcox.
+#' @param genesets The gene sets definition, ex. KEGG genesets from getGeneSets function.
+#' @param method The gene set enrichment analsyis method, including ORA, fgsea, GSA, ks, and wilcox.
 #' @param ORAArgs A list of other passed arguments to ORA. pThreshold is used as p.value cutoff to pick DE genes.
 #' @param FgseaArgs A list of other passed arguments to fgsea. See fgsea function.
 #' @param GSAArgs A list of other passed arguments to GSA. See GSA function.
-#' @return A dataframe of geneset analysis result
+#' @return A dataframe of gene set enrichment analysis result, which contains the following columns:
+#' \itemize{
+#' \item{ID: }{The ID of the gene set}
+#' \item{p.value: }{The p-value of the gene set}
+#' \item{pFDR: }{The adjusted p-value of the gene set using the Benjamini-Hochberg method}
+#' \item{score: }{The enrichment score of the gene set}
+#' \item{normalizedScore: }{The normalized enrichment score of the gene set}
+#' \item{sampleSize: }{The total number of samples in the study}
+#' \item{name: }{The name of the gene set}
+#' \item{pathwaySize: }{The size of the gene set}
+#' }
+#' 
+#' The returned data frame is sorted based on the pathways' nominal p-values.
+#' 
 #' @examples
 #' \donttest{
 #'
@@ -295,7 +308,8 @@ runGeneSetAnalysis <- function(summarizedExperiment, genesets, method = c("ora",
 
         tmp <- FgseaArgs
         FgseaArgs <- FgseaArgs.default
-        FgseaArgs[names(tmp)] <- FgseaArgs.default[names(tmp)]
+        # FgseaArgs[names(tmp)] <- FgseaArgs.default[names(tmp)]
+        FgseaArgs[names(tmp)] <- tmp
 
         if (!FgseaArgs$scoreType %in% c("std", "pos", "neg")) {
             stop("The scoreType value is not valid.")
@@ -327,7 +341,8 @@ runGeneSetAnalysis <- function(summarizedExperiment, genesets, method = c("ora",
 
         tmp <- GSAArgs
         GSAArgs <- GSAArgs.default
-        GSAArgs[names(tmp)] <- GSAArgs.default[names(tmp)]
+        # GSAArgs[names(tmp)] <- GSAArgs.default[names(tmp)]
+        GSAArgs[names(tmp)] <- tmp
 
         if (!GSAArgs$method %in% c("maxmean", "mean", "absmean")) {
             stop("The method value in GSA is not valid.")
@@ -365,7 +380,8 @@ runGeneSetAnalysis <- function(summarizedExperiment, genesets, method = c("ora",
 
         tmp <- ORAArgs
         ORAArgs <- ORAArgs.default
-        ORAArgs[names(tmp)] <- ORAArgs.default[names(tmp)]
+        # ORAArgs[names(tmp)] <- ORAArgs.default[names(tmp)]
+        ORAArgs[names(tmp)] <- tmp
 
         if (ORAArgs$pThreshold < 0 | ORAArgs$pThreshold > 1) {
             stop("The pThreshold must be between zero and one.")
@@ -405,6 +421,12 @@ runGeneSetAnalysis <- function(summarizedExperiment, genesets, method = c("ora",
     result$name = genesets_names[as.character(result$ID)]
     result$pFDR <- p.adjust(result$p.value, method = "fdr")
     result$pathwaySize <- genesets_size[result$ID]
+    
+    result <- result %>% drop_na()
+    
+    result <- result[order(result$p.value),]
+    
+    rownames(result) <- NULL
 
     return(result)
 }
