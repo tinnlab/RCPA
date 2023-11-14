@@ -9,7 +9,7 @@ getGeneSets(
   org = "hsa",
   taxid = 9606,
   namespace = c("biological_process", "molecular_function", "cellular_component"),
-  minSize = 10,
+  minSize = 1,
   maxSize = 1000
 )
 }

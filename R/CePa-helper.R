@@ -1,5 +1,5 @@
-#' @title Get KEGG pathway catalouge (network) for CePa.ORA and CePa.GSA methods
-#' @description Get KEGG pathway catalouge for CePa.ORA and CePa.GSA methods
+#' @title Get KEGG pathway catalogue (network) for CePa.ORA and CePa.GSA methods
+#' @description Get KEGG pathway catalogue for CePa.ORA and CePa.GSA methods
 #' @param org The organism abbreviation. E.g, hsa, mmu, dme, etc.
 #' To see the full list of supported organisms, visit https://www.genome.jp/kegg/catalog/org_list.html.
 #' @param updateCache A parameter to enable/disable cache update.
@@ -21,7 +21,8 @@ getCePaPathwayCatalogue <- function(org = "hsa", updateCache = FALSE){
     return(NULL)
   }
 
-  keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
+  # keggPathway <- ROntoTools::keggPathwayGraphs(org, updateCache = updateCache)
+  keggPathway <- ROntoTools::keggPathwayGraphs(org, relPercThresh = 0, updateCache = updateCache)
 
   interactionList <- lapply(keggPathway, function(pathway){
     pathway@edgeData %>% names()

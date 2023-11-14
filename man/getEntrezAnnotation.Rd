@@ -10,7 +10,7 @@ getEntrezAnnotation(entrezIds)
 \item{entrezIds}{A vector of Entrez IDs.}
 }
 \value{
-A data frame with Entrez annotation. The columns are ID, Symbol, Description, OtherDesignations, OtherAliases and Chromosome.
+A data frame with Entrez annotation. The columns are ID (Entrez ID), Symbol, Description, OtherDesignations, OtherAliases and Chromosome.
 }
 \description{
 This function gets Entrez annotation.

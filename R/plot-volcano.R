@@ -130,6 +130,7 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
             panel.background = element_blank(),
             axis.line.x = element_line(color = "darkgray"),
             axis.line.y = element_line(color = "darkgray"),
+            plot.title = element_text(hjust = 0.5),
             legend.position = "none"
         )
 }
@@ -214,6 +215,7 @@ plotVolcanoDE <- function(DEResult, pThreshold = 0.05, useFDR = TRUE, logFCThres
             panel.background = element_blank(),
             axis.line.x = element_line(color = "darkgray"),
             axis.line.y = element_line(color = "darkgray"),
+            plot.title = element_text(hjust = 0.5),
             legend.position = "none"
         )
 

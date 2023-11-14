@@ -1,9 +1,10 @@
 Package: RCPA
 Type: Package
 Title: Consensus Pathway Analysis
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(
-    person(given = "Zeynab", family = "Maghsoudi", email = "zmaghsoudi@nevada.unr.edu", role = c("aut", "cre")),
+    person(given = "Ha", family = "Nguyen", email = "hvn0006@auburn.edu", role = c("aut", "cre")),
+    person(given = "Zeynab", family = "Maghsoudi", email = "zmaghsoudi@nevada.unr.edu", role = c("aut")),
     person(given = "Phi Hung", family = "Bya", role = c("aut")),
     person(given = "Tin", family = "Nguyen", role = c("fnd")))
 Description: Consensus Pathway Analysis provides a set of functions to perform pathway analysis and meta analysis from multiple gene expression datasets, as well as visualization of the results.
@@ -46,7 +47,8 @@ Imports:
     rlang,
     ggpattern,
     scales,
-    RobustRankAggreg
+    RobustRankAggreg,
+    methods
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,

@@ -274,7 +274,11 @@
 #' @param destDir A path to save downloaded data.
 #' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
 #' @param greenOnly Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.
-#' @return A SummarizedExperiment object including the processed data.
+#' @return A SummarizedExperiment object including the following attributes:
+#' \itemize{
+#' \item{assay: }{The assay data matrix, where rows are genes and columns are samples}
+#' \item{colData: }{The data frame of sample information}
+#' }
 #' @examples
 #' \donttest{
 #' library(RCPA)

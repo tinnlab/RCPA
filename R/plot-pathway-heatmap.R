@@ -1,10 +1,12 @@
 #' @title Plot pathways heatmap plot from pathway/geneset/meta analysis results
-#' @description pathways heatmap forest plot from pathway/geneset/meta analysis results.
+#' @description pathways heatmap plot from pathway/geneset/meta analysis results.
 #' @param resultsList A named list of dataframes from pathway analysis, geneset analysis, and/or meta analysis results.
 #' The columns are ID, name, description, p.value, pFDR, size, nDE, score and normalizedScore.
 #' @param yAxis The column to use for the y-axis.
 #' @param negLog10pValueLims A vector of length 2 specifying the minimum and maximum -log10(p-value) to plot.
 #' @param useFDR Logical to indicate whether to use FDR or p-value.
+#' @param selectedPathways A vector of pathways ID, which is in the same format as ID column in the pathway analysis result, to be included in the plot.
+#' If it is NULL, all pathways will be included.
 #' @return A ggplot2 object for presenting the heatmap of the pathways.
 #' @examples
 #' \donttest{
@@ -35,8 +37,12 @@
 #' @importFrom ggrepel geom_label_repel
 #' @importFrom dplyr %>%
 #' @export
-plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pValueLims = c(0, 5), useFDR = TRUE) {
-
+plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pValueLims = c(0, 5), useFDR = TRUE, selectedPathways = NULL) {
+    
+    if (!is.null(selectedPathways)) {
+      resultsList <- lapply(resultsList, function(df) df[df$ID %in% selectedPathways,])
+    }
+  
     yAxis <- match.arg(yAxis)
 
     studyIDs <- names(resultsList)
@@ -44,8 +50,22 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
     if (any(sapply(studyIDs, is.null))) {
         stop("The names of the input list should be specified.")
     }
+    
+    checkNS <- lapply(resultsList, function(data) c("normalizedScore") %in% colnames(data))
+    
+    resultsList <- lapply(seq_along(checkNS), function(i) {
+      if (!checkNS[[i]]) {
+        df <- resultsList[[i]]
+        df$normalizedScore <- rep(.Machine$double.eps, nrow(df))
+        resultsList[[i]] <- df
+      } else {
+        resultsList[[i]]
+      }
+    })
 
     cols_list <- lapply(resultsList, function(data) colnames(data))
+    
+    
 
     if (!all(sapply(cols_list, function(x) c("ID", "name", "normalizedScore", "p.value") %in% x))) {
         stop("All dataframes in the input list must have 'ID', 'name', 'normalizedScore', and 'p.value' columns.")
@@ -71,10 +91,12 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
 
         data <- resultsList[[i]][, unique(c("ID", yAxis, "normalizedScore", "p.value", "pFDR"))]
         data$dataset <- studyIDs[i]
-        data$Direction <- ifelse(data$normalizedScore <= 0, "Down", "Up")
+        data$Direction <- ifelse(data$normalizedScore <= 0, "Negative", "Positive")
         data$abs.normalizedScore <- data$normalizedScore %>% abs()
         as.data.frame(data)
     }) %>% do.call(what = rbind)
+    
+    plotData$Direction <- factor(plotData$Direction, levels = c("Positive", "Negative"))
 
     pathwayOrder <- plotData %>%
         mutate(
@@ -139,13 +161,15 @@ plotPathwayHeatmap <- function(resultsList, yAxis = c("ID", "name"), negLog10pVa
             guide = guide_legend(override.aes = list(shape = 21, fill = "gray50"))
         ) +
         scale_fill_manual(
-            values = c("Up" = "#FFAA1D", "Down" = "#72A0C1"),
-            guide = guide_legend(override.aes = list(shape = 21, size = 8))
+            values = c("Positive" = "#FFAA1D", "Negative" = "#72A0C1"),
+            guide = guide_legend(override.aes = list(shape = 21, size = 8), title = element_text("Sign"))
         ) +
         labs(
             size = "Normalized score",
             x = "",
             y = "") +
 
-        theme_bw()
+        theme_bw() + 
+      
+      ggplot2::theme(plot.title = element_text(hjust = 0.5))
 }

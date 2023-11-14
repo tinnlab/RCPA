@@ -2,9 +2,9 @@
 % Please edit documentation in R/plot-venn.R
 \name{plotVennPathway}
 \alias{plotVennPathway}
-\title{Plot venndiagram from multiple pathway analysis results}
+\title{Plot Venn diagram from multiple pathway analysis results}
 \usage{
-plotVennPathway(PAResults, pThreshold = 0.05, useFDR = TRUE)
+plotVennPathway(PAResults, pThreshold = 0.05, useFDR = TRUE, topToList = 10)
 }
 \arguments{
 \item{PAResults}{A list of data frames with the results of pathway analysis.}
@@ -12,16 +12,23 @@ plotVennPathway(PAResults, pThreshold = 0.05, useFDR = TRUE)
 \item{pThreshold}{The p-value threshold to determine if a pathway is enriched.}
 
 \item{useFDR}{Use the FDR adjusted p-value instead of the raw p-value.}
+
+\item{topToList}{The number of common signifcant pathways that are used to annotate the plot.}
 }
 \value{
 A ggplot2 object.
 }
 \description{
-Plot a venndiagram from multiple pathway analysis results.
+Plot a Venn diagram from multiple pathway analysis results.
 }
 \examples{
 \donttest{
 library(RCPA)
+
+#if (!require("ggvenn", quietly = TRUE)) {
+ #install.packages("ggvenn")
+#}
+#library(ggvenn)
 
 affyFgseaResult <- loadData("affyFgseaResult")
 agilFgseaResult <- loadData("agilFgseaResult")
@@ -38,12 +45,13 @@ PAResults <- list(
 PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
 PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
 
+if (require("ggvenn", quietly = TRUE)){
 RCPA::plotVennPathway(PAResults, pThreshold = 0.05) +
     ggplot2::ggtitle("All Significant Pathways")
 RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) +
     ggplot2::ggtitle("Significantly Up-regulated Pathways")
 RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) +
     ggplot2::ggtitle("Significantly Down-regulated Pathways")
-
+}
 }
 }

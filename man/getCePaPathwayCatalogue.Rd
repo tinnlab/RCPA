@@ -2,7 +2,7 @@
 % Please edit documentation in R/CePa-helper.R
 \name{getCePaPathwayCatalogue}
 \alias{getCePaPathwayCatalogue}
-\title{Get KEGG pathway catalouge (network) for CePa.ORA and CePa.GSA methods}
+\title{Get KEGG pathway catalogue (network) for CePa.ORA and CePa.GSA methods}
 \usage{
 getCePaPathwayCatalogue(org = "hsa", updateCache = FALSE)
 }
@@ -16,7 +16,7 @@ To see the full list of supported organisms, visit https://www.genome.jp/kegg/ca
 A named list with three elements: network, names and sizes for CePa.ORA and CePa.GSA methods.
 }
 \description{
-Get KEGG pathway catalouge for CePa.ORA and CePa.GSA methods
+Get KEGG pathway catalogue for CePa.ORA and CePa.GSA methods
 }
 \examples{
 \donttest{
