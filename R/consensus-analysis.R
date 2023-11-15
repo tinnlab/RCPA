@@ -97,11 +97,11 @@
 #' So the union pathways of all input dataframes is taken into account.
 #' @return A dataframe of consensus analysis result, which contains the following columns:
 #' \itemize{
-#' \item{ID: }{The ID of pathway}
-#' \item{p.value: }{The p-value of pathway}
-#' \item{pFDR: }{The adjusted p-value using Benjamini-Hochberg method}
-#' \item{name: }{The name of pathway}
-#' \item{pathwaySize: }{The size of pathway}
+#' \item{ID: The ID of pathway}
+#' \item{p.value: The p-value of pathway}
+#' \item{pFDR: The adjusted p-value using Benjamini-Hochberg method}
+#' \item{name: The name of pathway}
+#' \item{pathwaySize: The size of pathway}
 #' }
 #' @examples
 #' \donttest{

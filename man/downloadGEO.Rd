@@ -26,8 +26,8 @@ downloadGEO(
 \value{
 A SummarizedExperiment object including the following attributes:
 \itemize{
-\item{assay: }{The assay data matrix, where rows are genes and columns are samples}
-\item{colData: }{The data frame of sample information}
+\item{assay: The assay data matrix, where rows are genes and columns are samples}
+\item{colData: The data frame of sample information}
 }
 }
 \description{
