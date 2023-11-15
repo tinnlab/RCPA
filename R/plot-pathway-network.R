@@ -65,15 +65,15 @@
 #'if (require("RCyjs", quietly = TRUE)){
 #' pltObj <- RCPA::plotPathwayNetwork(
 #'     PAResults,
-#'     genesets = genesets$genesets[genesetsToPlot],
-#'     labels = genesets$names[genesetsToPlot],
+#'     genesets = genesets,
+#'     selectedPathways = genesetsToPlot,
 #'     edgeThreshold = 0.75,
 #'     mode = "continuous",
 #'     statistic = "normalizedScore"
 #' )
 #' }
 #'
-#' # pltObj$plot() This function requires a browser to work
+#' # pltObj$plot() # This function requires a browser to work
 #'
 #' }
 #'
