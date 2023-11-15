@@ -30,21 +30,21 @@ where FROM is the probe ID and TO is the entrez gene ID.}
 \value{
 A SummarizedExperiment object with DE analysis results appended to the rowData slot with the following columns:
 \itemize{
-\item{ID: }{gene ID. If annotation is provided, this will be the entrez gene ID. Otherwise, it will be the probe ID.}
-\item{logFC: }{log2 fold change}
-\item{p.value: }{p-value from the DE analysis using the specified method}
-\item{pFDR: }{p-value adjusted for multiple testing using Benjamini-Hochberg method}
-\item{statistic: }{statistic from the DE analysis using the specified method.
+\item{ID: gene ID. If annotation is provided, this will be the entrez gene ID. Otherwise, it will be the probe ID.}
+\item{logFC: log2 fold change}
+\item{p.value: p-value from the DE analysis using the specified method}
+\item{pFDR: p-value adjusted for multiple testing using Benjamini-Hochberg method}
+\item{statistic: statistic from the DE analysis using the specified method.
 For limma, this is the t-statistic.
 For DESeq2, this is the Wald statistic.
 For edgeR, this is the log fold change.}
-\item{avgExpr: }{
+\item{avgExpr: 
 For limma, it is the average expression.
 For DESeq2, it is the log base mean.
 For edgeR, it is the log CPM.
 }
-\item{logFCSE: }{standard error of the log fold change.}
-\item{sampleSize: }{sample size used for DE analysis.}
+\item{logFCSE: standard error of the log fold change.}
+\item{sampleSize: sample size used for DE analysis.}
 }
 The assay slot will contain the input expression/count matrix,
 and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object

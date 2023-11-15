@@ -276,8 +276,8 @@
 #' @param greenOnly Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.
 #' @return A SummarizedExperiment object including the following attributes:
 #' \itemize{
-#' \item{assay: }{The assay data matrix, where rows are genes and columns are samples}
-#' \item{colData: }{The data frame of sample information}
+#' \item{assay: The assay data matrix, where rows are genes and columns are samples}
+#' \item{colData: The data frame of sample information}
 #' }
 #' @examples
 #' \donttest{

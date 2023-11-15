@@ -67,13 +67,13 @@
 #' @param method A method used to combine pathway analysis results, which can be "stouffer", "fisher", "addCLT", "geoMean", "minP", or "REML"
 #' @return A dataframe of meta analysis results including the following columns:
 #' \itemize{
-#' \item{ID: }{The ID of pathway}
-#' \item{name: }{The name of pathway}
-#' \item{p.value: }{The meta p-value of pathway}
-#' \item{pFDR: }{The adjusted meta p-value of pathway using Benjamini-Hochberg method}
-#' \item{score: }{The combined score of pathway}
-#' \item{normalizedScore: }{The combined normalized score of pathway}
-#' \item{pathwaySize: }{The size of pathway}
+#' \item{ID: The ID of pathway}
+#' \item{name: The name of pathway}
+#' \item{p.value: The meta p-value of pathway}
+#' \item{pFDR: The adjusted meta p-value of pathway using Benjamini-Hochberg method}
+#' \item{score: The combined score of pathway}
+#' \item{normalizedScore: The combined normalized score of pathway}
+#' \item{pathwaySize: The size of pathway}
 #' }
 #' @examples
 #' \donttest{

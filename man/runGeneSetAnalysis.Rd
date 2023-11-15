@@ -32,14 +32,14 @@ runGeneSetAnalysis(
 \value{
 A dataframe of gene set enrichment analysis result, which contains the following columns:
 \itemize{
-\item{ID: }{The ID of the gene set}
-\item{p.value: }{The p-value of the gene set}
-\item{pFDR: }{The adjusted p-value of the gene set using the Benjamini-Hochberg method}
-\item{score: }{The enrichment score of the gene set}
-\item{normalizedScore: }{The normalized enrichment score of the gene set}
-\item{sampleSize: }{The total number of samples in the study}
-\item{name: }{The name of the gene set}
-\item{pathwaySize: }{The size of the gene set}
+\item{ID: The ID of the gene set}
+\item{p.value: The p-value of the gene set}
+\item{pFDR: The adjusted p-value of the gene set using the Benjamini-Hochberg method}
+\item{score: The enrichment score of the gene set}
+\item{normalizedScore: The normalized enrichment score of the gene set}
+\item{sampleSize: The total number of samples in the study}
+\item{name: The name of the gene set}
+\item{pathwaySize: The size of the gene set}
 }
 
 The returned data frame is sorted based on the pathways' nominal p-values.

@@ -93,7 +93,7 @@
 #' @param taxid The NCBI taxonomy ID of the organism.
 #' @param namespace The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
 #' @return A named list with three elements: database, genesets and names.
-#' @importFrom utils read.table
+#' @importFrom utils read.table download.file
 #' @importFrom dplyr %>% filter group_by group_split rename select
 #' @importFrom stats setNames
 #' @noRd
@@ -101,43 +101,121 @@
 
     namespace <- match.arg(namespace)
     
+    tmpTarget <- tempfile(fileext = ".gz")
+    on.exit({
+      unlink(tmpTarget)
+    })
+    
     oldTimeout <- options("timeout")
-    options(timeout = 100000000)
-    con <- gzcon(url("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz"))
-    txt <- readLines(con)
-    close(con)
+    options(timeout = 3600)
+    download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
     options(timeout = oldTimeout)
-
+    
     cat <- switch(namespace,
                   biological_process = "Process",
                   molecular_function = "Function",
                   cellular_component = "Component")
-
-    genesets <- read.table(textConnection(txt), sep = "\t", header = TRUE, stringsAsFactors = FALSE, fill = TRUE, comment.char = "!") %>%
+    
+    gzCon <- gzfile(tmpTarget, open = "r")
+    on.exit({
+      close(gzCon)
+    })
+    headers <- readLines(gzCon, 1) %>%
+      stringr::str_split("\t") %>%
+      unlist() %>%
+      make.names()
+    
+    genesets <- list()
+    
+    while (TRUE) {
+      lines <- readLines(gzCon, 100000)
+      
+      if (length(lines) == 0) {
+        break
+      }
+      
+      genesetsTmp <- read.table(textConnection(lines), sep = "\t", header = FALSE, stringsAsFactors = FALSE, fill = TRUE, comment.char = "!", quote = "") %>%
+        `colnames<-`(headers) %>%
         rename(tax_id = "X.tax_id") %>%
         filter(.$tax_id == taxid & .$Category == cat) %>%
         group_by(.$GO_ID) %>%
         group_split() %>%
         lapply(function(df) {
-            list(
-                name = df$GO_ID[1] %>% as.character(),
-                geneIds = df$GeneID %>% as.character()
-            )
+          list(
+            name = df$GO_ID[1] %>% as.character(),
+            geneIds = df$GeneID %>% as.character()
+          )
         }) %>%
         setNames(lapply(., function(gl) gl$name)) %>%
         lapply(function(gl) gl$geneIds)
-
-    if (length(genesets) == 0) {
-        stop("No GO terms found for the given organism and namespace.")
+      
+      for (gsId in names(genesetsTmp)) {
+        if (is.null(genesets[[gsId]])) {
+          genesets[[gsId]] <- genesetsTmp[[gsId]]
+        } else {
+          genesets[[gsId]] <- union(genesets[[gsId]], genesetsTmp[[gsId]])
+        }
+      }
     }
-
-     goTermNames <- .getGOTermNames(namespace)
-
+    
+    if (length(genesets) == 0) {
+      stop("No GO terms found for the given organism and namespace.")
+    }
+    
+    goTermNames <- .getGOTermNames(namespace)
+    
     list(
-        database = "GO",
-        genesets = genesets,
-        names = goTermNames[names(genesets)]
+      database = "GO",
+      genesets = genesets,
+      names = goTermNames[names(genesets)]
     )
+    
+    # oldTimeout <- options("timeout")
+    # options(timeout = 100000000)
+    # con <- gzcon(url("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz"))
+    # txt <- readLines(con)
+    # close(con)
+    # options(timeout = oldTimeout)
+    
+    # tmpTarget <- tempfile(fileext = ".gz")
+    # on.exit({
+    #   unlink(tmpTarget)
+    # })
+    # download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
+    # txt <- readLines(gzfile(tmpTarget))
+    # 
+    # cat <- switch(namespace,
+    #               biological_process = "Process",
+    #               molecular_function = "Function",
+    #               cellular_component = "Component")
+    # 
+    # gc()
+    # 
+    # genesets <- read.table(textConnection(txt), sep = "\t", header = TRUE, stringsAsFactors = FALSE, fill = TRUE, comment.char = "!") %>%
+    #     rename(tax_id = "X.tax_id") %>%
+    #     filter(.$tax_id == taxid & .$Category == cat) %>%
+    #     group_by(.$GO_ID) %>%
+    #     group_split() %>%
+    #     lapply(function(df) {
+    #         list(
+    #             name = df$GO_ID[1] %>% as.character(),
+    #             geneIds = df$GeneID %>% as.character()
+    #         )
+    #     }) %>%
+    #     setNames(lapply(., function(gl) gl$name)) %>%
+    #     lapply(function(gl) gl$geneIds)
+    # 
+    # if (length(genesets) == 0) {
+    #     stop("No GO terms found for the given organism and namespace.")
+    # }
+    # 
+    #  goTermNames <- .getGOTermNames(namespace)
+    # 
+    # list(
+    #     database = "GO",
+    #     genesets = genesets,
+    #     names = goTermNames[names(genesets)]
+    # )
 }
 
 #' @title Get gene sets
