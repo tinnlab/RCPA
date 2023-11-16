@@ -22,8 +22,11 @@
 #'     "Agilent - GSE61196"   = rowData(agilDEExperiment),
 #'     "RNASeq - GSE153873"   = rowData(RNASeqDEExperiment)
 #' )
+#' 
 #' DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
+#' 
 #' DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
+#' 
 #' if (require("ggvenn", quietly = TRUE)){
 #' RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("All DE Genes")
 #' RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated DE Genes")
@@ -137,10 +140,6 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #' \donttest{
 #' library(RCPA)
 #'
-#' #if (!require("ggvenn", quietly = TRUE)) {
-#'  #install.packages("ggvenn")
-#' #}
-#' #library(ggvenn)
 #'
 #' affyFgseaResult <- loadData("affyFgseaResult")
 #' agilFgseaResult <- loadData("agilFgseaResult")
@@ -155,6 +154,7 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #' )
 #'
 #' PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
+#' 
 #' PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
 #'
 #' if (require("ggvenn", quietly = TRUE)){

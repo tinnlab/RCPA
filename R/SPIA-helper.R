@@ -235,9 +235,9 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
         stop("More than 1% of your de genes have IDs are not present in the reference array!. Are you sure you use the right reference array?")
     }
     if (!length(IDsNotP) == 0) {
-        cat("The following IDs are missing from all vector...:\n")
-        cat(paste(IDsNotP, collapse = ","))
-        cat("\nThey were added to your universe...")
+        message("The following IDs are missing from all vector...:\n")
+        message(paste(IDsNotP, collapse = ","))
+        message("\nThey were added to your universe...")
         all <- c(all, IDsNotP)
     }
     if (length(intersect(names(de), all)) != length(de)) {
@@ -311,8 +311,8 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
             pb[i] <- ph[i] <- smPFS[i] <- pcomb[i] <- tAraw[i] <- tA[i] <- NA
         }
         if (verbose) {
-            cat("\n")
-            cat(paste("Done pathway ", i, " : ", substr(path.names[names(datp)[i]], 1, 30), "..", sep = ""))
+            message("\n")
+            message(paste("Done pathway ", i, " : ", substr(path.names[names(datp)[i]], 1, 30), "..", sep = ""))
         }
     }
 

@@ -108,8 +108,8 @@
     
     oldTimeout <- options("timeout")
     options(timeout = 3600)
+    on.exit({options(timeout = oldTimeout)})
     download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
-    options(timeout = oldTimeout)
     
     cat <- switch(namespace,
                   biological_process = "Process",
@@ -169,53 +169,7 @@
       genesets = genesets,
       names = goTermNames[names(genesets)]
     )
-    
-    # oldTimeout <- options("timeout")
-    # options(timeout = 100000000)
-    # con <- gzcon(url("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz"))
-    # txt <- readLines(con)
-    # close(con)
-    # options(timeout = oldTimeout)
-    
-    # tmpTarget <- tempfile(fileext = ".gz")
-    # on.exit({
-    #   unlink(tmpTarget)
-    # })
-    # download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
-    # txt <- readLines(gzfile(tmpTarget))
-    # 
-    # cat <- switch(namespace,
-    #               biological_process = "Process",
-    #               molecular_function = "Function",
-    #               cellular_component = "Component")
-    # 
-    # gc()
-    # 
-    # genesets <- read.table(textConnection(txt), sep = "\t", header = TRUE, stringsAsFactors = FALSE, fill = TRUE, comment.char = "!") %>%
-    #     rename(tax_id = "X.tax_id") %>%
-    #     filter(.$tax_id == taxid & .$Category == cat) %>%
-    #     group_by(.$GO_ID) %>%
-    #     group_split() %>%
-    #     lapply(function(df) {
-    #         list(
-    #             name = df$GO_ID[1] %>% as.character(),
-    #             geneIds = df$GeneID %>% as.character()
-    #         )
-    #     }) %>%
-    #     setNames(lapply(., function(gl) gl$name)) %>%
-    #     lapply(function(gl) gl$geneIds)
-    # 
-    # if (length(genesets) == 0) {
-    #     stop("No GO terms found for the given organism and namespace.")
-    # }
-    # 
-    #  goTermNames <- .getGOTermNames(namespace)
-    # 
-    # list(
-    #     database = "GO",
-    #     genesets = genesets,
-    #     names = goTermNames[names(genesets)]
-    # )
+
 }
 
 #' @title Get gene sets

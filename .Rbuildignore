@@ -9,11 +9,10 @@
 ^README\.md
 ^RCPA\.Rproj
 ^tests
-^build
 ^.tests
 ^.Dockerfile
 ^.dockerignore
 ^.DS_Store
 ^doc$
-^Meta$
 ^tests$
+^Meta$

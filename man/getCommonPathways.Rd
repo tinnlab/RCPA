@@ -20,7 +20,6 @@ A data frame contains pathway ID and pathway names.
 Query a list of common significant pathways from multiple pathway analysis results.
 }
 \examples{
-\donttest{
 library(RCPA)
 
 
@@ -38,5 +37,4 @@ commonPathways <- RCPA::getCommonPathways(PAResults)
 
 print(commonPathways[1:6,])
 
-}
 }

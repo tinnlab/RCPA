@@ -47,8 +47,11 @@ DEResults <- list(
     "Agilent - GSE61196"   = rowData(agilDEExperiment),
     "RNASeq - GSE153873"   = rowData(RNASeqDEExperiment)
 )
+
 DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
+
 DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
+
 if (require("ggvenn", quietly = TRUE)){
 RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("All DE Genes")
 RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated DE Genes")
