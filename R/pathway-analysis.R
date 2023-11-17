@@ -214,12 +214,11 @@
 #' \donttest{
 #' library(RCPA)
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
-#' #spiaNetwork <- loadData("spiaNetwork")
+#' spiaNetwork <- loadData("spiaNetwork")
 #' cepaNetwork <- loadData("cepaNetwork")
 #'
-#' #spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
+#' spiaResult <- runPathwayAnalysis(RNASeqDEExperiment, spiaNetwork, method = "spia")
 #' cepaORAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaORA")
-#' #cepaGSAResult <- runPathwayAnalysis(RNASeqDEExperiment, cepaNetwork, method = "cepaGSA")
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment assay
 #' @importFrom dplyr %>%

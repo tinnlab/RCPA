@@ -8,7 +8,6 @@
 #' Default is 0, which means no filtering.
 #' @return A data frame wtih three columns: ID (Entrez IDs), Symbol and Description
 #' @examples
-#' \donttest{
 #' library(RCPA)
 #' library(SummarizedExperiment)
 #'
@@ -26,7 +25,6 @@
 #' 
 #' print(commonDEGenes[1:5,1:3])
 #'
-#' }
 #' @importFrom dplyr %>% filter
 #' @importFrom scales trans_new
 #' @export

@@ -5,7 +5,6 @@
 #' @param useFDR Use the FDR adjusted p-value instead of the nominal p-value.
 #' @return A data frame contains pathway ID and pathway names.
 #' @examples
-#' \donttest{
 #' library(RCPA)
 #'
 #'
@@ -23,7 +22,6 @@
 #' 
 #' print(commonPathways[1:6,])
 #'
-#' }
 #' @importFrom dplyr %>% filter
 #' @importFrom scales trans_new
 #' @export

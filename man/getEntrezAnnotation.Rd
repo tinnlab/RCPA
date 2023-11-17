@@ -16,8 +16,8 @@ A data frame with Entrez annotation. The columns are ID (Entrez ID), Symbol, Des
 This function gets Entrez annotation.
 }
 \examples{
-\donttest{
+
 library(RCPA)
 getEntrezAnnotation(c("77267466", "77267467"))
-}
+
 }

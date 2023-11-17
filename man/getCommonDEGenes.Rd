@@ -31,7 +31,6 @@ A data frame wtih three columns: ID (Entrez IDs), Symbol and Description
 Get a list of common significant DE genes from multiple DE Analysis results.
 }
 \examples{
-\donttest{
 library(RCPA)
 library(SummarizedExperiment)
 
@@ -49,5 +48,4 @@ commonDEGenes <- RCPA::getCommonDEGenes(DEResults)
 
 print(commonDEGenes[1:5,1:3])
 
-}
 }

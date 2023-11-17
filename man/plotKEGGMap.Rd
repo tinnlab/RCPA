@@ -47,6 +47,7 @@ This function plots KEGG map with DE genes.
 \donttest{
 library(RCPA)
 library(SummarizedExperiment)
+
 affyDEExperiment <- loadData("affyDEExperiment")
 agilDEExperiment <- loadData("agilDEExperiment")
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
@@ -58,9 +59,6 @@ DEResults <- list(
 )
 
 plotObj <- RCPA::plotKEGGMap(DEResults, "hsa05010", stat = "logFC", pThreshold = 1, statLimit = 1)
-# print(plotObj$plot)
-# ggplot2::ggsave("KEGG-hsa05010.png", plotObj$plot,
-#               width = plotObj$width, height = plotObj$height, units = "px")
 
 }
 }

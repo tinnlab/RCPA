@@ -25,10 +25,6 @@ Plot a Venn diagram from multiple pathway analysis results.
 \donttest{
 library(RCPA)
 
-#if (!require("ggvenn", quietly = TRUE)) {
- #install.packages("ggvenn")
-#}
-#library(ggvenn)
 
 affyFgseaResult <- loadData("affyFgseaResult")
 agilFgseaResult <- loadData("agilFgseaResult")
@@ -43,6 +39,7 @@ PAResults <- list(
 )
 
 PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
+
 PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
 
 if (require("ggvenn", quietly = TRUE)){

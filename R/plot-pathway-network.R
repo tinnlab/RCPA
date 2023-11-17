@@ -42,12 +42,9 @@
 #' @export
 #' @examples
 #' \donttest{
-#' # Loading libraries
-#' #if (!require("RCyjs", quietly = TRUE)) {
-#'  #BiocManager::install("RCyjs")
-#' #}
-#' #library(RCyjs)
+#' 
 #' library(RCPA)
+#' 
 #' affyFgseaResult <- loadData("affyFgseaResult")
 #' agilFgseaResult <- loadData("agilFgseaResult")
 #' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
@@ -62,7 +59,8 @@
 #' )
 #'
 #' genesetsToPlot <- metaPAResult$ID[order(metaPAResult$pFDR)][1:30]
-#'if (require("RCyjs", quietly = TRUE)){
+#' if (require("RCyjs", quietly = TRUE)){
+#' # This function requires a browser to work
 #' pltObj <- RCPA::plotPathwayNetwork(
 #'     PAResults,
 #'     genesets = genesets,
@@ -71,9 +69,10 @@
 #'     mode = "continuous",
 #'     statistic = "normalizedScore"
 #' )
+#' 
+#' # This function requires a browser to work
+#' pltObj$plot() 
 #' }
-#'
-#' # pltObj$plot() # This function requires a browser to work
 #'
 #' }
 #'

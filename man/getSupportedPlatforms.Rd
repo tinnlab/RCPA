@@ -13,8 +13,8 @@ A named list of supported platforms, where the names are the platform IDs and th
 Get supported platforms
 }
 \examples{
-\donttest{
+
 library(RCPA)
 getSupportedPlatforms()
-}
+
 }

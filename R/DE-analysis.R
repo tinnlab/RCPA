@@ -111,11 +111,6 @@
 #' library(RCPA)
 #' library(SummarizedExperiment)
 #'
-#' #if (!require("hgu133plus2.db", quietly = TRUE)) {
-#'  #BiocManager::install("hgu133plus2.db")
-#' #}
-#' #library(hgu133plus2.db)
-#'
 #' # GSE5281
 #' affyDataset <- loadData("affyDataset")
 #' affyDesign <- model.matrix(~0 + condition + region + condition:region, data = colData(affyDataset))
@@ -126,7 +121,9 @@
 #' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign,
 #'                                         contrast = affyContrast, annotation = "GPL570")
 #' }
-#' # print(rowData(affyDEExperiment)) # check the DE analysis results
+#' 
+#' # check the DE analysis results
+#' head(rowData(affyDEExperiment)) 
 #'
 #'
 #' # GSE61196
@@ -142,18 +139,13 @@
 #'
 #' agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
 #'                                         contrast = agilContrast, annotation = GPL4133GeneMapping)
-#' # print(rowData(agilDEExperiment))
+#' head(rowData(agilDEExperiment))
 #'
 #' # GSE153873
 #' RNASeqDataset <- loadData("RNASeqDataset")
 #' RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
 #' RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=RNASeqDesign)
 #'
-#' # Create mapping
-#' # Install org.Hs.eg.db if not installed
-#' # if (!require("org.Hs.eg.db", quietly = TRUE)) {
-#' #     BiocManager::install("org.Hs.eg.db")
-#' # }
 #'
 #' if (require("org.Hs.eg.db", quietly = TRUE)){
 #'     ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset),
@@ -165,7 +157,7 @@
 #'                            design = RNASeqDesign,
 #'                            contrast = RNASeqContrast,
 #'                            annotation = ENSEMBLMapping)
-#'     # print(rowData(RNASeqDEExperiment))
+#'     head(rowData(RNASeqDEExperiment))
 #' }
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData

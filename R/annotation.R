@@ -3,10 +3,10 @@
 #' @param entrezIds A vector of Entrez IDs.
 #' @return A data frame with Entrez annotation. The columns are ID (Entrez ID), Symbol, Description, OtherDesignations, OtherAliases and Chromosome.
 #' @examples
-#' \donttest{
+#' 
 #' library(RCPA)
 #' getEntrezAnnotation(c("77267466", "77267467"))
-#' }
+#' 
 #' @importFrom httr POST content
 #' @importFrom dplyr %>%
 #' @export
