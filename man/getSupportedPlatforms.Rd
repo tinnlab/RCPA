@@ -15,6 +15,6 @@ Get supported platforms
 \examples{
 
 library(RCPA)
-getSupportedPlatforms()
+supportedPlatforms <- getSupportedPlatforms()
 
 }

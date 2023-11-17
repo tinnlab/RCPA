@@ -4,7 +4,7 @@
 #' @examples
 #' 
 #' library(RCPA)
-#' getSupportedPlatforms()
+#' supportedPlatforms <- getSupportedPlatforms()
 #' 
 #' @export
 getSupportedPlatforms <- function(){

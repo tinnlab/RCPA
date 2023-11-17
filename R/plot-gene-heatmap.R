@@ -25,10 +25,6 @@
 #'     "RNASeq - GSE153873" = rowData(RNASeqDEExperiment)
 #' )
 #'
-#' # Install the meta package if not installed
-#' # if (!requireNamespace("meta", quietly = TRUE)) {
-#' #     install.packages("meta")
-#' # }
 #'
 #' if (requireNamespace("meta", quietly = TRUE)) {
 #'     metaDEResult <- RCPA::runDEMetaAnalysis(DEResults, method = "stouffer")
@@ -44,7 +40,7 @@
 #'     resultsToPlot <- c(DEResults, list(metaDEResult))
 #'     names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
 #'
-#'     RCPA::plotDEGeneHeatmap(
+#'     plotObj <- RCPA::plotDEGeneHeatmap(
 #'         resultsToPlot,
 #'         genesToPlot[genesOrderByFC],
 #'         labels = labels[genesOrderByFC],

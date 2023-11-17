@@ -20,6 +20,6 @@ Get KEGG pathway network for SPIA method
 }
 \examples{
 \donttest{
-getSPIAKEGGNetwork("hsa")
+spiaNetwork <- getSPIAKEGGNetwork("hsa")
 }
 }

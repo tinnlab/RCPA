@@ -19,10 +19,10 @@
 #' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
 #' metaPAResult <- loadData("metaPAResult")
 #'
-#' RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
-#' RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")
-#' RCPA::plotVolcanoPathway(RNASeqFgseaResult, sideToLabel = "left")
-#' RCPA::plotVolcanoPathway(metaPAResult, sideToLabel = "left")
+#' p1 <- RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
+#' p2 <- RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")
+#' p3 <- RCPA::plotVolcanoPathway(RNASeqFgseaResult, sideToLabel = "left")
+#' p4 <- RCPA::plotVolcanoPathway(metaPAResult, sideToLabel = "left")
 #'
 #' }
 #' 
@@ -153,11 +153,11 @@ plotVolcanoPathway <- function(PAResult, xAxis = c("normalizedScore", "score"), 
 #' agilDEExperiment <- loadData("agilDEExperiment")
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
-#' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
+#' p1 <- RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
 #'     ggplot2::ggtitle("Affymetrix - GSE5281")
-#' RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
+#' p2 <- RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
 #'     ggplot2::ggtitle("Agilent - GSE61196")
-#' RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
+#' p3 <- RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
 #'     ggplot2::ggtitle("RNASeq - GSE153873")
 #'
 #' }

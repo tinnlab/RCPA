@@ -48,10 +48,10 @@ agilFgseaResult <- loadData("agilFgseaResult")
 RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
 metaPAResult <- loadData("metaPAResult")
 
-RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
-RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")
-RCPA::plotVolcanoPathway(RNASeqFgseaResult, sideToLabel = "left")
-RCPA::plotVolcanoPathway(metaPAResult, sideToLabel = "left")
+p1 <- RCPA::plotVolcanoPathway(affyFgseaResult, sideToLabel = "left")
+p2 <- RCPA::plotVolcanoPathway(agilFgseaResult, sideToLabel = "left")
+p3 <- RCPA::plotVolcanoPathway(RNASeqFgseaResult, sideToLabel = "left")
+p4 <- RCPA::plotVolcanoPathway(metaPAResult, sideToLabel = "left")
 
 }
 

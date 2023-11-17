@@ -43,11 +43,11 @@ PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
 PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
 
 if (require("ggvenn", quietly = TRUE)){
-RCPA::plotVennPathway(PAResults, pThreshold = 0.05) +
+p1 <- RCPA::plotVennPathway(PAResults, pThreshold = 0.05) +
     ggplot2::ggtitle("All Significant Pathways")
-RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) +
+p2 <- RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) +
     ggplot2::ggtitle("Significantly Up-regulated Pathways")
-RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) +
+p3 <- RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) +
     ggplot2::ggtitle("Significantly Down-regulated Pathways")
 }
 }

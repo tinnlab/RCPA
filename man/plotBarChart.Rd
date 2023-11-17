@@ -66,7 +66,7 @@ selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:h
                       "path:hsa04722")
 resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
 
-RCPA::plotBarChart(resultsToPlot) + ggplot2::ggtitle("FGSEA Analysis Results")
+plotObj <- RCPA::plotBarChart(resultsToPlot) + ggplot2::ggtitle("FGSEA Analysis Results")
 
 }
 }

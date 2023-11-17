@@ -30,7 +30,7 @@
 #'                       "path:hsa04722")
 #' resultsToPlot <- lapply(PAResults, function(df) df[df$ID %in% selectedPathways,])
 #'
-#' RCPA::plotPathwayHeatmap(resultsToPlot, yAxis = "name")
+#' plotObj <- RCPA::plotPathwayHeatmap(resultsToPlot, yAxis = "name")
 #'
 #' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs scale_fill_continuous scale_size geom_tile

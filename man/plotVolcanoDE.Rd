@@ -32,11 +32,11 @@ affyDEExperiment <- loadData("affyDEExperiment")
 agilDEExperiment <- loadData("agilDEExperiment")
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 
-RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
+p1 <- RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
     ggplot2::ggtitle("Affymetrix - GSE5281")
-RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
+p2 <- RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
     ggplot2::ggtitle("Agilent - GSE61196")
-RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
+p3 <- RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
     ggplot2::ggtitle("RNASeq - GSE153873")
 
 }

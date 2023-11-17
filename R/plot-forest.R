@@ -30,7 +30,7 @@
 #'                       "path:hsa04722")
 #' resultsToPlot <- lapply(PAResults, function(df) df[df$ID %in% selectedPathways,])
 #'
-#' RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
+#' plotObj <- RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
 #'
 #' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_color_gradient scale_size_continuous labs scale_fill_continuous scale_size geom_tile geom_errorbarh

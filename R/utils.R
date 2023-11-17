@@ -14,7 +14,7 @@
         if (rlang::is_interactive()){
             BiocManager::install(pkg, update = FALSE, ask = TRUE)
             if (pkg %in% .packages(all.available = TRUE)) {
-                message("Package ", pkg, " is installed.\n")
+                message("Package ", pkg, " is installed.")
             } else {
                 warning("Package ", pkg, " is not installed. Please install it first.\n")
                 pkgEnv$isMissingDependency <- TRUE
@@ -96,6 +96,11 @@
 #' 
 #' @export
 loadData <- function(name){
+      
+     oldTimeout <- options("timeout")
+     options(timeout = 3600)
+     on.exit({options(timeout = oldTimeout)})
+     
      data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))
      get(data)
 }

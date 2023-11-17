@@ -6,7 +6,7 @@
 #' @return A named list with three elements: network, names and sizes.
 #' @examples
 #' \donttest{
-#' getSPIAKEGGNetwork("hsa")
+#' spiaNetwork <- getSPIAKEGGNetwork("hsa")
 #' }
 #' @export
 #' @importFrom graph nodes edges
@@ -235,9 +235,9 @@ combfunc <- function (p1 = NULL, p2 = NULL, combine)
         stop("More than 1% of your de genes have IDs are not present in the reference array!. Are you sure you use the right reference array?")
     }
     if (!length(IDsNotP) == 0) {
-        message("The following IDs are missing from all vector...:\n")
+        message("The following IDs are missing from all vector...:")
         message(paste(IDsNotP, collapse = ","))
-        message("\nThey were added to your universe...")
+        message("They were added to your universe...")
         all <- c(all, IDsNotP)
     }
     if (length(intersect(names(de), all)) != length(de)) {

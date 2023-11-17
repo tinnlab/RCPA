@@ -53,7 +53,7 @@ selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:h
                       "path:hsa04722")
 resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
 
-RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
+plotObj <- RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
 
 }
 }

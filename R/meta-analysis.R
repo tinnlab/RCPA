@@ -212,7 +212,7 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 #' @description This function performs mata analysis on multiple DE analysis results.
 #' @param DEResults A list of dataframes containing DE analysis results.
 #' Each dataframe must have ID, p.value, logFC and logFCSE columns.
-#' @param method The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP".
+#' @param method The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP", or "REML".
 #' @return A dataframe containing combined DE analysis results.
 #' The dataframe has ID, p.value, pDFR, logFC, and logFCSE columns.
 #' @examples
@@ -228,6 +228,7 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 #'     rowData(agilDEExperiment),
 #'     rowData(RNASeqDEExperiment)
 #' ), method = "stouffer")
+#' 
 #' }
 #' @importFrom dplyr %>% bind_rows group_by summarize mutate
 #' @importFrom stats p.adjust

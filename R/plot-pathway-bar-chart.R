@@ -37,7 +37,7 @@
 #'                       "path:hsa04722")
 #' resultsToPlot <- lapply(PAResults, function(df) df[df$ID %in% selectedPathways,])
 #'
-#' RCPA::plotBarChart(resultsToPlot) + ggplot2::ggtitle("FGSEA Analysis Results")
+#' plotObj <- RCPA::plotBarChart(resultsToPlot) + ggplot2::ggtitle("FGSEA Analysis Results")
 #'
 #' }
 #' @export

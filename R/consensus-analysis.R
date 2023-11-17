@@ -116,6 +116,8 @@
 #'     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
 #'     method = "weightedZMean"
 #' )
+#' 
+#' print(head(consensusPAResult))
 #'
 #' }
 #' @importFrom dplyr %>%
