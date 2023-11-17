@@ -59,14 +59,17 @@ PAResults <- list(
     "Meta-analysis" = metaPAResult
 )
 
-selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:hsa05016",
-                      "path:hsa05017", "path:hsa05020", "path:hsa05022", "path:hsa04724",
-                      "path:hsa04727", "path:hsa04725", "path:hsa04728", "path:hsa04726",
-                      "path:hsa04720", "path:hsa04730", "path:hsa04723", "path:hsa04721",
-                      "path:hsa04722")
-resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
+selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", 
+                       "path:hsa05016", "path:hsa05017", "path:hsa05020", 
+                       "path:hsa05022", "path:hsa04724", "path:hsa04727", 
+                       "path:hsa04725", "path:hsa04728", "path:hsa04726",
+                      "path:hsa04720", "path:hsa04730", "path:hsa04723", 
+                      "path:hsa04721", "path:hsa04722")
+resultsToPlot <- lapply(PAResults, 
+                    function(df) df[df$ID \%in\% selectedPathways,])
 
-plotObj <- RCPA::plotBarChart(resultsToPlot) + ggplot2::ggtitle("FGSEA Analysis Results")
+plotObj <- RCPA::plotBarChart(resultsToPlot) + 
+            ggplot2::ggtitle("FGSEA Analysis Results")
 
 }
 }

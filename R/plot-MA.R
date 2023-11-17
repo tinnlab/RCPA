@@ -16,7 +16,8 @@
 #'
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #' 
-#' plotObj <- RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggtitle("RNASeq - GSE153873")
+#' plotObj <- RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + 
+#' ggtitle("RNASeq - GSE153873")
 #'
 #' }
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline theme_minimal theme theme_bw geom_vline scale_x_continuous scale_color_manual labs geom_smooth

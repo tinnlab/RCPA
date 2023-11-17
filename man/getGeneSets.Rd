@@ -41,9 +41,12 @@ This function retrieves gene sets for a given organism.
 
 library(RCPA)
 
-KEGGgenesets <- getGeneSets("KEGG", org = "hsa", minSize = 10, maxSize = 1000)
+KEGGgenesets <- getGeneSets("KEGG", org = "hsa", 
+                              minSize = 10, maxSize = 1000)
 
-GOterms <- getGeneSets("GO", taxid = 9606, namespace = "biological_process", minSize = 10, maxSize = 1000)
+GOterms <- getGeneSets("GO", taxid = 9606, 
+                        namespace = "biological_process", 
+                        minSize = 10, maxSize = 1000)
 
 }
 }

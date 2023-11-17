@@ -107,8 +107,8 @@
     })
     
     oldTimeout <- options("timeout")
-    options(timeout = 3600)
     on.exit({options(timeout = oldTimeout)})
+    options(timeout = 3600)
     download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
     
     cat <- switch(namespace,
@@ -190,9 +190,12 @@
 #'
 #' library(RCPA)
 #'
-#' KEGGgenesets <- getGeneSets("KEGG", org = "hsa", minSize = 10, maxSize = 1000)
+#' KEGGgenesets <- getGeneSets("KEGG", org = "hsa", 
+#'                               minSize = 10, maxSize = 1000)
 #' 
-#' GOterms <- getGeneSets("GO", taxid = 9606, namespace = "biological_process", minSize = 10, maxSize = 1000)
+#' GOterms <- getGeneSets("GO", taxid = 9606, 
+#'                         namespace = "biological_process", 
+#'                         minSize = 10, maxSize = 1000)
 #'
 #' }
 #' @export
