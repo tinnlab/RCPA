@@ -71,7 +71,8 @@ affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = 
 }
 
 # check the DE analysis results
-head(rowData(affyDEExperiment)) 
+
+print(head(rowData(affyDEExperiment)))
 
 
 # GSE61196
@@ -87,7 +88,7 @@ GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
 
 agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
                                         contrast = agilContrast, annotation = GPL4133GeneMapping)
-head(rowData(agilDEExperiment))
+print(head(rowData(agilDEExperiment)))
 
 # GSE153873
 RNASeqDataset <- loadData("RNASeqDataset")
@@ -105,7 +106,7 @@ if (require("org.Hs.eg.db", quietly = TRUE)){
                            design = RNASeqDesign,
                            contrast = RNASeqContrast,
                            annotation = ENSEMBLMapping)
-    head(rowData(RNASeqDEExperiment))
+    print(head(rowData(RNASeqDEExperiment)))
 }
 }
 }

@@ -123,7 +123,8 @@
 #' }
 #' 
 #' # check the DE analysis results
-#' head(rowData(affyDEExperiment)) 
+#' 
+#' print(head(rowData(affyDEExperiment)))
 #'
 #'
 #' # GSE61196
@@ -139,7 +140,7 @@
 #'
 #' agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
 #'                                         contrast = agilContrast, annotation = GPL4133GeneMapping)
-#' head(rowData(agilDEExperiment))
+#' print(head(rowData(agilDEExperiment)))
 #'
 #' # GSE153873
 #' RNASeqDataset <- loadData("RNASeqDataset")
@@ -157,7 +158,7 @@
 #'                            design = RNASeqDesign,
 #'                            contrast = RNASeqContrast,
 #'                            annotation = ENSEMBLMapping)
-#'     head(rowData(RNASeqDEExperiment))
+#'     print(head(rowData(RNASeqDEExperiment)))
 #' }
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData

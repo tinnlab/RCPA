@@ -262,12 +262,17 @@
 #' \donttest{
 #'
 #' library(RCPA)
+#' 
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #' genesets <- loadData("genesets")
+#' 
 #' oraResult <- runGeneSetAnalysis(RNASeqDEExperiment, genesets,
 #'                                           method = "ora", ORAArgs = list(pThreshold = 0.05))
+#' print(head(oraResult))
+#'                                            
 #' fgseaResult <- runGeneSetAnalysis(RNASeqDEExperiment, genesets, method = "fgsea",
 #'                                             FgseaArgs = list(minSize = 10, maxSize = Inf))
+#' print(head(fgseaResult))
 #'
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay

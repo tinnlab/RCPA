@@ -6,7 +6,7 @@
 #' @return A named list with three elements: network, names and sizes for CePa.ORA and CePa.GSA methods.
 #' @examples
 #' \donttest{
-#' getCePaPathwayCatalogue("hsa")
+#' cepaNetwork <- getCePaPathwayCatalogue("hsa")
 #' }
 #' @export
 #' @importFrom graph nodes edges

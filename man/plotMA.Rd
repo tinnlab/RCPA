@@ -40,7 +40,8 @@ library(RCPA)
 library(SummarizedExperiment)
 
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
-RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggtitle("RNASeq - GSE153873")
+
+plotObj <- RCPA::plotMA(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) + ggtitle("RNASeq - GSE153873")
 
 }
 }

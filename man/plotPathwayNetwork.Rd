@@ -106,8 +106,9 @@ PAResults <- list(
 )
 
 genesetsToPlot <- metaPAResult$ID[order(metaPAResult$pFDR)][1:30]
-if (require("RCyjs", quietly = TRUE)){
+
 # This function requires a browser to work
+if (require("RCyjs", quietly = TRUE) && getOption("browser") != ""){
 pltObj <- RCPA::plotPathwayNetwork(
     PAResults,
     genesets = genesets,

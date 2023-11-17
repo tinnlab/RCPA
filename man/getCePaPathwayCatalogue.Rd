@@ -20,6 +20,6 @@ Get KEGG pathway catalogue for CePa.ORA and CePa.GSA methods
 }
 \examples{
 \donttest{
-getCePaPathwayCatalogue("hsa")
+cepaNetwork <- getCePaPathwayCatalogue("hsa")
 }
 }

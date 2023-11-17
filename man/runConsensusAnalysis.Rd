@@ -62,5 +62,7 @@ consensusPAResult <- RCPA::runConsensusAnalysis(
     method = "weightedZMean"
 )
 
+print(head(consensusPAResult))
+
 }
 }

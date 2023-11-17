@@ -5,7 +5,7 @@
 #' @examples
 #' 
 #' library(RCPA)
-#' getEntrezAnnotation(c("77267466", "77267467"))
+#' geneAnno <- getEntrezAnnotation(c("77267466", "77267467"))
 #' 
 #' @importFrom httr POST content
 #' @importFrom dplyr %>%

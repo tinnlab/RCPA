@@ -53,9 +53,9 @@ DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0
 DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
 
 if (require("ggvenn", quietly = TRUE)){
-RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("All DE Genes")
-RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated DE Genes")
-RCPA::plotVennDE(DEResultDowns) + ggplot2::ggtitle("Down-regulated DE Genes")
+p1 <- RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("All DE Genes")
+p2 <- RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated DE Genes")
+p3 <- RCPA::plotVennDE(DEResultDowns) + ggplot2::ggtitle("Down-regulated DE Genes")
 }
 
 }
