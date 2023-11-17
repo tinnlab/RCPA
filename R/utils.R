@@ -98,8 +98,8 @@
 loadData <- function(name){
       
      oldTimeout <- options("timeout")
-     options(timeout = 3600)
      on.exit({options(timeout = oldTimeout)})
+     options(timeout = 3600)
      
      data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))
      get(data)

@@ -61,13 +61,17 @@ library(SummarizedExperiment)
 
 # GSE5281
 affyDataset <- loadData("affyDataset")
-affyDesign <- model.matrix(~0 + condition + region + condition:region, data = colData(affyDataset))
+affyDesign <- model.matrix(~0 + condition + region + condition:region, 
+                             data = colData(affyDataset))
 colnames(affyDesign) <- make.names(colnames(affyDesign))
-affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=affyDesign)
+affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
+                                     levels=affyDesign)
 
 if (require("hgu133plus2.db", quietly = TRUE)){
-affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign,
-                                        contrast = affyContrast, annotation = "GPL570")
+affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", 
+                                        design = affyDesign,
+                                        contrast = affyContrast, 
+                                        annotation = "GPL570")
 }
 
 # check the DE analysis results
@@ -77,28 +81,36 @@ print(head(rowData(affyDEExperiment)))
 
 # GSE61196
 agilDataset <- loadData("agilDataset")
-agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
-agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
+agilDesign <- model.matrix(~0 + condition, 
+                            data = colData(agilDataset))
+agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
+                                     levels=agilDesign)
 
 # Create Probe mapping
 GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
-GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, TO = as.character(GPL4133Anno$GENE),
+GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
+                                 TO = as.character(GPL4133Anno$GENE),
                                  stringsAsFactors = FALSE)
 GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
 
-agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
-                                        contrast = agilContrast, annotation = GPL4133GeneMapping)
+agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", 
+                                        design = agilDesign,
+                                        contrast = agilContrast, 
+                                        annotation = GPL4133GeneMapping)
 print(head(rowData(agilDEExperiment)))
 
 # GSE153873
 RNASeqDataset <- loadData("RNASeqDataset")
 RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
-RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=RNASeqDesign)
+RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
+                                      levels=RNASeqDesign)
 
 
 if (require("org.Hs.eg.db", quietly = TRUE)){
-    ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset),
-                                            columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
+    ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, 
+                                            keys = rownames(RNASeqDataset),
+                                            columns = c("SYMBOL", "ENTREZID"), 
+                                            keytype = "SYMBOL")
     colnames(ENSEMBLMapping) <- c("FROM", "TO")
 
     RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset,
