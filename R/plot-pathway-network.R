@@ -284,7 +284,7 @@ plotPathwayNetwork <- function(PAResults, genesets, selectedPathways = NULL,
         IRdisplay::display_html(htmlTemplate)
     }
   } else {
-    if (getOption("browser") != "") {
+    if (!is.character(getOption("browser")) || getOption("browser") != "") {
       browseURL(htmlFile)
     } else {
       message("Please open the file ", htmlFile, " in a browser.")

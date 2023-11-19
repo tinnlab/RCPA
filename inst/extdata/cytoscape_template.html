@@ -16,7 +16,29 @@
     </style>
 </head>
 <body>
-<div id="cyDiv"></div>
+<div id="cyOuterDiv">
+    <div id="cyMenubarDiv">
+        <button id='cyFitButton' class="cyMenuButton">Fit</button>
+        <button id='cyFitSelectedButton' class="cyMenuButton">Fit Selected</button>
+        <button id='cySFNButton' class="cyMenuButton">SFN</button>
+        <button id='cyHideUnselectedButton' class="cyMenuButton">Hide Unselected</button>
+        <button id='cyShowAllButton' class="cyMenuButton">Show All</button>
+        <label for="layouts">Layout:</label>
+        <select id="layouts" class="cyMenuButton">
+            <option value="nop"></option>
+            <option value="breadthfirst">breadthfirst</option>
+            <option value="circle">circle</option>
+            <option value="cola">cola</option>
+            <option value="concentric">concentric</option>
+            <option value="cose">cose</option>
+            <option value="cose-bilkent">cose-bilkent</option>
+            <option value="dagre">dagre</option>
+            <option value="grid">grid</option>
+            <option value="random">random</option>
+        </select>
+    </div>
+    <div id="cyDiv"></div>
+</div>
 <script>
     //----------------------------------------------------------------------------------------------------
     var cy;  // keep this outside of module scope so it can be manipulated in the console
@@ -26,7 +48,8 @@
     var graph;
 
     var hub = {
-        send: function(){}
+        send: function () {
+        }
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -205,16 +228,39 @@
     initializeUI()
     setBackgroundColor({payload: "#ffffff"})
 
+    $("#cyFitButton").click(function () {
+        cy.fit(50)
+    });
+    $("#cyFitSelectedButton").click(function () {
+        cy.fit(cy.nodes(":selected"), 50)
+    });
+    $("#cySFNButton").click(function () {
+        cy.nodes(':selected').neighborhood().nodes().select()
+    });
+    $("#cyHideUnselectedButton").click(function () {
+        cy.nodes(":unselected").hide()
+    });
+    $("#cyShowAllButton").click(function () {
+        cy.nodes().show();
+        cy.edges().show()
+    });
+
+    $("#layouts").change(function(value){
+        doLayout({
+            payload: value.target.value
+        })
+    })
+
 </script>
 <script>
     ___STYLE___
 </script>
 <script>
-    setTimeout(function(){
+    setTimeout(function () {
         redraw()
     }, 1000)
 
-    setTimeout(function(){
+    setTimeout(function () {
         doLayout({
             payload: "cose"
         })
