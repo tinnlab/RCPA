@@ -279,11 +279,10 @@ plotPathwayNetwork <- function(PAResults, genesets, selectedPathways = NULL,
   htmlFile <- file
   writeLines(htmlTemplate, htmlFile)
 
-  # check if there is rstudioapi::viewer available
-  if (requireNamespace("rstudioapi", quietly = TRUE)) {
-    rstudioapi::viewer(htmlFile)
-  } else if (Sys.getenv("JPY_PARENT_PID") != "") { # check if is using jupyter notebook
-    IRdisplay::display_html(htmlTemplate)
+  if (Sys.getenv("JPY_PARENT_PID") != "") { # check if is using jupyter notebook
+    if (requireNamespace("IRdisplay", quietly = TRUE)){
+        IRdisplay::display_html(htmlTemplate)
+    }
   } else {
     if (getOption("browser") != "") {
       browseURL(htmlFile)
