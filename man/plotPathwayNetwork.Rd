@@ -21,7 +21,8 @@ plotPathwayNetwork(
   nodeSizeFnc = function(id) length(genesets[[id]])^0.75,
   borderWidthFnc = function(id) 1,
   edgeWidthFnc = function(from, to) 1,
-  styleFile = system.file(package = "RCPA", "extdata", "pieStyle.js")
+  styleFile = system.file(package = "RCPA", "extdata", "pieStyle.js"),
+  file = tempfile(fileext = ".html")
 )
 }
 \arguments{
@@ -71,9 +72,11 @@ The length of the vector must be the same as the number of results.}
 
 \item{styleFile}{A character value of the path to the style file.
 If NULL, the default style file will be used, which is located at system.file(package="RCPA", "extdata", "pieStyle.js")}
+
+\item{file}{A character value of the path to the html file to be created.}
 }
 \value{
-A RCyjs object.
+A character value of the html content of the plot.
 }
 \description{
 This function plots a pathway network.
@@ -107,9 +110,7 @@ PAResults <- list(
 
 genesetsToPlot <- metaPAResult$ID[order(metaPAResult$pFDR)][1:30]
 
-# This function requires a browser to work
-if (require("RCyjs", quietly = TRUE) && getOption("browser") != ""){
-pltObj <- RCPA::plotPathwayNetwork(
+pltHtml <- RCPA::plotPathwayNetwork(
     PAResults,
     genesets = genesets,
     selectedPathways = genesetsToPlot,
@@ -117,10 +118,6 @@ pltObj <- RCPA::plotPathwayNetwork(
     mode = "continuous",
     statistic = "normalizedScore"
 )
-
-# This function requires a browser to work
-pltObj$plot() 
-}
 
 }
 

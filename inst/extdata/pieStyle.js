@@ -28,8 +28,8 @@ vizmap = [
     }
 ];
 
-nResult = rcy.cy.nodes()[0].data("nResult");
-isDiscrete = rcy.cy.nodes()[0].data("mode") == "discrete"
+nResult = cy.nodes()[0].data("nResult");
+isDiscrete = cy.nodes()[0].data("mode") == "discrete"
 
 pie = {};
 resultNames = []
@@ -37,7 +37,7 @@ resultNames = []
 for (let i = 1; i <= nResult; ++i) {
     pie[`pie-${i}-background-color`] = (node) => node.data("color" + i);
     pie[`pie-${i}-background-size`] = 100 / nResult
-    resultNames.push(rcy.cy.nodes()[0].data("resultName" + i));
+    resultNames.push(cy.nodes()[0].data("resultName" + i));
 }
 
 vizmap[0].css = Object.assign(vizmap[0].css, pie);
@@ -95,9 +95,9 @@ legendDiv.style.right = "210px";
 legendDiv.style.width = "200px";
 legendDiv.style.height = "50px";
 
-legendTitle = rcy.cy.nodes()[0].data("legendTitle");
-statLimitUpper = rcy.cy.nodes()[0].data("statLimitUpper");
-statLimitLower = rcy.cy.nodes()[0].data("statLimitLower");
+legendTitle = cy.nodes()[0].data("legendTitle");
+statLimitUpper = cy.nodes()[0].data("statLimitUpper");
+statLimitLower = cy.nodes()[0].data("statLimitLower");
 
 legendDiv.innerHTML = isDiscrete ? `` : `
 <div>
@@ -136,4 +136,5 @@ legendDiv.innerHTML = isDiscrete ? `` : `
 </div>
 `
 
+cy.style(vizmap);
 cyDiv.appendChild(legendDiv);
