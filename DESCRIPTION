@@ -41,7 +41,9 @@ Imports:
     ggpattern,
     scales,
     RobustRankAggreg,
-    methods
+    methods,
+    jsonlite,
+    IRdisplay
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,

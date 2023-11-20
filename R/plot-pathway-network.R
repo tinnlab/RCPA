@@ -74,6 +74,7 @@
 #'
 #' @importFrom graph graphNEL addEdge `nodeDataDefaults<-` `nodeData<-`
 #' @importFrom grDevices colorRampPalette
+#' @importFrom utils browseURL
 plotPathwayNetwork <- function(PAResults, genesets, selectedPathways = NULL,
                                statistic = "pFDR",
                                mode = c("continuous", "discrete"),
