@@ -16,3 +16,6 @@
 ^doc$
 ^tests$
 ^Meta$
+^examples$
+^genesets$
+^img$

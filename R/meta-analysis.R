@@ -88,7 +88,7 @@
 #'     method = "stouffer"
 #' )
 #' }
-#' @details This function performs mata analysis on multiple pathway analysis results.
+#' @details This function performs meta-analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows mutate group_by summarise filter group_split select inner_join
 #' @importFrom tidyr drop_na
 #' @export
@@ -224,9 +224,9 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
 #' metaDEResult <- RCPA::runDEMetaAnalysis(list(
-#'     rowData(affyDEExperiment),
-#'     rowData(agilDEExperiment),
-#'     rowData(RNASeqDEExperiment)
+#'     rowData(affyDEExperiment)[1:1000,],
+#'     rowData(agilDEExperiment)[1:1000,],
+#'     rowData(RNASeqDEExperiment)[1:1000,]
 #' ), method = "stouffer")
 #' 
 #' }
