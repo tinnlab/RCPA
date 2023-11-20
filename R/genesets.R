@@ -215,8 +215,9 @@ getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, n
           data <- try({load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/genesets/", name, ".rda"))))}, silent = TRUE)
           if (inherits(data, "try-error")) {
             gs <- .getKEGGGeneSets(org)
+          } else {
+            gs <- get(data)
           }
-          gs <- get(data)
         } else {
           gs <- .getKEGGGeneSets(org)
         }
@@ -238,8 +239,9 @@ getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, n
           data <- try({load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/genesets/", name, ".rda"))))}, silent = TRUE)
           if (inherits(data, "try-error")) {
             gs <- .getGOTerms(taxid, namespace)
+          } else {
+            gs <- get(data)
           }
-          gs <- get(data)
         } else {
           gs <- .getGOTerms(taxid, namespace)
         }
