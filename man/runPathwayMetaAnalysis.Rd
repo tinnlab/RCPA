@@ -30,7 +30,7 @@ A dataframe of meta analysis results including the following columns:
 This function performs meta analysis on multiple pathway analysis results.
 }
 \details{
-This function performs mata analysis on multiple pathway analysis results.
+This function performs meta-analysis on multiple pathway analysis results.
 }
 \examples{
 \donttest{

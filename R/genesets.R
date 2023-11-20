@@ -212,7 +212,10 @@ getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, n
           on.exit({options(timeout = oldTimeout)})
           options(timeout = 3600)
           name <- paste0(database, "_", org)
-          data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data_genesets/", name, ".rda"))))
+          data <- try({load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/genesets/", name, ".rda"))))}, silent = TRUE)
+          if (inherits(data, "try-error")) {
+            gs <- .getKEGGGeneSets(org)
+          }
           gs <- get(data)
         } else {
           gs <- .getKEGGGeneSets(org)
@@ -232,7 +235,10 @@ getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, n
           on.exit({options(timeout = oldTimeout)})
           options(timeout = 3600)
           name <- paste0(database, "_", taxid, "_", namespace)
-          data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data_genesets/", name, ".rda"))))
+          data <- try({load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/genesets/", name, ".rda"))))}, silent = TRUE)
+          if (inherits(data, "try-error")) {
+            gs <- .getGOTerms(taxid, namespace)
+          }
           gs <- get(data)
         } else {
           gs <- .getGOTerms(taxid, namespace)
