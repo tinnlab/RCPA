@@ -42,6 +42,7 @@ library(SummarizedExperiment)
 affyDEExperiment <- loadData("affyDEExperiment")
 agilDEExperiment <- loadData("agilDEExperiment")
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
+metaDEResult <- loadData("metaDEResult")
 genesets <- loadData("genesets")
 
 DEResults <- list(
@@ -50,28 +51,25 @@ DEResults <- list(
     "RNASeq - GSE153873" = rowData(RNASeqDEExperiment)
 )
 
+ metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
 
-if (requireNamespace("meta", quietly = TRUE)) {
-    metaDEResult <- RCPA::runDEMetaAnalysis(DEResults, method = "stouffer")
-    metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
+ alzheimerGenes <- genesets$genesets[["path:hsa05010"]]
+ genesToPlot <- head(metaDEResult[metaDEResult$ID \%in\% alzheimerGenes, ], 50)$ID
 
-    alzheimerGenes <- genesets$genesets[["path:hsa05010"]]
-    genesToPlot <- head(metaDEResult[metaDEResult$ID \%in\% alzheimerGenes, ], 50)$ID
+ genesAnnotation <- RCPA::getEntrezAnnotation(genesToPlot)
+ labels <- genesAnnotation[genesToPlot, "Description"]
 
-    genesAnnotation <- RCPA::getEntrezAnnotation(genesToPlot)
-    labels <- genesAnnotation[genesToPlot, "Description"]
+ genesOrderByFC <- order(metaDEResult[match(genesToPlot, metaDEResult$ID), "logFC"])
+ resultsToPlot <- c(DEResults, list(metaDEResult))
+ names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
 
-    genesOrderByFC <- order(metaDEResult[match(genesToPlot, metaDEResult$ID), "logFC"])
-    resultsToPlot <- c(DEResults, list(metaDEResult))
-    names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
+ plotObj <- RCPA::plotDEGeneHeatmap(
+     resultsToPlot,
+     genesToPlot[genesOrderByFC],
+     labels = labels[genesOrderByFC],
+     negLog10pValueLims = c(0, 5), logFCLims = c(-1, 1)
+ )
 
-    plotObj <- RCPA::plotDEGeneHeatmap(
-        resultsToPlot,
-        genesToPlot[genesOrderByFC],
-        labels = labels[genesOrderByFC],
-        negLog10pValueLims = c(0, 5), logFCLims = c(-1, 1)
-    )
-}
 
 }
 }
