@@ -37,9 +37,9 @@ This function download and process data from GEO for microarray and RNASeq data.
 \donttest{
 library(RCPA)
 # Affymetrix
-downloadPath <- file.path(tempdir(), "GSE230534")
+downloadPath <- file.path(tempdir(), "GSE59761")
 if(!dir.exists(downloadPath)) dir.create(downloadPath)
-affyDataset <- RCPA::downloadGEO(GEOID = "GSE230534", platform ="GPL23126",
+affyDataset <- RCPA::downloadGEO(GEOID = "GSE59761", platform ="GPL16311",
                                  protocol ="affymetrix", destDir = downloadPath)
 }
 }

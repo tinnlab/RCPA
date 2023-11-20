@@ -10,7 +10,8 @@ getGeneSets(
   taxid = 9606,
   namespace = c("biological_process", "molecular_function", "cellular_component"),
   minSize = 1,
-  maxSize = 1000
+  maxSize = 1000,
+  useCache = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ This parameter is only used when database is GO.}
 \item{minSize}{The minimum size of the gene sets.}
 
 \item{maxSize}{The maximum size of the gene sets.}
+
+\item{useCache}{A boolean parameter specifying if using pre-saved downloaded geneset database. It is FALSE by default.}
 }
 \value{
 A named list with three elements: database, genesets and names.
@@ -41,11 +44,11 @@ This function retrieves gene sets for a given organism.
 library(RCPA)
 
 KEGGgenesets <- getGeneSets("KEGG", org = "hsa", 
-                              minSize = 10, maxSize = 1000)
+                              minSize = 10, maxSize = 1000, useCache = TRUE)
 
 GOterms <- getGeneSets("GO", taxid = 9606, 
                         namespace = "biological_process", 
-                        minSize = 10, maxSize = 1000)
+                        minSize = 10, maxSize = 1000, useCache = TRUE)
 
 }
 }
