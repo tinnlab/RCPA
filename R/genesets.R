@@ -183,7 +183,6 @@
 #' @param namespace The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
 #' @param minSize The minimum size of the gene sets.
 #' @param maxSize The maximum size of the gene sets.
-#' This parameter is only used when database is GO.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
 #' \donttest{

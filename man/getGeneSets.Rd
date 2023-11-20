@@ -27,8 +27,7 @@ This parameter is only used when database is GO.}
 
 \item{minSize}{The minimum size of the gene sets.}
 
-\item{maxSize}{The maximum size of the gene sets.
-This parameter is only used when database is GO.}
+\item{maxSize}{The maximum size of the gene sets.}
 }
 \value{
 A named list with three elements: database, genesets and names.
