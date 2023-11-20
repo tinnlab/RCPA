@@ -183,6 +183,7 @@
 #' @param namespace The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
 #' @param minSize The minimum size of the gene sets.
 #' @param maxSize The maximum size of the gene sets.
+#' @param useCache A boolean parameter specifying if using pre-saved downloaded geneset database. It is FALSE by default.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
 #' \donttest{
@@ -190,23 +191,34 @@
 #' library(RCPA)
 #'
 #' KEGGgenesets <- getGeneSets("KEGG", org = "hsa", 
-#'                               minSize = 10, maxSize = 1000)
+#'                               minSize = 10, maxSize = 1000, useCache = TRUE)
 #' 
 #' GOterms <- getGeneSets("GO", taxid = 9606, 
 #'                         namespace = "biological_process", 
-#'                         minSize = 10, maxSize = 1000)
+#'                         minSize = 10, maxSize = 1000, useCache = TRUE)
 #'
 #' }
 #' @export
-getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 1, maxSize = 1000) {
+getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 1, maxSize = 1000, useCache = FALSE) {
     database <- match.arg(database)
 
     if (database == "KEGG") {
         if (is.null(org)) {
             stop("Organism must be specified")
         }
+      
+        if (useCache) {
+          oldTimeout <- options("timeout")
+          on.exit({options(timeout = oldTimeout)})
+          options(timeout = 3600)
+          name <- paste0(database, "_", org)
+          data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data_genesets/", name, ".rda"))))
+          gs <- get(data)
+        } else {
+          gs <- .getKEGGGeneSets(org)
+        }
 
-        gs <- .getKEGGGeneSets(org)
+        # gs <- .getKEGGGeneSets(org)
     } else if (database == "GO") {
 
         if (is.null(taxid)) {
@@ -214,8 +226,19 @@ getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, n
         }
 
         namespace <- match.arg(namespace)
+        
+        if (useCache) {
+          oldTimeout <- options("timeout")
+          on.exit({options(timeout = oldTimeout)})
+          options(timeout = 3600)
+          name <- paste0(database, "_", taxid, "_", namespace)
+          data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data_genesets/", name, ".rda"))))
+          gs <- get(data)
+        } else {
+          gs <- .getGOTerms(taxid, namespace)
+        }
 
-        gs <- .getGOTerms(taxid, namespace)
+        # gs <- .getGOTerms(taxid, namespace)
     } else {
         stop("Database not supported")
     }
