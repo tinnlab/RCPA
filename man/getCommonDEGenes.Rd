@@ -47,6 +47,6 @@ DEResults <- list(
 
 commonDEGenes <- RCPA::getCommonDEGenes(DEResults)
 
-print(commonDEGenes[1:5,1:3])
+print(head(commonDEGenes))
 }
 }
