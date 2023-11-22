@@ -37,7 +37,7 @@ PAResults <- list(
 
 commonPathways <- RCPA::getCommonPathways(PAResults)
 
-print(commonPathways[1:6,])
+print(head(commonPathways))
 
 }
 
