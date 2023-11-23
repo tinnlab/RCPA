@@ -11,25 +11,24 @@
 #' @noRd
 .downloadGEOObject <- function(GEOID, platform, destDir) {
 
-    if (!dir.exists(destDir)) {
-        stop("The destination directory does not exist.")
-    }
+  if (!dir.exists(destDir)) {
+    stop("The destination directory does not exist.")
+  }
 
-    gsets <- getGEO(GEOID, GSEMatrix = TRUE, getGPL = TRUE, destdir = destDir)
-    platforms <- sapply(gsets, annotation)
+  gsets <- getGEO(GEOID, GSEMatrix = TRUE, getGPL = TRUE, destdir = destDir)
+  platforms <- sapply(gsets, annotation)
 
-    if (!platform %in% platforms) {
-        stop("The platform is not available in the GEO dataset.")
-    }
+  if (!platform %in% platforms) {
+    stop("The platform is not available in the GEO dataset.")
+  }
 
-    gsets[[which(platforms == platform)]]
+  gsets[[which(platforms == platform)]]
 }
 
 #' @title Download samples from GEO object
 #' @description This function downloads the corresponding samples from queried GEO object. This function is only used if the protocol is affymetrix or agilent.
 #' This function is used internally by downloadGEO.
 #' @param sampleIDs A vector of GEO accession sample IDs to be downloaded.
-#' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
 #' @param destDir The user path to save the downloaded files.
 #' @return TRUE
 #' @details This function is used internally by downloadGEO.
@@ -38,299 +37,279 @@
 #' @importFrom utils URLdecode
 #' @importFrom httr HEAD
 #' @noRd
-.downloadSamples <- function(sampleIDs, protocol, destDir) {
+.downloadSamples <- function(sampleIDs, protocol = c("affymetrix", "agilent"), destDir) {
 
-    if (!dir.exists(destDir)) {
-        stop("The destination directory does not exist.")
-    }
+  if (!dir.exists(destDir)) {
+    stop("The destination directory does not exist.")
+  }
 
-    if(!(protocol %in% c("affymetrix", "agilent"))) {
-        stop("The specified protocol is not valid.")
-    }
+  protocol <- match.arg(protocol)
 
-    for (id in sampleIDs) {
+  for (id in sampleIDs) {
 
-        if(protocol == "affymetrix"){
+    if (protocol == "affymetrix") {
 
-            if (file.exists(file.path(destDir, paste0(id, ".CEL.gz")))) next()
+      if (file.exists(file.path(destDir, paste0(id, ".CEL.gz")))) next()
 
-            filesURL <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE, fetch_files = FALSE)
+      filesURL <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE, fetch_files = FALSE)
 
-            actualInfo <- lapply(1:nrow(filesURL), function(curRow){
-                actualFileLength <- httr::HEAD(filesURL[curRow, 2])$headers$`content-length`
-                data.frame(
-                    fname = filesURL[curRow, 1],
-                    fsize = actualFileLength,
-                    stringsAsFactors = FALSE
-                )
-            }) %>% do.call(what = rbind)
+      actualInfo <- lapply(1:nrow(filesURL), function(curRow) {
+        actualFileLength <- httr::HEAD(filesURL[curRow, 2])$
+          headers$
+          `content-length`
+        data.frame(
+          fname = filesURL[curRow, 1],
+          fsize = actualFileLength,
+          stringsAsFactors = FALSE
+        )
+      }) %>% do.call(what = rbind)
 
-            downloadedInfo <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
-            downloadedFiles <- downloadedInfo %>% rownames()
+      downloadedInfo <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
+      downloadedFiles <- downloadedInfo %>% rownames()
 
-            isDeletedFlag <- FALSE
-            for(i in 1:2){
-                 lapply(nrow(downloadedInfo), function(curRow){
-                    if(downloadedInfo[curRow, "size"] != actualInfo[curRow, "fsize"]){
-                        file.remove(downloadedFiles[curRow])
-                        isDeletedFlag <- TRUE
-                    }
-                })
+      isDeletedFlag <- FALSE
+      for (i in 1:2) {
+        lapply(nrow(downloadedInfo), function(curRow) {
+          if (downloadedInfo[curRow, "size"] != actualInfo[curRow, "fsize"]) {
+            file.remove(downloadedFiles[curRow])
+            isDeletedFlag <- TRUE
+          }
+        })
 
-                if(i == 2 & isDeletedFlag == TRUE){
-                    stop(paste0("There is an error in downloading sample ", id))
-                }else if(isDeletedFlag){
-                    downloadedInfo <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
-                    isDeletedFlag <- FALSE
-                }else break
-            }
+        if (i == 2 & isDeletedFlag == TRUE) {
+          stop(paste0("There is an error in downloading sample ", id))
+        }else if (isDeletedFlag) {
+          downloadedInfo <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
+          isDeletedFlag <- FALSE
+        }else break
+      }
 
-            #downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
+      #downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
 
-            if(is.null(downloadedFiles)){
-                stop("Check the specified samples IDs to be valid. No file is found.")
-            }
+      if (is.null(downloadedFiles)) {
+        stop("Check the specified samples IDs to be valid. No file is found.")
+      }
 
-            downloadedFiles <- sapply(downloadedFiles, function(fileName){
-                if (!file.exists(fileName)) {
-                    URLdecode(fileName)
-                } else {
-                    fileName
-                }
-            }) %>% as.vector()
-
-            downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = TRUE)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
-
-        }else{
-
-            if (file.exists(file.path(destDir, paste0(id, ".TXT.gz")))) next()
-
-            downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
-
-            if(is.null(downloadedFiles)){
-                stop("Check the specified samples IDs to be valid. No file is found.")
-            }
-
-            downloadedFiles <- sapply(downloadedFiles, function(fileName){
-                if (!file.exists(fileName)) {
-                    URLdecode(fileName)
-                } else {
-                    fileName
-                }
-            }) %>% as.vector()
-
-            downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = TRUE)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
+      downloadedFiles <- sapply(downloadedFiles, function(fileName) {
+        if (!file.exists(fileName)) {
+          URLdecode(fileName)
+        } else {
+          fileName
         }
-    }
+      }) %>% as.vector()
 
-    return(TRUE)
+      downloadedFiles[grep(".cel.gz", downloadedFiles, ignore.case = TRUE)] %>% file.rename(paste0(destDir, "/", id, ".CEL.gz"))
+
+    }else {
+
+      if (file.exists(file.path(destDir, paste0(id, ".TXT.gz")))) next()
+
+      downloadedFiles <- getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE) %>% rownames()
+
+      if (is.null(downloadedFiles)) {
+        stop("Check the specified samples IDs to be valid. No file is found.")
+      }
+
+      downloadedFiles <- sapply(downloadedFiles, function(fileName) {
+        if (!file.exists(fileName)) {
+          URLdecode(fileName)
+        } else {
+          fileName
+        }
+      }) %>% as.vector()
+
+      downloadedFiles[grep(".txt.gz", downloadedFiles, ignore.case = TRUE)] %>% file.rename(paste0(destDir, "/", id, ".TXT.gz"))
+    }
+  }
+
+  return(TRUE)
 }
 
 #' @title Process and normalize affymetrix-based dataset
-#' @description This function normalize expression data of the downloaded GEO object.
-#' The normalization process includes background correction using RMA and data normalization using quantile method.
-#' This function is only used if the protocol is affymetrix or agilent.
-#' This function is used internally by downloadGEO.
-#' @param metadata The metadat of downloaded GEO object.
-#' @param sampleIDs A vector of downloaded samples IDs from the queried GEO object.
-#' @param destDir The user path to save the downloaded files.
-#' @return A SummarizedExperiment object with appended expression values as assay and metadata as colData.
-#' @details This function is used internally by downloadGEO.
-#' @importFrom SummarizedExperiment SummarizedExperiment colData assay
+#' @description
+#' This function process CEL files and normalize expression data
+#' @param dir The path to the directory containing CEL files.
+#' @param samples A vector of samples IDs. If NULL, the function will automatically detect the samples in the directory.
+#' @return A matrix of normalized expression data. Rows are probes and columns are samples.
+#' @details  Read and normalize expression data for affymetrix using RMA method
 #' @importFrom dplyr %>%
 #' @importFrom Biobase exprs
-#' @noRd
-.processAffymetrix <- function(metadata, sampleIDs, destDir) {
+#' @importFrom stringr str_replace
+#' @export
+processAffymetrix <- function(dir, samples = NULL) {
 
-    if (!dir.exists(destDir)) {
-        stop("The destination directory does not exist.")
+  if (!dir.exists(dir)) {
+    stop("The input directory does not exist.")
+  }
+
+  if (!.requirePackage("oligo")) {
+    return(NULL)
+  }
+
+  if (is.null(samples)) {
+    samples <- list.files(dir, pattern = ".CEL.gz", full.names = FALSE) %>%
+      stringr::str_replace(".CEL.gz", "")
+
+    if (length(samples) == 0) {
+      stop("There is no CEL.gz file in the directory.")
+    } else {
+      message("The following samples are found: ", paste0(samples, collapse = ", "))
     }
+  }
 
-    metadata <- metadata[metadata$geo_accession %in% sampleIDs,]
+  expression <- oligo::read.celfiles(file.path(dir, paste0(samples, '.CEL.gz'))) %>%
+    oligo::rma(normalize = TRUE) %>%
+    Biobase::exprs() %>%
+    as.data.frame()
+  if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
 
-    if(nrow(metadata) < length(sampleIDs)){
-        stop("The input metadata and sampleIDs do not match. Make sure the sample IDs match with geo_accession IDs from dataset.")
-    }
+  colnames(expression) <- samples
 
-    if (!.requirePackage("oligo")){
-        return(NULL)
-    }
+  if (dim(expression)[1] == 0 || dim(expression)[2] == 0) {
+    stop("The expression matrix is empty.")
+  }
 
-    #Normalize expression data based on RMA method
-    # expression <- try({
-    #     ReadAffy(verbose = TRUE, celfile.path = destDir, sampleNames = sampleIDs, filenames = paste0(sampleIDs, '.CEL.gz')) %>%
-    #         threestep(background.method = "RMA.2", normalize.method = "quantile", summary.method = "median.polish") %>%
-    #         exprs() %>%
-    #         as.data.frame()
-    # })
-
-    # if ("try-error" %in% class(expression)) {
-    expression <- oligo::read.celfiles(file.path(destDir, paste0(sampleIDs, '.CEL.gz'))) %>%
-        oligo::rma(normalize = TRUE) %>%
-        Biobase::exprs() %>%
-        as.data.frame()
-    if (sum(is.na(expression)) > 0) stop("There is NA in expression data.")
-    colnames(expression) <- sampleIDs
-    # }
-
-    if(dim(expression)[1] == 0 | dim(expression)[2] == 0){
-        stop("The expression matrix is empty.")
-    }
-
-    summarizedExperiment <- SummarizedExperiment(
-        assays = expression %>% log2() %>% as.matrix(),
-        colData = data.frame(metadata)
-    )
-
-    return(summarizedExperiment)
+  expression %>% log2() %>% as.matrix()
 }
 
 #' @title Process and normalize agilent-based dataset
-#' @description This function normalize expression data of the downloaded GEO object.
-#' In the normalization process the limma package functions are utilized, including background correction using normexp and data normalization using loess and quantile methods.
-#' This function is only used if the protocol is agilent.
-#' This function is used internally by downloadGEO.
-#' @param metadata The metadat of downloaded GEO object.
-#' @param sampleIDs A vector of downloaded samples IDs from the queried GEO object.
-#' @param destDir The user path to save the downloaded files.
+#' @description
+#' This function process TXT files and normalize expression data
+#' @param dir The path to the directory containing TXT files.
+#' @param samples A vector of samples IDs. If NULL, the function will automatically detect the samples in the directory.
 #' @param greenOnly Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.
-#' @return A SummarizedExperiment object with appended expression values as assay and metadata as colData.
-#' @details This function is used internally by downloadGEO.
-#' @importFrom SummarizedExperiment SummarizedExperiment colData assay
+#' @return A matrix of normalized expression data. Rows are probes and columns are samples.
+#' @details Read and normalize expression data for agilent using limma normexp, loess, and quantile methods
 #' @importFrom limma read.maimages backgroundCorrect normalizeWithinArrays normalizeBetweenArrays
 #' @importFrom dplyr %>%
-#' @noRd
-.processAgilent <- function(metadata, sampleIDs, destDir, greenOnly) {
+#' @importFrom stringr str_replace
+#' @export
+processAgilent <- function(dir, samples = NULL, greenOnly) {
 
-    if (!dir.exists(destDir)) {
-        stop("The destination directory does not exist.")
+  if (!dir.exists(dir)) {
+    stop("The destination directory does not exist.")
+  }
+
+  if (is.null(samples)) {
+    samples <- list.files(dir, pattern = ".TXT.gz", full.names = FALSE) %>%
+      stringr::str_replace(".TXT.gz", "")
+
+    if (length(samples) == 0) {
+      stop("There is no TXT.gz file in the directory.")
+    } else {
+      message("The following samples are found: ", paste0(samples, collapse = ", "))
     }
+  }
 
-    metadata <- metadata[metadata$geo_accession %in% sampleIDs,]
+  raw.data <- read.maimages(file.path(dir, paste0(samples, ".TXT.gz")),
+                            source = "agilent",
+                            green.only = greenOnly,
+                            names = samples
+  )
 
-    if(nrow(metadata) < length(sampleIDs)){
-        stop("The input metadata and sampleIDs do not match. Make sure the sample IDs match with geo_accession IDs from dataset.")
-    }
+  #Correct expression for background using the normexp method
+  background_corrected_data <- backgroundCorrect(raw.data, method = "normexp")
 
-    raw.data <- read.maimages(file.path(destDir, paste0(sampleIDs, ".TXT.gz")),
-                              source = "agilent",
-                              green.only = greenOnly,
-                              names = sampleIDs
-    )
+  if (inherits(background_corrected_data, "RGList")) {
+    # Normalize background-corrected data using the loess method for two color array
+    norm1.data <- normalizeWithinArrays(background_corrected_data, method = "loess")
 
-    #Correct expression for background using the normexp method
-    background_corrected_data <- backgroundCorrect(raw.data, method = "normexp")
+    # Normalize background-corrected data using the quantile method
+    norm2.data <- normalizeBetweenArrays(norm1.data, method = "quantile")
 
-    if(inherits(background_corrected_data, "RGList")){
-        # Normalize background-corrected data using the loess method for two color array
-        norm1.data <- normalizeWithinArrays(background_corrected_data, method = "loess")
+    expression <- norm2.data$A
+    rownames(expression) <- norm2.data$genes[, "ProbeName"]
+  }else {
+    # Normalize background-corrected data using the quantile method
+    norm.data <- normalizeBetweenArrays(background_corrected_data, method = "quantile")
 
-        # Normalize background-corrected data using the quantile method
-        norm2.data <- normalizeBetweenArrays(norm1.data, method = "quantile")
+    expression <- norm.data$E
+    rownames(expression) <- norm.data$genes[, "ProbeName"]
+  }
 
-        expression <- norm2.data$A
-        rownames(expression) <- norm2.data$genes[, "ProbeName"]
-    }else{
-        # Normalize background-corrected data using the quantile method
-        norm.data <- normalizeBetweenArrays(background_corrected_data, method = "quantile")
+  # if (!is.null(background_corrected_data$G) & !is.null(background_corrected_data$R)) {
+  #     # Normalize background-corrected data using the loess method for two color array
+  #     norm1.data <- normalizeWithinArrays(background_corrected_data, method = "loess")
+  #
+  #     # Normalize background-corrected data using the quantile method
+  #     norm2.data <- normalizeBetweenArrays(norm1.data, method = "quantile")
+  #
+  #     expression <- norm2.data$G
+  #     rownames(expression) <- norm2.data$genes[, "ProbeName"]
+  # } else {
+  #     # Normalize background-corrected data using the quantile method
+  #     norm.data <- normalizeBetweenArrays(background_corrected_data, method = "quantile")
+  #
+  #     expression <- norm.data$E
+  #     rownames(expression) <- norm.data$genes[, "ProbeName"]
+  # }
 
-        expression <- norm.data$E
-        rownames(expression) <- norm.data$genes[, "ProbeName"]
-    }
+  if (dim(expression)[1] == 0 | dim(expression)[2] == 0) {
+    stop("The expression matrix is empty.")
+  }
 
-    # if (!is.null(background_corrected_data$G) & !is.null(background_corrected_data$R)) {
-    #     # Normalize background-corrected data using the loess method for two color array
-    #     norm1.data <- normalizeWithinArrays(background_corrected_data, method = "loess")
-    #
-    #     # Normalize background-corrected data using the quantile method
-    #     norm2.data <- normalizeBetweenArrays(norm1.data, method = "quantile")
-    #
-    #     expression <- norm2.data$G
-    #     rownames(expression) <- norm2.data$genes[, "ProbeName"]
-    # } else {
-    #     # Normalize background-corrected data using the quantile method
-    #     norm.data <- normalizeBetweenArrays(background_corrected_data, method = "quantile")
-    #
-    #     expression <- norm.data$E
-    #     rownames(expression) <- norm.data$genes[, "ProbeName"]
-    # }
-
-    if(dim(expression)[1] == 0 | dim(expression)[2] == 0){
-        stop("The expression matrix is empty.")
-    }
-
-    summarizedExperiment <- SummarizedExperiment(
-        assays = expression %>% as.matrix(),
-        colData = data.frame(metadata)
-    )
-
-    return(summarizedExperiment)
+  expression %>% as.matrix()
 }
 
 #' @title Download GEO data
 #' @description This function download and process data from GEO for microarray and RNASeq data.
 #' @param GEOID The ID of the GEO dataset.
+#' @param protocol The protocol of selected GEO dataset.
 #' @param platform The platform of selected GEO dataset.
-#' @param destDir A path to save downloaded data.
-#' @param protocol The protocol of the selected GEO dataset, including affymetrix and agilent.
-#' @param greenOnly Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.
-#' @return A SummarizedExperiment object including the following attributes:
-#' \itemize{
-#' \item{assay: The assay data matrix, where rows are genes and columns are samples}
-#' \item{colData: The data frame of sample information}
-#' }
+#' @param destDir A path to save downloaded data. If the directory does not exist, it will be created.
+#' @return A vector of file paths to the downloaded files. The first element is the metadata file.
 #' @examples
 #' \donttest{
 #' library(RCPA)
 #' # Affymetrix
 #' downloadPath <- file.path(tempdir(), "GSE59761")
-#' if(!dir.exists(downloadPath)) dir.create(downloadPath)
-#' affyDataset <- RCPA::downloadGEO(GEOID = "GSE59761", platform ="GPL16311",
-#'                                  protocol ="affymetrix", destDir = downloadPath)
+#' fileList <- RCPA::downloadGEO(GEOID = "GSE59761", protocol = "affymetrix",
+#'                                 platform ="GPL16311", destDir = downloadPath)
 #' }
-#' @importFrom SummarizedExperiment SummarizedExperiment colData assay
 #' @importFrom dplyr %>%
 #' @importFrom Biobase pData
+#' @importFrom utils write.csv
 #' @export
-downloadGEO <- function(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir, greenOnly = TRUE) {
-    protocol <- match.arg(protocol)
-    protocol <- protocol %>% tolower()
+downloadGEO <- function(GEOID, protocol = c("affymetrix", "agilent"), platform, destDir) {
+  protocol <- match.arg(protocol)
+  protocol <- tolower(protocol)
 
-    #Download data with the specified platform from GEO
-    GEOObject <- .downloadGEOObject(GEOID, platform, destDir)
+  if (!dir.exists(destDir)) {
+    message("The destination directory does not exist. It will be created.")
+    dir.create(destDir, recursive = TRUE)
+  }
 
-    #Extract metadata from GEOObject
-    GEOObject.metadata <- GEOObject %>% pData()
+  #Download data with the specified platform from GEO
+  GEOObject <- .downloadGEOObject(GEOID, platform, destDir)
 
-    #Object to store processed and normalized data
-    summarizedExperimentObject <- NULL
+  #Extract metadata from GEOObject
+  GEOObject.metadata <- GEOObject %>% pData()
 
-    #Download samples from the current GEO object
-    sampleIDs <- GEOObject.metadata["geo_accession"] %>% apply(MARGIN = 1, FUN = function(x) x)
-    downloadRes <- .downloadSamples(sampleIDs, protocol, destDir)
+  #Download samples from the current GEO object
+  sampleIDs <- GEOObject.metadata["geo_accession"] %>% apply(MARGIN = 1, FUN = function(x) x)
+  downloadRes <- .downloadSamples(sampleIDs, protocol, destDir)
 
-    if(downloadRes != TRUE){
-        stop("There is an error in downloading samples.")
-    }
+  if (downloadRes != TRUE) {
+    stop("There is an error in downloading samples.")
+  }
 
-    if(!is.logical(greenOnly)){
-        stop("The greenOnly parameter can only be TRUE or FALSE! Please refer to document.")
-    }
+  rownames(GEOObject.metadata) <- sampleIDs
+  metadata <- GEOObject.metadata %>% `colnames<-`(make.names(colnames(GEOObject.metadata), unique = TRUE)) %>% as.data.frame()
+  write.csv(metadata, file.path(destDir, "metadata.csv"))
 
-    if (protocol == "affymetrix"){
-        #Normalize expression data for affymetrix using RMA method
-        summarizedExperimentObject <- .processAffymetrix(GEOObject.metadata, sampleIDs, destDir)
-    }else{
-        #Normalize expression data for affymetrix using limma normexp, loess, and quantile methods
-        summarizedExperimentObject <- .processAgilent(GEOObject.metadata, sampleIDs, destDir, greenOnly)
-    }
-
-    if(is.null(summarizedExperimentObject)){
-        if (pkgEnv$isMissingDependency){
-            return(NULL)
-        }
-        stop("There is an error in processing and normalizing data.")
-    }
-
-    return(summarizedExperimentObject)
+  if (protocol == "affymetrix") {
+    return(
+      c(
+        "metadata.csv",
+        list.files(destDir, pattern = ".CEL.gz", full.names = F)
+      )
+    )
+  }else {
+    return(
+      c(
+        "metadata.csv",
+        list.files(destDir, pattern = ".TXT.gz", full.names = F)
+      )
+    )
+  }
 }
