@@ -136,6 +136,16 @@
 #' @importFrom Biobase exprs
 #' @importFrom stringr str_replace
 #' @export
+#' @examples
+#' \donttest{
+#' library(RCPA)
+#' geoId <- "GSE59761"
+#' downloadPath <- file.path(tempdir(), geoId)
+#' fileList <- RCPA::downloadGEO(GEOID = geoId, protocol = "affymetrix",
+#'                                platform ="GPL16311", destDir = downloadPath)
+#' # process only 3 samples
+#' expression <- RCPA::processAffymetrix(downloadPath, samples = c("GSM1446171", "GSM1446172", "GSM1446173"))
+#' }
 processAffymetrix <- function(dir, samples = NULL) {
 
   if (!dir.exists(dir)) {
@@ -184,6 +194,18 @@ processAffymetrix <- function(dir, samples = NULL) {
 #' @importFrom dplyr %>%
 #' @importFrom stringr str_replace
 #' @export
+#' @examples
+#' \donttest{
+#' library(RCPA)
+#' geoId <- "GSE28522"
+#'
+#' downloadPath <- file.path(tempdir(), geoId)
+#' fileList <- RCPA::downloadGEO(GEOID = geoId, protocol = "agilent",
+#'                               platform ="GPL4133", destDir = downloadPath)
+#'
+#' expression <- RCPA::processAgilent(downloadPath, greenOnly = FALSE)
+#' }
+#'
 processAgilent <- function(dir, samples = NULL, greenOnly) {
 
   if (!dir.exists(dir)) {
