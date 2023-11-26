@@ -20,3 +20,14 @@ This function process CEL files and normalize expression data
 \details{
 Read and normalize expression data for affymetrix using RMA method
 }
+\examples{
+\donttest{
+library(RCPA)
+geoId <- "GSE59761"
+downloadPath <- file.path(tempdir(), geoId)
+fileList <- RCPA::downloadGEO(GEOID = geoId, protocol = "affymetrix",
+                               platform ="GPL16311", destDir = downloadPath)
+# process only 3 samples
+expression <- RCPA::processAffymetrix(downloadPath, samples = c("GSM1446171", "GSM1446172", "GSM1446173"))
+}
+}
