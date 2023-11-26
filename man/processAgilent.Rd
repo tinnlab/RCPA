@@ -22,3 +22,16 @@ This function process TXT files and normalize expression data
 \details{
 Read and normalize expression data for agilent using limma normexp, loess, and quantile methods
 }
+\examples{
+\donttest{
+library(RCPA)
+geoId <- "GSE28522"
+
+downloadPath <- file.path(tempdir(), geoId)
+fileList <- RCPA::downloadGEO(GEOID = geoId, protocol = "agilent",
+                              platform ="GPL4133", destDir = downloadPath)
+
+expression <- RCPA::processAgilent(downloadPath, greenOnly = FALSE)
+}
+
+}
