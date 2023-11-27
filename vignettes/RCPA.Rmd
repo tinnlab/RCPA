@@ -36,12 +36,12 @@ library(ggplot2)
 library(gridExtra)
 ```
 
-## Stage 1: Data preparation
+## Module 1: Data processing
 
-### Download Affymetrix and Agilent microarray data from GEO
-RCPA provides the `downloadGEO` function for downloading and processing high-throughput gene expression data from NCBI GEO repository supporting both Affymetrix and Agilent technologies. The output of `downloadGEO` is a `SummarizedExperiment` object. The `SummarizedExperiment` object is structured in a way that captures the various dimensions and metadata associated with the data, making it an ideal choice for storing and manipulating complex datasets. The `assays` attribute of the resulted object contains gene expression values, and `colData` attribute stores sample-level metadata, such as clinical information, and experimental conditions.
+### Processing Affymetrix and Agilent microarray data
+RCPA provides the `downloadGEO` function for downloading, `processAffymetrix` and `processAgilent` for processing high-throughput gene expression data from NCBI GEO repository supporting both Affymetrix and Agilent technologies. Users then can save the processed data in a `SummarizedExperiment` object. The `SummarizedExperiment` object is structured in a way that captures the various dimensions and metadata associated with the data, making it an ideal choice for storing and manipulating complex datasets. The `assays` attribute of the resulted object contains gene expression values, and `colData` attribute stores sample-level metadata, such as clinical information, and experimental conditions.
 
-#### Running *downloadGEO* to download *GSE5281* with *affymetrix* protocol:
+#### Download and process *GSE5281* with *affymetrix* protocol:
 In this example, we demonstrate the use of function `downloadGEO` for downloading an Affymetrix dataset from GEO database (accession ID: GSE5181). Users can run the following code to get the data:
 
 ```{r, eval=FALSE}
@@ -49,11 +49,30 @@ In this example, we demonstrate the use of function `downloadGEO` for downloadin
 downloadPath <- file.path(getwd(), "GSE5281")
 # Create the directory if it does not exist
 if(!dir.exists(downloadPath)) dir.create(downloadPath)
-# Download the dataset GSE5281 using downloadGEO() function
-affyDataset <- downloadGEO(GEOID = "GSE5281", platform = "GPL570", protocol = "affymetrix", destDir = downloadPath)
+# download the data
+downloadedFiles <- RCPA::downloadGEO(GEOID = "GSE5281", platform = "GPL570", protocol = "affymetrix", destDir = downloadPath)
 ```
 
-After executing the code, by running `head(affyDataset)` command, users can expect to get the below output:
+After executing the code, by running `head(downloadedFiles)` command to see the output. The function `downloadGEO` returns a list of downloaded files, which is assigned to the downloadedFiles variable. The first element of the list is the metadata file, and the remaining elements are the CEL files.
+
+```
+[1] "metadata.csv"     "GSM119615.CEL.gz" "GSM119616.CEL.gz" "GSM119617.CEL.gz"
+[5] "GSM119618.CEL.gz" "GSM119619.CEL.gz"
+```
+We can then process the downloaded files as follow:
+
+```{r, eval=FALSE}
+# read the metadata file
+affySampleInfo <- read.csv(file.path(downloadPath, "metadata.csv"))
+
+# read the CEL files
+affyExprs <- RCPA::processAffymetrix(dir = downloadPath, samples = affySampleInfo$geo_accession)
+
+# create the SummarizedExperiment object
+affyDataset <- SummarizedExperiment::SummarizedExperiment(assays = affyExprs, colData = affySampleInfo)
+```
+
+By running `head(affyDataset)` command, users can expect to get the below output:
 
 ```
 class: SummarizedExperiment 
@@ -100,7 +119,7 @@ GSM119616         RNA             1 brain, Entorhinal Co.. Homo sapiens Sample A
 GSM119617         RNA             1 brain, Entorhinal Co.. Homo sapiens Sample Amount: 10 ug
 ```
 
-#### Running *downloadGEO* to download *GSE61196* with *agilent* technology:
+#### Download and process *GSE61196* with *agilent* technology:
 In this example, we use the function `downloadGEO` to download an Agilent dataset from GEO database (accession ID: GSE61196):
 
 ```{r, eval=FALSE}
@@ -108,11 +127,33 @@ In this example, we use the function `downloadGEO` to download an Agilent datase
 downloadPath <- file.path(getwd(), "GSE61196")
 # Create the directory if it does not exist
 if(!dir.exists(downloadPath)) dir.create(downloadPath)
-# Download the dataset GSE61196 using downloadGEO() function
-agilDataset <- RCPA::downloadGEO(GEOID = "GSE61196", platform ="GPL4133", protocol = "agilent", destDir = downloadPath, greenOnly = FALSE)
+# download the data
+downloadedFiles <- RCPA::downloadGEO(GEOID = "GSE61196", platform = "GPL4133", protocol = "agilent", destDir = downloadPath)
 ```
 
-In the above code, the function `downloadGEO` requires users to specify which color channel should be used when downloading an Agilent dataset. When `greenOnly = FALSE`, it tells the function that both red and green channels required. Similarly, we run `head(agilDataset)` command, and get the below output:
+In the above code, the function `downloadGEO` requires users to specify which color channel should be used when downloading an Agilent dataset. When `greenOnly = FALSE`, it tells the function that both red and green channels required. Similarly, we run `head(downloadedFiles)` command, and get the below output:
+
+```
+> head(downloadedFiles)
+[1] "metadata.csv"      "GSM1499379.TXT.gz" "GSM1499380.TXT.gz"
+[4] "GSM1499381.TXT.gz" "GSM1499382.TXT.gz" "GSM1499383.TXT.gz"
+```
+
+Next, we process the downloaded files as follows:
+
+```{r, eval=FALSE}
+# read the metadata file
+agilSampleInfo <- read.csv(file.path(downloadPath, "metadata.csv"))
+
+# read the TXT files
+agilExprs <- processAgilent(dir = downloadPath, samples = agilSampleInfo$geo_accession, greenOnly = FALSE)
+
+# create the SummarizedExperiment object
+agilDataset <- SummarizedExperiment::SummarizedExperiment(assays = agilExprs, colData = agilSampleInfo)
+```
+
+
+We can then run the `print(agilDataset)` to display the `SummarizedExperiment` object:
 
 ```
 class: SummarizedExperiment
@@ -166,7 +207,7 @@ GSM1499380 tissue: choroid plex..
 GSM1499381 tissue: choroid plex..
 ```
 
-### Download RNA-Seq read counts
+### Download and process RNA-Seq read counts
 
 One can also download read counts data from GEO and create the *SummarizedExperiment* object to be used in later stages. Here, we download read counts data for *GSE153873* from GEO:
 
@@ -298,7 +339,7 @@ colData names(38): title geo_accession ... disease state:ch1 tissue:ch1
 
 Additionally, users can create their own `SummarizedExperiment` object from their customized data with the same procedure.
 
-## Stage 2 : Differential analysis
+## Module 2 : Differential analysis
 
 To begin with differential analysis (DE analysis), we can call *runDEAnalysis* function. This function utilizes one of the *limma*, *DESeq2*, and *edgeR* methods to perform the analysis. It is generally recommended to use *limma* for differential expression analysis of microarray data, or log-scaled RNA-seq data with TPM, FPKM, or RPKM normalization values. For RNA-seq data with raw counts, *DESeq2* or *edgeR* are recommended.
 
@@ -616,7 +657,7 @@ and the generated Venn diagrams are:
 
 ![](./images/venn-de.png)
 
-## Stage 3 : Pathway Analysis
+## Module 3 : System-level Analysis
 In this pipeline, we have implemented eight widely used and reliable approaches for pathway analysis, which assist users in identifying significantly enriched functional categories.
 We categorize these approaches into two subgroups: non-topology-based and topology-based pathway analysis tools.
 
@@ -767,7 +808,7 @@ The *runPathwayAnalysis* function returns a dataframe the same as the output of 
 6                                 Alzheimer disease 2.469525e-21         384
 ```
 
-## Stage 4 : Integrative Analysis
+## Module 4 : Integrative Analysis and Visualization
 
 ### Gene-Level Meta Analysis
 For gene-level meta-analysis, RCPA provides the function named *runDEMetaAnalysis* to perform meta-analysis using DE analysis results. Users can pick one of the *fisher*, *stouffer*, *addCLT*, *geoMean*, and *minP* methods to perform meta-analysis. Besides the p-values, the fold-changes also are combined using *SMD* method.
@@ -1023,7 +1064,7 @@ attached base packages:
 [1] grid      stats4    stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] RCPA_0.1.3                  tidyr_1.3.0                 RCyjs_2.24.0               
+ [1] RCPA_0.2.1                  tidyr_1.3.0                 RCyjs_2.24.0               
  [4] BrowserViz_2.24.0           httpuv_1.6.12               jsonlite_1.8.7             
  [7] RCurl_1.98-1.12             png_0.1-8                   XML_3.99-0.15              
 [10] gridExtra_2.3               ggvenn_0.1.10               dplyr_1.1.3                
