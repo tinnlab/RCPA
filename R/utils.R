@@ -85,6 +85,22 @@
     )
 }
 
+#' @title Check URL is ok
+#' @description This function checks whether the URL is available
+#' @param url The URL to the internet source
+#' @return TRUE is the URL is available, FALSE otherwise
+#' @importFrom httr http_error
+#' @importFrom rlang interrupt
+#' @noRd
+
+.checkURLAvailable <- function(url) {
+  toCheck <- try({httr::http_error(url)}, silent = TRUE)
+  if (inherits(toCheck, "try-error") || toCheck) {
+    warning("No internet connection or data source broken.")
+    rlang::interrupt()
+  }
+}
+
 #' @title Load data from GitHub
 #' @description This function loads data from GitHub.
 #' @param name The name of the data.
@@ -94,13 +110,26 @@
 #' library(RCPA)
 #' RNASeqDataset <- loadData("RNASeqDataset")
 #' 
+#' 
 #' @export
 loadData <- function(name){
       
      oldTimeout <- options("timeout")
      on.exit({options(timeout = oldTimeout)})
-     options(timeout = 3600)
+     options(timeout = 10)
      
-     data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))
+     # data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))
+     # get(data)
+     
+     toUseURL <- paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda")
+     
+     # toCheck <- try({httr::http_error(toUseURL)}, silent = TRUE)
+     # toCheck <- crul::ok(toUseURL)
+     .checkURLAvailable(toUseURL)
+     
+     data <- load(gzcon(url(toUseURL)))
      get(data)
+     
+     
+     
 }

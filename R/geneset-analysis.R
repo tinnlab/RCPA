@@ -266,6 +266,7 @@
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #' genesets <- loadData("genesets")
 #' 
+#' 
 #' oraResult <- runGeneSetAnalysis(RNASeqDEExperiment, genesets,
 #'                                method = "ora", 
 #'                                ORAArgs = list(pThreshold = 0.05))
