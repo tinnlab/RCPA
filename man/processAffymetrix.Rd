@@ -28,6 +28,7 @@ downloadPath <- file.path(tempdir(), geoId)
 fileList <- RCPA::downloadGEO(GEOID = geoId, protocol = "affymetrix",
                                platform ="GPL16311", destDir = downloadPath)
 # process only 3 samples
-expression <- RCPA::processAffymetrix(downloadPath, samples = c("GSM1446171", "GSM1446172", "GSM1446173"))
+expression <- RCPA::processAffymetrix(downloadPath, 
+                   samples = c("GSM1446171", "GSM1446172", "GSM1446173"))
 }
 }
