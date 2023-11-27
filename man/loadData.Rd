@@ -20,4 +20,5 @@ This function loads data from GitHub.
 library(RCPA)
 RNASeqDataset <- loadData("RNASeqDataset")
 
+
 }

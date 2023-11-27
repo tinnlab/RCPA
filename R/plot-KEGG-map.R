@@ -68,10 +68,12 @@ plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = 
     pngContent <- try({ RCurl::getURLContent(paste0("https://www.kegg.jp/kegg/pathway/", organismCode, "/", KEGGPathwayID, "@2x.png")) })
     if (inherits(pngContent, "try-error")) {
         scale <- 1
+        .checkURLAvailable(paste0("https://www.kegg.jp/kegg/pathway/", organismCode, "/", KEGGPathwayID, ".png"))
         pngContent <- RCurl::getURLContent(paste0("https://www.kegg.jp/kegg/pathway/", organismCode, "/", KEGGPathwayID, ".png"))
     }
 
     img <- png::readPNG(pngContent)
+    .checkURLAvailable(paste0("https://rest.kegg.jp/get/", KEGGPathwayID, "/kgml"))
     xml <- RCurl::getURLContent(paste0("https://rest.kegg.jp/get/", KEGGPathwayID, "/kgml")) %>%
         XML::xmlParse()
 

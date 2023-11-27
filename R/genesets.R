@@ -13,7 +13,13 @@
 #' @importFrom utils read.table
 #' @noRd
 .getKEGGPathwayNames <- function(org = "hsa") {
-    gsNames <- read.table(paste0("https://rest.kegg.jp/list/pathway/", org), sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+    # gsNames <- read.table(paste0("https://rest.kegg.jp/list/pathway/", org), sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+    toUseURL <- paste0("https://rest.kegg.jp/list/pathway/", org)
+    
+    .checkURLAvailable(toUseURL)
+    
+    gsNames <- read.table(toUseURL, sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+    
     gsNames[, 2] %>%
         str_split(" - ") %>%
         sapply(function(x) paste0(x[1:(length(x) - 1)], collapse = " - ")) %>%
@@ -35,9 +41,16 @@
 #' @importFrom stats setNames
 #' @noRd
 .getKEGGGeneSets <- function(org = "hsa") {
-    geneLink <- read.table(paste0("https://rest.kegg.jp/link/", org, "/pathway"), sep = "\t", header = FALSE, stringsAsFactors = FALSE) %>%
-        `colnames<-`(c("geneset", "gene"))
+    # geneLink <- read.table(paste0("https://rest.kegg.jp/link/", org, "/pathway"), sep = "\t", header = FALSE, stringsAsFactors = FALSE) %>%
+    #     `colnames<-`(c("geneset", "gene"))
 
+    toUseURL <- paste0("https://rest.kegg.jp/link/", org, "/pathway")
+    
+    .checkURLAvailable(toUseURL)
+    
+    geneLink <- read.table(toUseURL, sep = "\t", header = FALSE, stringsAsFactors = FALSE) %>%
+        `colnames<-`(c("geneset", "gene"))
+    
     gensets <- geneLink %>%
         group_by(.$geneset) %>%
         group_split() %>%
@@ -67,8 +80,13 @@
 #' @noRd
 .getGOTermNames <- function(namespace = c("biological_process", "molecular_function", "cellular_component")) {
     namespace <- match.arg(namespace)
-
-    con <- url("http://purl.obolibrary.org/obo/go.obo")
+    
+    toUseURL <- "http://purl.obolibrary.org/obo/go.obo"
+    
+    .checkURLAvailable(toUseURL)
+    
+    # con <- url("http://purl.obolibrary.org/obo/go.obo")
+    con <- url(toUseURL)
     rawText <- readLines(con) %>% paste(collapse = "\n")
     close(con)
 
@@ -101,6 +119,10 @@
 
     namespace <- match.arg(namespace)
     
+    toUseURL <- "https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz"
+    
+    .checkURLAvailable(toUseURL)
+    
     tmpTarget <- tempfile(fileext = ".gz")
     on.exit({
       unlink(tmpTarget)
@@ -109,7 +131,8 @@
     oldTimeout <- options("timeout")
     on.exit({options(timeout = oldTimeout)})
     options(timeout = 3600)
-    download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
+    # download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
+    download.file(toUseURL, tmpTarget)
     
     cat <- switch(namespace,
                   biological_process = "Process",

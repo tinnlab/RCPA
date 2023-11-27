@@ -9,6 +9,7 @@
 #' 
 #' @importFrom httr POST content
 #' @importFrom dplyr %>%
+#' @importFrom rlang interrupt
 #' @export
 getEntrezAnnotation <- function(entrezIds) {
 
@@ -31,9 +32,13 @@ getEntrezAnnotation <- function(entrezIds) {
     }, silent = TRUE)
     
     if (inherits(xml, "try-error")) {
-      df <- data.frame(matrix(ncol = 6, nrow = 0))
-      colnames(df) <- c("ID", "Symbol", "Description", "OtherDesignations", "OtherAliases", "Chromosome")
-      df
+      # df <- data.frame(matrix(ncol = 6, nrow = 0))
+      # colnames(df) <- c("ID", "Symbol", "Description", "OtherDesignations", "OtherAliases", "Chromosome")
+      # df
+      
+      warning("No internet connection or data source broken.")
+      rlang::interrupt()
+      
     } else {
       xpath <- "//DocumentSummary"
       XML::xpathApply(xml, xpath, function(xmlDoc) {
