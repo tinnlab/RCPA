@@ -4,7 +4,7 @@
 #' @param pkg The name of the package to be loaded.
 #' @return TRUE if the package is installed, FALSE otherwise.
 #' @importFrom BiocManager install
-#' @importFrom rlang is_interactive
+#' @importFrom rlang is_interactive interrupt
 #' @noRd
 .requirePackage <- function(pkg) {
     pkgEnv$isMissingDependency <- FALSE
@@ -18,6 +18,7 @@
             } else {
                 warning("Package ", pkg, " is not installed. Please install it first.\n")
                 pkgEnv$isMissingDependency <- TRUE
+                rlang::interrupt()
                 return(FALSE)
             }
         } else {
