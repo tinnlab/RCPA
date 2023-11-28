@@ -72,11 +72,12 @@ affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma",
                                         design = affyDesign,
                                         contrast = affyContrast, 
                                         annotation = "GPL570")
-}
-
+                                        
 # check the DE analysis results
 
 print(head(rowData(affyDEExperiment)))
+}
+
 
 
 # GSE61196
