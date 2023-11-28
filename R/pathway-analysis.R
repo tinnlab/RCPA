@@ -27,6 +27,10 @@
 #' @importFrom methods Summary
 #' @noRd
 .runSPIA <- function(summarizedExperiment, network, pThreshold, all, nB = 2000, ...){
+  
+    if (!.requirePackage("ROntoTools")){
+      return(NULL)
+    }
 
     DE_data <- rowData(summarizedExperiment)
 
