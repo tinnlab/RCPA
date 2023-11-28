@@ -1029,16 +1029,14 @@ This plot is useful for understanding the relationships among the pathways and i
 ```{r, eval=FALSE}
 genesetsToPlot <- metaPAResult$ID[order(metaPAResult$pFDR)][1:30]
 
-pltObj <- RCPA::plotPathwayNetwork(
+pltHtml <- RCPA::plotPathwayNetwork(
 	PAResults,
-	genesets = genesets$genesets[genesetsToPlot],
-	labels = genesets$names[genesetsToPlot],
+	genesets = genesets,
+	selectedPathways = genesetsToPlot,
 	edgeThreshold = 0.75,
 	mode = "continuous",
 	statistic = "normalizedScore"
 	)
-
-pltObj$plot()
 ```
 
 The generated pathway network for the selected set of pathways is as:

@@ -51,9 +51,7 @@ Suggests:
     markdown,
     testthat (>= 3.0.0),
     ROntoTools,
-    RCyjs,
     fgsea,
-    BrowserViz,
     GSA,
     CePa,
     meta,
@@ -62,7 +60,6 @@ Suggests:
     RCurl,
     XML,
     S4Vectors,
-    devtools,
     hgu133plus2.db,
     org.Hs.eg.db,
     oligo
