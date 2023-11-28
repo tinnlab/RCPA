@@ -38,6 +38,8 @@
   if (inherits(res, "try-error")) {
     warning("No internet connection or data source broken.")
     rlang::interrupt()
+  } else {
+    return(res)
   }
 }
 
