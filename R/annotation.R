@@ -36,7 +36,7 @@ getEntrezAnnotation <- function(entrezIds) {
       # colnames(df) <- c("ID", "Symbol", "Description", "OtherDesignations", "OtherAliases", "Chromosome")
       # df
       
-      warning("No internet connection or data source broken.")
+      warning("The data source is temporarily unvailable. Please try it again later or contact the maintainer(s) to solve this issue.")
       rlang::interrupt()
       
     } else {
