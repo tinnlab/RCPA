@@ -15,6 +15,10 @@
     stop("The destination directory does not exist.")
   }
   
+  oldTimeout <- options("timeout")
+  on.exit({options(timeout = oldTimeout)})
+  options(timeout = 3600)
+  
   gsets <- getGEO(GEOID, GSEMatrix = TRUE, getGPL = TRUE, destdir = destDir)
   platforms <- sapply(gsets, annotation)
   
