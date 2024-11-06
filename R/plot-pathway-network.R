@@ -279,19 +279,23 @@ plotPathwayNetwork <- function(PAResults, genesets, selectedPathways = NULL,
 
   htmlFile <- file
   writeLines(htmlTemplate, htmlFile)
-
-  if (Sys.getenv("JPY_PARENT_PID") != "") { # check if is using jupyter notebook
-    if (requireNamespace("IRdisplay", quietly = TRUE)){
-        IRdisplay::display_html(htmlTemplate)
+  
+  if (Sys.getenv("JPY_PARENT_PID") != "") { # check if using Jupyter Notebook
+    if (requireNamespace("IRdisplay", quietly = TRUE)) {
+      IRdisplay::display_html(htmlTemplate)
     }
   } else {
-    if (!is.character(getOption("browser")) || getOption("browser") != "") {
-      browseURL(htmlFile)
+    if (interactive()) {
+      if (!is.character(getOption("browser")) || getOption("browser") != "") {
+        browseURL(htmlFile)
+      } else {
+        message("Please open the file ", htmlFile, " in a browser.")
+      }
     } else {
-      message("Please open the file ", htmlFile, " in a browser.")
+      message("Non-interactive session detected. Please open the file ", htmlFile, " in a browser.")
     }
   }
-
+  
   message("The plot is saved to ", htmlFile)
   return(htmlTemplate)
 }
