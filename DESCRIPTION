@@ -1,11 +1,11 @@
 Package: RCPA
 Type: Package
 Title: Consensus Pathway Analysis
-Version: 0.2.5
+Version: 0.2.6
 Authors@R: c(
     person(given = "Ha", family = "Nguyen", email = "hvn0006@auburn.edu", role = c("aut", "cre")),
-    person(given = "Zeynab", family = "Maghsoudi", email = "zmaghsoudi@nevada.unr.edu", role = c("aut")),
-    person(given = "Phi Hung", family = "Bya", role = c("aut")),
+    person(given = "Phi", family = "Bya", role = c("aut")),
+    person(given = "Zeynab", family = "Maghsoudi", role = c("aut")),
     person(given = "Tin", family = "Nguyen", role = c("fnd")))
 Description: Provides a set of functions to perform pathway analysis and meta-analysis from multiple gene expression datasets, as well as visualization of the results. This package wraps functionality from the following packages: Ritchie et al. (2015) <doi:10.1093/nar/gkv007>, Love et al. (2014) <doi:10.1186/s13059-014-0550-8>, Robinson et al. (2010) <doi:10.1093/bioinformatics/btp616>, Korotkevich et al. (2016) <arxiv:10.1101/060012>, Efron et al. (2015) <https://CRAN.R-project.org/package=GSA>, and Gu et al. (2012) <https://CRAN.R-project.org/package=CePa>.
 License: GPL-3
