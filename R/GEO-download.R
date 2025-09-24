@@ -15,6 +15,10 @@
     stop("The destination directory does not exist.")
   }
   
+  oldTimeout <- options("timeout")
+  on.exit({options(timeout = oldTimeout)})
+  options(timeout = 3600)
+  
   gsets <- getGEO(GEOID, GSEMatrix = TRUE, getGPL = TRUE, destdir = destDir)
   platforms <- sapply(gsets, annotation)
   
@@ -71,16 +75,40 @@
       
       filesURL <- .getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE, fetch_files = FALSE)
       
-      actualInfo <- lapply(1:nrow(filesURL), function(curRow) {
-        actualFileLength <- httr::HEAD(filesURL[curRow, 2])$
-          headers$
-          `content-length`
-        data.frame(
-          fname = filesURL[curRow, 1],
-          fsize = actualFileLength,
-          stringsAsFactors = FALSE
-        )
-      }) %>% do.call(what = rbind)
+      oldTimeout <- options("timeout")
+      on.exit({options(timeout = oldTimeout$timeout)})
+      options(timeout = 3600)
+      
+      # actualInfo <- lapply(1:nrow(filesURL), function(curRow) {
+      #   actualFileLength <- httr::HEAD(filesURL[curRow, 2])$
+      #     headers$
+      #     `content-length`
+      #   data.frame(
+      #     fname = filesURL[curRow, 1],
+      #     fsize = actualFileLength,
+      #     stringsAsFactors = FALSE
+      #   )
+      # }) %>% do.call(what = rbind)
+      
+      restmp <- try({
+        lapply(1:nrow(filesURL), function(curRow) {
+          actualFileLength <- httr::HEAD(filesURL[curRow, 2])$
+            headers$
+            `content-length`
+          data.frame(
+            fname = filesURL[curRow, 1],
+            fsize = actualFileLength,
+            stringsAsFactors = FALSE
+          )
+        }) %>% do.call(what = rbind)
+      }, silent = TRUE)
+      
+      if (inherits(restmp, "try-error")) {
+        warning("The data source is temporarily unavailable. Please try it again later or contact the maintainer(s) to solve this issue.")
+        rlang::interrupt()
+      } else {
+        actualInfo <- restmp
+      }
       
       downloadedInfo <- .getGEOSuppFiles(id, baseDir = destDir, makeDirectory = FALSE)
       downloadedFiles <- downloadedInfo %>% rownames()

@@ -140,6 +140,7 @@
 #'                                      levels=agilDesign)
 #'
 #' # Create Probe mapping
+#' options(timeout = 3600)
 #' GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
 #' GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
 #'                                  TO = as.character(GPL4133Anno$GENE),
