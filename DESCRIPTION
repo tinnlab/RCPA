@@ -1,7 +1,7 @@
 Package: RCPA
 Type: Package
 Title: Consensus Pathway Analysis
-Version: 0.2.6
+Version: 0.2.8
 Authors@R: c(
     person(given = "Ha", family = "Nguyen", email = "hvn0006@auburn.edu", role = c("aut", "cre")),
     person(given = "Phi", family = "Bya", role = c("aut")),
