@@ -1,9 +1,9 @@
 Package: RCPA
 Type: Package
 Title: Consensus Pathway Analysis
-Version: 0.2.8
+Version: 0.2.9
 Authors@R: c(
-    person(given = "Ha", family = "Nguyen", email = "hvn0006@auburn.edu", role = c("aut", "cre")),
+    person(given = "Ha", family = "Nguyen", email = "hvn0006@wayne.edu", role = c("aut", "cre")),
     person(given = "Phi", family = "Bya", role = c("aut")),
     person(given = "Zeynab", family = "Maghsoudi", role = c("aut")),
     person(given = "Tin", family = "Nguyen", role = c("fnd")))
@@ -62,7 +62,6 @@ Suggests:
     S4Vectors,
     hgu133plus2.db,
     org.Hs.eg.db,
-    pd.hg.u133.plus.2,
     oligo
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false
